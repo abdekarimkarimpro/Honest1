@@ -3,488 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سات فيكس | منصة الخدمات المتكاملة</title>
+    <title>سات فيكس | SatFix Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; }
-        .active-tab { background-color: #1e3a8a; color: white; }
-        .hidden-section { display: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .rating-star:hover { color: gold; cursor: pointer; }
+        /* إخفاء العناصر */
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-20 select-none">
 
-    <div id="login-screen" class="fixed inset-0 bg-blue-900 z-50 flex flex-col items-center justify-center text-white p-6">
-        <h1 class="text-4xl font-black mb-2">📡 سات فيكس</h1>
-        <p class="mb-8 opacity-80">اختر نوع الحساب للدخول</p>
-        
-        <div class="space-y-4 w-full max-w-sm">
-            <button onclick="loginAs('client')" class="w-full bg-white text-blue-900 py-3 rounded-xl font-bold hover:bg-gray-100 flex items-center justify-center gap-2">
-                <i class="fas fa-user"></i> دخول كـ زبون
-            </button>
-            <button onclick="loginAs('tech')" class="w-full bg-blue-700 border border-blue-500 py-3 rounded-xl font-bold hover:bg-blue-600 flex items-center justify-center gap-2">
-                <i class="fas fa-tools"></i> دخول كـ فني
-            </button>
-            <button onclick="loginAs('admin')" class="w-full bg-gray-800 border border-gray-600 py-3 rounded-xl font-bold hover:bg-gray-700 flex items-center justify-center gap-2">
-                <i class="fas fa-lock"></i> دخول كـ إدارة (Admin)
-            </button>
-        </div>
-        <p class="mt-8 text-xs text-blue-300">وضع تجريبي: البيانات تحفظ في جهازك فقط</p>
+    <!-- نظام كشف الأخطاء (سيظهر فقط لو حدثت مشكلة) -->
+    <div id="error-box" class="hidden fixed top-0 left-0 w-full bg-red-600 text-white p-4 z-[9999] text-center text-sm font-bold">
     </div>
 
-    <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-40">
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="login-screen" class="fixed inset-0 bg-blue-900 z-50 flex flex-col items-center justify-center text-white p-6">
+        <div class="mb-8 text-center">
+            <h1 class="text-5xl font-black mb-2">📡</h1>
+            <h1 class="text-3xl font-bold">سات فيكس</h1>
+            <p class="opacity-75 text-sm">المنصة الشاملة لخدمات الستلايت</p>
+        </div>
+        
+        <div class="space-y-4 w-full max-w-sm">
+            <button onclick="app.login('client')" class="w-full bg-white text-blue-900 py-4 rounded-xl font-bold hover:bg-gray-100 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
+                <i class="fas fa-user"></i> دخول كـ زبون
+            </button>
+            <button onclick="app.login('tech')" class="w-full bg-blue-700 border border-blue-500 py-4 rounded-xl font-bold hover:bg-blue-600 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
+                <i class="fas fa-tools"></i> دخول كـ فني
+            </button>
+            <button onclick="app.login('admin')" class="w-full bg-gray-800 border border-gray-600 py-4 rounded-xl font-bold hover:bg-gray-700 shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3">
+                <i class="fas fa-lock"></i> لوحة الإدارة
+            </button>
+        </div>
+
+        <!-- زر الطوارئ لإصلاح المشاكل -->
+        <button onclick="localStorage.clear(); location.reload();" class="mt-10 text-xs text-red-300 underline">
+            ⚠️ التطبيق لا يعمل؟ اضغط هنا لعمل (Reset)
+        </button>
+    </div>
+
+    <!-- 2. الشريط العلوي (يظهر بعد الدخول) -->
+    <nav id="navbar" class="hidden bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-40">
         <div class="flex justify-between items-center max-w-2xl mx-auto">
             <h1 class="text-xl font-bold flex items-center gap-2">📡 سات فيكس</h1>
             <div class="flex items-center gap-3">
-                <span id="user-role-badge" class="text-xs bg-blue-700 px-3 py-1 rounded-full border border-blue-500">زائر</span>
-                <button onclick="logout()" class="text-xs bg-red-500 px-2 py-1 rounded hover:bg-red-600"><i class="fas fa-sign-out-alt"></i></button>
+                <span id="role-badge" class="text-xs bg-blue-800 px-3 py-1 rounded-full border border-blue-600">...</span>
+                <button onclick="location.reload()" class="text-xs bg-red-500 px-2 py-1 rounded hover:bg-red-600"><i class="fas fa-sign-out-alt"></i> خروج</button>
             </div>
         </div>
     </nav>
 
+    <!-- حاوية الصفحات -->
     <div class="max-w-2xl mx-auto p-4">
 
-        <div id="client-panel" class="hidden-section fade-in">
-            <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white mb-6 text-center">
-                <h2 class="text-2xl font-bold mb-2">هل تواجه مشكلة في التلفاز؟</h2>
-                <p class="text-sm opacity-90 mb-4">اطلب فني محترف الآن ليصلك لباب المنزل</p>
-                <button onclick="showServiceForm()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:scale-105 transition">طلب خدمة صيانة</button>
+        <!-- A. لوحة الزبون -->
+        <div id="panel-client" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-6 text-white text-center shadow-lg">
+                <h2 class="text-2xl font-bold mb-2">بحاجة لفني محترف؟</h2>
+                <p class="text-sm opacity-90 mb-4">خدمات تركيب، صيانة، وبرمجة تصلك لباب بيتك.</p>
+                <button onclick="app.showServiceForm()" class="bg-white text-purple-700 px-6 py-3 rounded-full font-bold shadow-md active:scale-95 transition">طلب فني الآن 🛠️</button>
             </div>
             
-            <h3 class="font-bold text-gray-800 text-lg mb-4 border-b pb-2">⭐ تقييمات قيد الانتظار</h3>
-            <div id="pending-reviews-list" class="space-y-3 mb-6">
-                <div class="text-center text-gray-400 py-2">لا توجد خدمات بانتظار التقييم.</div>
-            </div>
-
-            <h3 class="font-bold text-gray-800 text-lg mb-4 border-b pb-2">🛒 تسوق أحدث الأجهزة</h3>
-            <div id="client-products-list" class="grid grid-cols-2 gap-4">
-                </div>
+            <h3 class="font-bold text-gray-800 border-b pb-2">🛒 منتجات مقترحة لك</h3>
+            <div id="list-client-products" class="grid grid-cols-2 gap-3"></div>
         </div>
 
-        <div id="service-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
-            <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl animate-bounce-up">
-                <h3 class="font-bold text-xl mb-4">🛠️ طلب فني صيانة</h3>
-                <input type="text" id="req-name" placeholder="اسمك الكامل" class="w-full p-3 bg-gray-50 rounded-lg mb-3 border">
-                <select id="req-type" class="w-full p-3 bg-gray-50 rounded-lg mb-3 border">
-                    <option value="ضبط إشارة">ضبط إشارة (Parabole)</option>
-                    <option value="تركيب تلفاز">تركيب تلفاز جديد</option>
-                    <option value="اشتراك IPTV">تجديد اشتراك IPTV</option>
-                    <option value="صيانة عامة">صيانة عامة</option>
-                </select>
-                <input type="text" id="req-address" placeholder="المدينة والعنوان" class="w-full p-3 bg-gray-50 rounded-lg mb-3 border">
-                <button onclick="submitServiceRequest()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold">إرسال الطلب</button>
-                <button onclick="document.getElementById('service-modal').classList.add('hidden')" class="w-full mt-2 text-gray-500 py-2">إلغاء</button>
-            </div>
-        </div>
-
-        <div id="rating-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
-            <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl animate-bounce-up text-center">
-                <h3 class="font-bold text-xl mb-4">🌟 تقييم الخدمة</h3>
-                <p id="rating-modal-info" class="text-sm text-gray-600 mb-4">تقييم الفني [اسم الفني] بعد خدمة [نوع الخدمة].</p>
-                <div id="star-rating-area" class="text-4xl text-gray-300 mb-6">
-                    <i class="fas fa-star rating-star" data-rating="1" onclick="selectRating(1)"></i>
-                    <i class="fas fa-star rating-star" data-rating="2" onclick="selectRating(2)"></i>
-                    <i class="fas fa-star rating-star" data-rating="3" onclick="selectRating(3)"></i>
-                    <i class="fas fa-star rating-star" data-rating="4" onclick="selectRating(4)"></i>
-                    <i class="fas fa-star rating-star" data-rating="5" onclick="selectRating(5)"></i>
-                </div>
-                <input type="hidden" id="current-req-id">
-                <input type="hidden" id="selected-rating">
-                <button onclick="submitRating()" class="w-full bg-yellow-500 text-white py-3 rounded-lg font-bold hover:bg-yellow-600">إرسال التقييم</button>
-                <button onclick="document.getElementById('rating-modal').classList.add('hidden')" class="w-full mt-2 text-gray-500 py-2">تخطي حالياً</button>
-            </div>
-        </div>
-
-
-        <div id="tech-panel" class="hidden-section fade-in">
-            <div class="bg-gray-800 text-white p-6 rounded-2xl shadow-xl mb-6 relative overflow-hidden">
-                <div class="absolute top-0 left-0 p-4 opacity-10 text-6xl"><i class="fas fa-wallet"></i></div>
-                <p class="text-gray-400 text-xs font-bold">رصيد العمولات المكتسبة</p>
+        <!-- B. لوحة الفني -->
+        <div id="panel-tech" class="hidden space-y-4">
+            <!-- المحفظة -->
+            <div class="bg-gray-900 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 top-0 p-4 opacity-20 text-6xl"><i class="fas fa-wallet"></i></div>
+                <p class="text-gray-400 text-xs font-bold">العمولات المكتسبة</p>
                 <div class="flex items-end gap-2 mt-1">
-                    <h2 id="tech-wallet" class="text-4xl font-black text-green-400">0</h2>
-                    <span class="text-sm mb-1">درهم</span>
+                    <h2 id="tech-wallet-display" class="text-5xl font-black text-green-400">0</h2>
+                    <span class="text-lg mb-2">درهم</span>
                 </div>
-                <button onclick="requestPayout()" class="absolute bottom-3 left-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition"><i class="fas fa-hand-holding-usd ml-1"></i> سحب الأرباح</button>
             </div>
 
-            <div class="flex mb-4 bg-white p-1 rounded-xl shadow-sm">
-                <button onclick="switchTechTab('products')" class="flex-1 py-2 rounded-lg text-sm font-bold active-tab" id="tab-btn-products">شراء منتجات</button>
-                <button onclick="switchTechTab('requests')" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-500" id="tab-btn-requests">طلبات العمل 🔔</button>
+            <!-- أزرار التبديل -->
+            <div class="flex bg-white p-1 rounded-xl shadow border">
+                <button onclick="app.switchTechView('products')" id="btn-tech-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">شراء منتجات</button>
+                <button onclick="app.switchTechView('requests')" id="btn-tech-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-500 transition">طلبات العمل 🔔</button>
             </div>
 
-            <div id="tech-products-view">
-                <div id="tech-products-list" class="space-y-4"></div>
-            </div>
-
-            <div id="tech-requests-view" class="hidden-section space-y-3">
-                <div id="requests-list"></div>
+            <div id="view-tech-products" class="space-y-3"></div>
+            <div id="view-tech-requests" class="hidden space-y-3">
+                <div id="list-tech-requests"></div>
             </div>
         </div>
 
-        <div id="admin-panel" class="hidden-section fade-in">
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-blue-100 p-4 rounded-xl text-blue-800 text-center">
-                    <h3 class="font-bold text-2xl" id="total-users">0</h3>
-                    <p class="text-xs">مستخدم</p>
+        <!-- C. لوحة الإدارة -->
+        <div id="panel-admin" class="hidden space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-100 p-4 rounded-xl text-center">
+                    <h3 class="font-bold text-2xl text-blue-800" id="admin-sales">0</h3>
+                    <p class="text-xs text-blue-600">عملية بيع</p>
                 </div>
-                <div class="bg-green-100 p-4 rounded-xl text-green-800 text-center">
-                    <h3 class="font-bold text-2xl" id="total-sales">0</h3>
-                    <p class="text-xs">مبيعات</p>
+                <div class="bg-green-100 p-4 rounded-xl text-center">
+                    <h3 class="font-bold text-2xl text-green-800" id="admin-products-count">0</h3>
+                    <p class="text-xs text-green-600">منتج متوفر</p>
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                <h3 class="font-bold text-lg mb-4 text-gray-800">➕ إضافة منتج جديد للموقع</h3>
-                <input type="text" id="prod-name" placeholder="اسم المنتج" class="w-full mb-2 p-2 border rounded">
+            <div class="bg-white p-4 rounded-xl shadow border">
+                <h3 class="font-bold mb-3">➕ إضافة منتج</h3>
+                <input id="new-prod-name" type="text" placeholder="اسم المنتج" class="w-full p-2 border rounded mb-2 bg-gray-50">
                 <div class="flex gap-2 mb-2">
-                    <input type="number" id="prod-price" placeholder="السعر للعموم" class="w-full p-2 border rounded">
-                    <input type="number" id="prod-comm" placeholder="عمولة الفني" class="w-full p-2 border rounded">
+                    <input id="new-prod-price" type="number" placeholder="السعر" class="w-full p-2 border rounded bg-gray-50">
+                    <input id="new-prod-comm" type="number" placeholder="العمولة" class="w-full p-2 border rounded bg-gray-50">
                 </div>
-                <input type="text" id="prod-img" placeholder="رابط الصورة (اختياري)" class="w-full mb-3 p-2 border rounded">
-                <button onclick="adminAddProduct()" class="w-full bg-black text-white py-2 rounded font-bold">نشر المنتج</button>
+                <button onclick="app.addProduct()" class="w-full bg-black text-white py-3 rounded font-bold">نشر المنتج</button>
             </div>
 
-            <h3 class="font-bold mt-6 mb-3">📦 إدارة المنتجات الحالية</h3>
-            <div id="admin-products-list" class="space-y-2"></div>
-            
-            <h3 class="font-bold mt-6 mb-3">🛠️ مراجعة الطلبات المكتملة</h3>
-            <div id="admin-completed-requests" class="space-y-2">
-                <div class="text-center text-gray-400 py-2">لا توجد طلبات مكتملة للمراجعة.</div>
-            </div>
+            <div id="list-admin-products" class="space-y-2"></div>
         </div>
 
     </div>
 
-    <script>
-        // === 1. قاعدة البيانات المحاكية (LocalStorage) ===
-        const defaultProducts = [
-            { id: 1, name: "رسيفر Echolink HD", price: 250, comm: 50, img: "https://m.media-amazon.com/images/I/61H+1n+2O2L.jpg" },
-            { id: 2, name: "لاقط LNB 4 مخارج", price: 80, comm: 20, img: "https://m.media-amazon.com/images/I/51pQv+k-GHL.jpg" },
-            { id: 3, name: "TV Box Android 4K", price: 400, comm: 80, img: "https://m.media-amazon.com/images/I/61STzN5rO+L.jpg" }
-        ];
+    <!-- مودال طلب الخدمة -->
+    <div id="modal-service" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl animate-[bounce-up_0.3s]">
+            <h3 class="font-bold text-xl mb-4 text-center">طلب فني جديد</h3>
+            <div class="space-y-3">
+                <input id="srv-name" type="text" placeholder="الاسم الكامل" class="w-full p-3 bg-gray-50 border rounded-lg">
+                <select id="srv-type" class="w-full p-3 bg-gray-50 border rounded-lg">
+                    <option>ضبط إشارة (Parabole)</option>
+                    <option>تركيب شاشة</option>
+                    <option>صيانة عامة</option>
+                </select>
+                <input id="srv-addr" type="text" placeholder="العنوان / المدينة" class="w-full p-3 bg-gray-50 border rounded-lg">
+                <button onclick="app.sendRequest()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold shadow-lg">تأكيد الطلب</button>
+                <button onclick="document.getElementById('modal-service').classList.add('hidden')" class="w-full text-gray-500 py-2">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
-        let db = {
-            products: JSON.parse(localStorage.getItem('satfix_products')) || defaultProducts,
-            requests: JSON.parse(localStorage.getItem('satfix_requests')) || [],
-            techWallet: parseInt(localStorage.getItem('satfix_wallet')) || 0,
-            salesCount: parseInt(localStorage.getItem('satfix_sales')) || 0
+    <!-- المنطق البرمجي (JavaScript) -->
+    <script>
+        // 1. التقاط أي خطأ وعرضه للمستخدم
+        window.onerror = function(msg, url, line) {
+            const errBox = document.getElementById('error-box');
+            errBox.innerText = "خطأ برمجي: " + msg;
+            errBox.classList.remove('hidden');
+            return false;
         };
 
-        let currentUserRole = null;
-        
-        // === 2. وظائف النظام الأساسية ===
+        // 2. كائن التطبيق الرئيسي
+        const app = {
+            data: {
+                products: JSON.parse(localStorage.getItem('sf_products')) || [
+                    { id: 1, name: "رسيفر HD Mini", price: 200, comm: 40, img: "https://via.placeholder.com/150?text=Receiver" },
+                    { id: 2, name: "لاقط LNB", price: 50, comm: 10, img: "https://via.placeholder.com/150?text=LNB" }
+                ],
+                requests: JSON.parse(localStorage.getItem('sf_requests')) || [],
+                wallet: parseInt(localStorage.getItem('sf_wallet')) || 0,
+                sales: parseInt(localStorage.getItem('sf_sales')) || 0
+            },
 
-        function saveData() {
-            localStorage.setItem('satfix_products', JSON.stringify(db.products));
-            localStorage.setItem('satfix_requests', JSON.stringify(db.requests));
-            localStorage.setItem('satfix_wallet', db.techWallet);
-            localStorage.setItem('satfix_sales', db.salesCount);
-        }
+            save: function() {
+                localStorage.setItem('sf_products', JSON.stringify(this.data.products));
+                localStorage.setItem('sf_requests', JSON.stringify(this.data.requests));
+                localStorage.setItem('sf_wallet', this.data.wallet);
+                localStorage.setItem('sf_sales', this.data.sales);
+            },
 
-        function loginAs(role) {
-            currentUserRole = role;
-            sessionStorage.setItem('current_user_role', role);
+            // تسجيل الدخول
+            login: function(role) {
+                // إخفاء شاشة الدخول
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('navbar').classList.remove('hidden');
 
-            // إخفاء شاشة الدخول أولاً لضمان عدم وجود تداخل
-            document.getElementById('login-screen').classList.add('hidden');
-            
-            // إخفاء جميع الأقسام
-            document.getElementById('client-panel').classList.add('hidden-section');
-            document.getElementById('tech-panel').classList.add('hidden-section');
-            document.getElementById('admin-panel').classList.add('hidden-section');
+                // إخفاء جميع الأقسام أولاً
+                ['client', 'tech', 'admin'].forEach(r => {
+                    document.getElementById(`panel-${r}`).classList.add('hidden');
+                });
 
-            // إظهار القسم المناسب وتحديث البيانات
-            if (role === 'client') {
-                document.getElementById('client-panel').classList.remove('hidden-section');
-                document.getElementById('user-role-badge').innerText = "زبون";
-                renderClientProducts();
-                renderPendingReviews(); 
-            } else if (role === 'tech') {
-                document.getElementById('tech-panel').classList.remove('hidden-section');
-                document.getElementById('user-role-badge').innerText = "فني";
-                updateTechWallet();
-                renderTechProducts();
-                switchTechTab('products'); 
-            } else if (role === 'admin') {
-                document.getElementById('admin-panel').classList.remove('hidden-section');
-                document.getElementById('user-role-badge').innerText = "مدير";
-                renderAdminStats();
-                renderAdminProducts();
-                renderAdminCompletedRequests(); 
-            }
-        }
+                // عرض القسم المطلوب
+                document.getElementById(`panel-${role}`).classList.remove('hidden');
+                
+                // تحديث النصوص
+                const roles = { 'client': 'زبون', 'tech': 'فني', 'admin': 'مدير' };
+                document.getElementById('role-badge').innerText = roles[role];
 
-        function logout() {
-            sessionStorage.removeItem('current_user_role');
-            location.reload();
-        }
+                // تحميل البيانات المناسبة
+                if(role === 'client') this.renderClient();
+                if(role === 'tech') this.renderTech();
+                if(role === 'admin') this.renderAdmin();
+            },
 
-        // === 3. وظائف الزبون ===
-        function renderClientProducts() {
-            const container = document.getElementById('client-products-list');
-            container.innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded-xl shadow-sm">
-                    <img src="${p.img}" class="w-full h-32 object-contain mb-2">
-                    <h4 class="font-bold text-sm h-10 overflow-hidden">${p.name}</h4>
-                    <div class="flex justify-between items-center mt-2">
-                        <span class="font-bold text-blue-900">${p.price} درهم</span>
-                        <button onclick="clientBuy(${p.id})" class="bg-blue-900 text-white px-3 py-1 rounded text-xs">شراء</button>
+            // --- دوال الزبون ---
+            renderClient: function() {
+                const list = document.getElementById('list-client-products');
+                list.innerHTML = this.data.products.map(p => `
+                    <div class="bg-white p-3 rounded-xl shadow border text-center">
+                        <div class="h-24 bg-gray-100 rounded mb-2 flex items-center justify-center text-2xl text-gray-400">📦</div>
+                        <h4 class="font-bold text-sm truncate">${p.name}</h4>
+                        <p class="text-blue-900 font-bold mt-1">${p.price} درهم</p>
+                        <button onclick="alert('سيتم التواصل معك للتوصيل')" class="mt-2 w-full bg-blue-100 text-blue-800 text-xs py-2 rounded font-bold">شراء</button>
                     </div>
-                </div>
-            `).join('');
-        }
+                `).join('');
+            },
 
-        function clientBuy(id) {
-            alert("✅ تم استلام طلبك! سنتصل بك للتوصيل.");
-            db.salesCount++;
-            saveData();
-        }
+            showServiceForm: function() {
+                document.getElementById('modal-service').classList.remove('hidden');
+            },
 
-        function showServiceForm() {
-            document.getElementById('service-modal').classList.remove('hidden');
-        }
+            sendRequest: function() {
+                const name = document.getElementById('srv-name').value;
+                const type = document.getElementById('srv-type').value;
+                const addr = document.getElementById('srv-addr').value;
+                
+                if(!name || !addr) return alert('يرجى ملء البيانات');
 
-        function submitServiceRequest() {
-            const name = document.getElementById('req-name').value;
-            const type = document.getElementById('req-type').value;
-            const address = document.getElementById('req-address').value;
+                this.data.requests.push({ id: Date.now(), name, type, addr, status: 'pending' });
+                this.save();
+                document.getElementById('modal-service').classList.add('hidden');
+                alert('✅ تم إرسال الطلب للفنيين!');
+            },
 
-            if(!name || !address) return alert("المرجو ملء المعلومات");
-
-            db.requests.push({
-                id: Date.now(),
-                name, 
-                type, 
-                address, 
-                status: 'pending',
-                technician_name: null, 
-                rating: null,
-                date: new Date().toLocaleDateString('ar-EG')
-            });
-            saveData();
-            
-            document.getElementById('service-modal').classList.add('hidden');
-            alert("🚀 تم إرسال الطلب للفنيين في منطقتك!");
-        }
-
-        // === 3-1. وظائف التقييم (الزبون) ===
-
-        function renderPendingReviews() {
-            const container = document.getElementById('pending-reviews-list');
-            const reviewableRequests = db.requests.filter(r => r.status === 'completed' && r.rating === null);
-
-            if(reviewableRequests.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-400 py-2">لا توجد خدمات بانتظار التقييم.</div>';
-                return;
-            }
-
-            container.innerHTML = reviewableRequests.map(r => `
-                <div class="bg-yellow-50 border-r-4 border-yellow-400 p-4 rounded shadow-sm flex justify-between items-center">
-                    <div>
-                        <h4 class="font-bold text-gray-800">${r.type}</h4>
-                        <p class="text-xs text-gray-600">الفني: ${r.technician_name || 'غير معروف'}</p>
-                    </div>
-                    <button onclick="showRatingModal(${r.id}, '${r.type}', '${r.technician_name}')" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">تقييم الآن</button>
-                </div>
-            `).join('');
-        }
-
-        function showRatingModal(reqId, type, techName) {
-            document.getElementById('current-req-id').value = reqId;
-            document.getElementById('rating-modal-info').innerText = `تقييم الفني ${techName} بعد خدمة ${type}.`;
-            // تصفير النجوم
-            document.querySelectorAll('.rating-star').forEach(star => star.style.color = 'rgb(209 213 219)'); 
-            document.getElementById('selected-rating').value = '';
-            document.getElementById('rating-modal').classList.remove('hidden');
-        }
-
-        function selectRating(rating) {
-            document.getElementById('selected-rating').value = rating;
-            document.querySelectorAll('.rating-star').forEach(star => {
-                const starRating = parseInt(star.getAttribute('data-rating'));
-                star.style.color = starRating <= rating ? 'gold' : 'rgb(209 213 219)';
-            });
-        }
-
-        function submitRating() {
-            const reqId = parseInt(document.getElementById('current-req-id').value);
-            const rating = parseInt(document.getElementById('selected-rating').value);
-
-            if (!rating) return alert("الرجاء اختيار عدد النجوم للتقييم.");
-
-            const reqIndex = db.requests.findIndex(r => r.id === reqId);
-            if (reqIndex !== -1) {
-                db.requests[reqIndex].rating = rating;
-                saveData();
-                renderPendingReviews();
-                document.getElementById('rating-modal').classList.add('hidden');
-                alert(`شكراً لتقييمك! تم إرسال ${rating} نجمة للفني.`);
-                // تحديث لوحة الإدارة لرؤية التقييم
-                if (currentUserRole === 'admin') renderAdminCompletedRequests();
-            }
-        }
-
-
-        // === 4. وظائف الفني ===
-        function updateTechWallet() {
-            document.getElementById('tech-wallet').innerText = db.techWallet;
-        }
-
-        function switchTechTab(tab) {
-            const views = { 'products': 'tech-products-view', 'requests': 'tech-requests-view' };
-            const btns = { 'products': 'tab-btn-products', 'requests': 'tab-btn-requests' };
-            
-            for (let t in views) {
-                document.getElementById(views[t]).classList.add('hidden-section');
-                document.getElementById(btns[t]).classList.remove('active-tab');
-                document.getElementById(btns[t]).classList.add('text-gray-500');
-            }
-
-            document.getElementById(views[tab]).classList.remove('hidden-section');
-            document.getElementById(btns[tab]).classList.add('active-tab');
-            document.getElementById(btns[tab]).classList.remove('text-gray-500');
-
-            if (tab === 'requests') {
-                renderRequests();
-            }
-        }
-
-        function renderTechProducts() {
-            const container = document.getElementById('tech-products-list');
-            container.innerHTML = db.products.map(p => `
-                <div class="bg-white p-4 rounded-xl shadow-sm flex gap-3">
-                    <img src="${p.img}" class="w-20 h-20 object-contain bg-gray-50 rounded">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-gray-800">${p.name}</h4>
-                        <div class="flex justify-between items-center mt-2">
-                            <div>
-                                <span class="text-xs text-gray-400 block">السعر للزبون</span>
-                                <span class="font-bold text-lg">${p.price} درهم</span>
-                            </div>
-                            <div class="bg-green-50 px-2 py-1 rounded text-center">
-                                <span class="text-[10px] text-green-700 font-bold block">عمولتك</span>
-                                <span class="text-green-600 font-bold">+${p.comm}</span>
+            // --- دوال الفني ---
+            renderTech: function() {
+                document.getElementById('tech-wallet-display').innerText = this.data.wallet;
+                
+                // عرض المنتجات
+                const prodList = document.getElementById('view-tech-products');
+                prodList.innerHTML = this.data.products.map(p => `
+                    <div class="bg-white p-4 rounded-xl shadow flex gap-4 items-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-xl">📦</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold">${p.name}</h4>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-xs text-gray-500">سعر الزبون: ${p.price}</span>
+                                <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold">+${p.comm} عمولة</span>
                             </div>
                         </div>
-                        <button onclick="techBuy(${p.id})" class="w-full mt-2 bg-blue-900 text-white py-2 rounded font-bold text-sm">شراء للزبون</button>
+                        <button onclick="app.techBuy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-bold">شراء</button>
                     </div>
-                </div>
-            `).join('');
-        }
+                `).join('');
 
-        function techBuy(id) {
-            const product = db.products.find(p => p.id === id);
-            if(confirm(`شراء ${product.name}؟\nستحصل على ${product.comm} درهم في محفظتك.`)) {
-                db.techWallet += parseInt(product.comm);
-                db.salesCount++;
-                saveData();
-                updateTechWallet();
-                alert("💰 مبروك! تمت إضافة العمولة.");
-            }
-        }
-
-        function renderRequests() {
-            const container = document.getElementById('requests-list');
-            const activeReqs = db.requests.filter(r => r.status === 'pending' || r.status === 'accepted');
-
-            if(activeReqs.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-400 py-10">لا توجد طلبات عمل حالياً</div>';
-                return;
-            }
-
-            container.innerHTML = activeReqs.map(r => `
-                <div class="bg-white border-r-4 ${r.status === 'pending' ? 'border-yellow-400' : 'border-blue-500'} p-4 rounded shadow-sm">
-                    <div class="flex justify-between">
-                        <h4 class="font-bold text-gray-800">${r.type}</h4>
-                        <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'} px-2 py-1 rounded">${r.status === 'pending' ? 'جديد' : 'مقبول'}</span>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 ml-1"></i> ${r.address}</p>
-                    <p class="text-xs text-gray-400 mt-1">الزبون: ${r.name}</p>
-                    ${r.status === 'pending' ? 
-                        `<button onclick="acceptRequest(${r.id})" class="w-full mt-3 bg-gray-800 text-white py-2 rounded text-sm">قبول العمل</button>` :
-                        `
-                        <div class="mt-3 bg-blue-50 p-3 rounded">
-                            <p class="text-xs text-blue-800 font-bold">للتواصل: ${r.name} - ${r.address} (رقم وهمي: 0612345678)</p>
+                // عرض الطلبات
+                const reqList = document.getElementById('list-tech-requests');
+                const pending = this.data.requests.filter(r => r.status === 'pending');
+                
+                if(pending.length === 0) {
+                    reqList.innerHTML = '<p class="text-center text-gray-400 py-8">لا توجد طلبات جديدة</p>';
+                } else {
+                    reqList.innerHTML = pending.map(r => `
+                        <div class="bg-white border-r-4 border-yellow-400 p-4 rounded shadow">
+                            <div class="flex justify-between">
+                                <h4 class="font-bold">${r.type}</h4>
+                                <span class="text-xs bg-yellow-100 px-2 rounded text-yellow-800">جديد</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">📍 ${r.addr}</p>
+                            <button onclick="app.acceptRequest(${r.id})" class="w-full mt-2 bg-gray-800 text-white py-2 rounded text-sm">قبول</button>
                         </div>
-                        <button onclick="finishRequest(${r.id})" class="w-full mt-2 bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700"><i class="fas fa-check-circle ml-1"></i> إنهاء العمل</button>
-                        `
-                    }
-                </div>
-            `).join('');
-        }
+                    `).join('');
+                }
+            },
 
-        function acceptRequest(id) {
-            const reqIndex = db.requests.findIndex(r => r.id === id);
-            if (reqIndex !== -1) {
-                db.requests[reqIndex].status = 'accepted';
-                db.requests[reqIndex].technician_name = "الفني التجريبي"; 
-                saveData();
-                renderRequests();
-                alert("✅ تم قبول العمل! يمكنك رؤية تفاصيل التواصل الآن.");
-            }
-        }
+            switchTechView: function(view) {
+                if(view === 'products') {
+                    document.getElementById('view-tech-products').classList.remove('hidden');
+                    document.getElementById('view-tech-requests').classList.add('hidden');
+                    document.getElementById('btn-tech-prod').classList.add('bg-blue-900', 'text-white');
+                    document.getElementById('btn-tech-prod').classList.remove('text-gray-500');
+                    document.getElementById('btn-tech-req').classList.remove('bg-blue-900', 'text-white');
+                } else {
+                    document.getElementById('view-tech-products').classList.add('hidden');
+                    document.getElementById('view-tech-requests').classList.remove('hidden');
+                    document.getElementById('btn-tech-req').classList.add('bg-blue-900', 'text-white');
+                    document.getElementById('btn-tech-req').classList.remove('text-gray-500');
+                    document.getElementById('btn-tech-prod').classList.remove('bg-blue-900', 'text-white');
+                }
+            },
 
-        function finishRequest(id) {
-            if(confirm("هل أنت متأكد من إنهاء هذا العمل؟ سيطلب من الزبون تقييمك بعد ذلك.")) {
-                const reqIndex = db.requests.findIndex(r => r.id === id);
-                if (reqIndex !== -1) {
-                    db.requests[reqIndex].status = 'completed';
-                    saveData();
-                    renderRequests(); 
-                    if (currentUserRole === 'admin') renderAdminCompletedRequests();
-                    // بما أن الفني أنهى العمل، نتوقع من الزبون التقييم، لذلك نحتاج لتحديث واجهة الزبون في حال كان هو المستخدم الحالي.
-                    if (currentUserRole === 'client') renderPendingReviews();
-                    alert("✅ تم وضع الطلب كـ 'مكتمل'.");
+            techBuy: function(id) {
+                const p = this.data.products.find(x => x.id === id);
+                if(confirm(`تأكيد شراء ${p.name}؟\nستدخل ${p.comm} درهم لمحفظتك.`)) {
+                    this.data.wallet += parseInt(p.comm);
+                    this.data.sales++;
+                    this.save();
+                    this.renderTech();
+                    alert('💰 مبروك! تمت إضافة العمولة.');
+                }
+            },
+
+            acceptRequest: function(id) {
+                const idx = this.data.requests.findIndex(r => r.id === id);
+                this.data.requests[idx].status = 'accepted';
+                this.save();
+                this.renderTech();
+                alert('✅ تم قبول العمل! معلومات الزبون: 06XXXXXXXX');
+            },
+
+            // --- دوال الإدارة ---
+            renderAdmin: function() {
+                document.getElementById('admin-sales').innerText = this.data.sales;
+                document.getElementById('admin-products-count').innerText = this.data.products.length;
+                
+                const list = document.getElementById('list-admin-products');
+                list.innerHTML = this.data.products.map(p => `
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded border">
+                        <div>
+                            <span class="font-bold block">${p.name}</span>
+                            <span class="text-xs text-gray-500">${p.price} د.م | عمولة ${p.comm}</span>
+                        </div>
+                        <button onclick="app.delProduct(${p.id})" class="text-red-500 text-sm px-3 py-1 border border-red-200 bg-white rounded">حذف</button>
+                    </div>
+                `).join('');
+            },
+
+            addProduct: function() {
+                const name = document.getElementById('new-prod-name').value;
+                const price = document.getElementById('new-prod-price').value;
+                const comm = document.getElementById('new-prod-comm').value;
+
+                if(!name || !price) return alert('بيانات ناقصة');
+
+                this.data.products.push({ 
+                    id: Date.now(), 
+                    name, price, comm, 
+                    img: "https://via.placeholder.com/150" 
+                });
+                this.save();
+                this.renderAdmin();
+                
+                // تفريغ الحقول
+                document.getElementById('new-prod-name').value = '';
+                document.getElementById('new-prod-price').value = '';
+                document.getElementById('new-prod-comm').value = '';
+            },
+
+            delProduct: function(id) {
+                if(confirm('حذف؟')) {
+                    this.data.products = this.data.products.filter(p => p.id !== id);
+                    this.save();
+                    this.renderAdmin();
                 }
             }
-        }
-
-        function requestPayout() {
-            if (db.techWallet === 0) {
-                return alert("⚠️ رصيدك الحالي هو صفر درهم. لا يمكن تقديم طلب سحب.");
-            }
-            if(confirm(`هل تريد تقديم طلب سحب رصيد بقيمة ${db.techWallet} درهم؟ سيتم تصفير المبلغ بعد الموافقة.`)) {
-                alert("📝 تم إرسال طلب السحب للإدارة للمراجعة! سيتم التواصل معك قريباً.");
-                db.techWallet = 0; 
-                saveData();
-                updateTechWallet();
-            }
-        }
-
-
-        // === 5. وظائف الإدارة ===
-        function renderAdminStats() {
-            document.getElementById('total-users').innerText = "3"; // وهمي
-            document.getElementById('total-sales').innerText = db.salesCount;
-        }
-
-        function renderAdminProducts() {
-            const container = document.getElementById('admin-products-list');
-            container.innerHTML = db.products.map(p => `
-                <div class="flex justify-between items-center bg-gray-50 p-3 rounded border">
-                    <div>
-                        <p class="font-bold text-sm">${p.name}</p>
-                        <p class="text-xs text-gray-500">${p.price} درهم (عمولة ${p.comm} درهم)</p>
-                    </div>
-                    <button onclick="adminDeleteProduct(${p.id})" class="text-red-500 hover:text-red-700 text-lg"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function adminAddProduct() {
-            const name = document.getElementById('prod-name').value;
-            const price = parseInt(document.getElementById('prod-price').value);
-            const comm = parseInt(document.getElementById('prod-comm').value);
-            const img = document.getElementById('prod-img').value || "https://via.placeholder.com/150?text=SatFix";
-
-            if (!name || isNaN(price) || isNaN(comm)) {
-                return alert("الرجاء ملء الاسم والسعر والعمولة بأرقام صحيحة.");
-            }
-
-            db.products.push({
-                id: Date.now(),
-                name, price, comm, img
+        };
+    </script>
+</body>
+</html>
