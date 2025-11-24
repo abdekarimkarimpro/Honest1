@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سات فيكس | Demo</title>
+    <!-- مكتبة التصميم Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- خط تجوال العربي -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        .toast { transition: all 0.5s ease; transform: translateY(-100px); opacity: 0; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20 select-none">
+
+    <!-- إشعار النجاح -->
+    <div id="toast-msg" class="toast fixed top-5 left-5 right-5 bg-green-600 text-white p-4 rounded-xl shadow-2xl z-50 flex items-center gap-3">
+        <div class="bg-white text-green-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">✓</div>
+        <div>
+            <h4 class="font-bold text-sm">تمت العملية بنجاح!</h4>
+            <p class="text-xs opacity-90" id="toast-text">تمت إضافة العمولة.</p>
+        </div>
+    </div>
+
+    <!-- الشريط العلوي -->
+    <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-40">
+        <div class="flex justify-between items-center max-w-md mx-auto">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                📡 سات فيكس
+            </h1>
+            <div class="flex items-center gap-2">
+                <button onclick="resetApp()" class="text-[10px] bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-white">تصفير</button>
+                <div class="text-xs bg-blue-800 px-3 py-1 rounded-full border border-blue-700">
+                    👤 أحمد (فني)
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-md mx-auto p-4 mt-2">
+        
+        <!-- بطاقة المحفظة -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
+            <!-- زخرفة خلفية -->
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+            
+            <p class="text-blue-200 text-xs font-bold mb-1">رصيد الأرباح المتاح</p>
+            <div class="flex items-end gap-2">
+                <h2 id="wallet-balance" class="text-5xl font-black tracking-tight">0</h2>
+                <span class="text-lg mb-2 font-medium opacity-80">درهم</span>
+            </div>
+            
+            <div class="mt-4 flex gap-3">
+                <div class="bg-blue-900/50 px-3 py-2 rounded-lg flex-1 text-center border border-blue-500/30">
+                    <p class="text-[10px] text-blue-300">عدد الطلبات</p>
+                    <p id="orders-count" class="font-bold text-lg">0</p>
+                </div>
+                <button class="bg-white text-blue-900 px-4 py-2 rounded-lg font-bold text-xs flex-1 shadow hover:bg-gray-100 transition">
+                    سحب الرصيد
+                </button>
+            </div>
+        </div>
+
+        <!-- عنوان القسم -->
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-gray-800 text-lg">📦 المنتجات المتاحة</h3>
+            <span class="text-xs text-gray-400 bg-white px-2 py-1 rounded border">محدث الآن</span>
+        </div>
+
+        <!-- قائمة المنتجات (يتم توليدها بالجافاسكريبت) -->
+        <div id="products-container" class="space-y-4">
+            <!-- سيتم وضع المنتجات هنا تلقائياً -->
+        </div>
+
+    </div>
+
+    <!-- الشريط السفلي للتنقل -->
+    <div class="fixed bottom-0 w-full bg-white border-t border-gray-100 p-2 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-40">
+        <div class="max-w-md mx-auto flex justify-around text-gray-400">
+            <button class="flex flex-col items-center text-blue-900">
+                <span class="text-xl">🏠</span>
+                <span class="text-[10px] font-bold mt-1">الرئيسية</span>
+            </button>
+            <button class="flex flex-col items-center hover:text-blue-900 transition">
+                <span class="text-xl">📋</span>
+                <span class="text-[10px] font-medium mt-1">طلباتي</span>
+            </button>
+            <button class="flex flex-col items-center hover:text-blue-900 transition">
+                <span class="text-xl">⚙️</span>
+                <span class="text-[10px] font-medium mt-1">الإعدادات</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ⚡⚡ كود البرمجة (JavaScript Logic) ⚡⚡ -->
+    <script>
+        // 1. قاعدة بيانات المنتجات (مصفوفة)
+        const products = [
+            {
+                id: 1,
+                name: "رسيفر Echolink HD",
+                desc: "سيرفر سنة مجاناً + Wifi",
+                price: 250,
+                commission: 50,
+                image: "https://m.media-amazon.com/images/I/61H+1n+2O2L.jpg"
+            },
+            {
+                id: 2,
+                name: "لاقط LNB 4 مخارج",
+                desc: "جودة 4K أصلية",
+                price: 60,
+                commission: 20,
+                image: "https://m.media-amazon.com/images/I/51pQv+k-GHL.jpg"
+            },
+            {
+                id: 3,
+                name: "كابل ستلايت (100م)",
+                desc: "نحاس خالص ومقاوم للشمس",
+                price: 120,
+                commission: 15,
+                image: "https://m.media-amazon.com/images/I/41D2KkF0eEL.jpg"
+            },
+            {
+                id: 4,
+                name: "Android TV Box",
+                desc: "حول تلفازك إلى ذكي 4K",
+                price: 350,
+                commission: 70,
+                image: "https://m.media-amazon.com/images/I/61STzN5rO+L.jpg"
+            }
+        ];
+
+        // 2. تهيئة البيانات عند فتح التطبيق
+        // نحاول جلب البيانات المحفوظة، إذا لم توجد نبدأ من الصفر
+        let wallet = parseInt(localStorage.getItem('satfix_wallet')) || 0;
+        let orders = parseInt(localStorage.getItem('satfix_orders')) || 0;
+
+        // تحديث الشاشة فوراً
+        updateUI();
+        renderProducts();
+
+        // 3. دالة عرض المنتجات
+        function renderProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = ''; // مسح المحتوى القديم
+
+            products.forEach(product => {
+                const html = `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-row h-32 active:scale-[0.98] transition-transform duration-200">
+                    <div class="w-32 bg-gray-100 relative">
+                        <img src="${product.image}" class="w-full h-full object-cover">
+                        <span class="absolute top-1 right-1 bg-yellow-400 text-[10px] font-bold px-1 rounded shadow">مميز</span>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm leading-tight">${product.name}</h4>
+                            <p class="text-[10px] text-gray-400 mt-1">${product.desc}</p>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mt-2">
+                            <div>
+                                <p class="text-blue-900 font-black text-lg">${product.price} <span class="text-[10px] font-normal">د.م</span></p>
+                            </div>
+                            <button onclick="buyProduct(${product.id})" class="bg-blue-900 text-white text-xs px-3 py-2 rounded-lg font-bold shadow-lg hover:bg-blue-800 flex items-center gap-1">
+                                شراء
+                                <span class="bg-green-500 text-white text-[9px] px-1 rounded-sm">+${product.commission}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // 4. دالة الشراء (المنطق الرئيسي)
+        function buyProduct(id) {
+            // البحث عن المنتج
+            const product = products.find(p => p.id === id);
+            
+            // التأكيد
+            if(confirm(`تأكيد شراء ${product.name}؟\nستحصل على عمولة ${product.commission} درهم.`)) {
+                
+                // العمليات الحسابية
+                wallet += product.commission;
+                orders += 1;
+
+                // حفظ البيانات في الهاتف (Local Storage)
+                localStorage.setItem('satfix_wallet', wallet);
+                localStorage.setItem('satfix_orders', orders);
+
+                // تحديث الواجهة
+                updateUI();
+                
+                // إظهار إشعار النجاح
+                showToast(`تمت إضافة ${product.commission} درهم لرصيدك`);
+            }
+        }
+
+        // 5. دالة تحديث واجهة المستخدم
+        function updateUI() {
+            // عمل عداد متحرك للأرقام (Animation)
+            animateValue("wallet-balance", parseInt(document.getElementById("wallet-balance").innerText), wallet, 500);
+            document.getElementById('orders-count').innerText = orders;
+        }
+
+        // 6. دالة الإشعار المنبثق (Toast)
+        function showToast(message) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 7. دالة تصفير التطبيق (لإعادة التجربة)
+        function resetApp() {
+            if(confirm("هل تريد تصفير الرصيد والبيانات؟")) {
+                localStorage.clear();
+                wallet = 0;
+                orders = 0;
+                updateUI();
+                location.reload();
+            }
+        }
+
+        // تأثير عداد الأرقام
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, Math.min(stepTime, 50)); // سرعة لا تقل عن 50ms
+        }
+
+    </script>
+</body>
+</html>
