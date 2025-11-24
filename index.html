@@ -2,432 +2,393 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سات فيكس | SatFix App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سات فيكس | SatFix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
-        .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* إجبار الإخفاء */
+        .d-none { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-gray-50 pb-20 select-none text-gray-800">
+<body class="bg-gray-50 text-gray-800 pb-10 select-none">
 
-    <!-- ================= 1. نظام الحماية وتسجيل الدخول ================= -->
-    
-    <!-- واجهة الترحيب وتسجيل الدخول -->
-    <div id="auth-screen" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center p-6 fade-in overflow-y-auto">
-        
-        <!-- اللوجو -->
-        <div class="text-center mb-8">
-            <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-xl mb-3">📡</div>
-            <h1 class="text-3xl font-black text-blue-900">سات فيكس</h1>
-            <p class="text-gray-500 text-sm">منصة الفنيين والخدمات الذكية</p>
-        </div>
+    <!-- زر إصلاح (يظهر فقط للطوارئ) -->
+    <button onclick="hardReset()" class="fixed top-2 left-2 z-[9999] bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded border border-red-200 opacity-50 hover:opacity-100">
+        ♻️ تنظيف الذاكرة
+    </button>
 
-        <!-- فورم تسجيل الدخول -->
-        <div id="form-login" class="w-full max-w-sm space-y-4">
-            <h2 class="text-xl font-bold mb-4 border-r-4 border-blue-900 pr-3">تسجيل الدخول</h2>
+    <!-- ================= 1. شاشات المصادقة (Auth) ================= -->
+    <div id="auth-container" class="fixed inset-0 bg-white z-50 overflow-y-auto">
+        <div class="min-h-screen flex flex-col items-center justify-center p-6">
             
-            <div>
-                <label class="text-xs font-bold text-gray-500">رقم الهاتف</label>
-                <input type="tel" id="login-phone" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-blue-500 outline-none transition" placeholder="مثلاً: 0600000000">
+            <!-- اللوجو -->
+            <div class="text-center mb-8">
+                <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-lg mb-3">📡</div>
+                <h1 class="text-3xl font-black text-blue-900">سات فيكس</h1>
             </div>
-            <div>
-                <label class="text-xs font-bold text-gray-500">كلمة المرور</label>
-                <input type="password" id="login-pass" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-blue-500 outline-none transition" placeholder="••••••">
-            </div>
-            
-            <button onclick="auth.login()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">دخول</button>
-            
-            <p class="text-center text-sm mt-4">
-                ليس لديك حساب؟ <span onclick="auth.switch('register')" class="text-blue-600 font-bold cursor-pointer">أنشئ حساباً جديداً</span>
-            </p>
-        </div>
 
-        <!-- فورم إنشاء حساب جديد -->
-        <div id="form-register" class="w-full max-w-sm space-y-3 hidden">
-            <h2 class="text-xl font-bold mb-4 border-r-4 border-green-500 pr-3">إنشاء حساب جديد</h2>
-            
-            <div class="grid grid-cols-2 gap-2">
-                <input type="text" id="reg-name" placeholder="الاسم الأول" class="w-full p-3 bg-gray-50 border rounded-xl">
-                <input type="text" id="reg-lastname" placeholder="النسب (الكنية)" class="w-full p-3 bg-gray-50 border rounded-xl">
-            </div>
-            
-            <input type="tel" id="reg-phone" placeholder="رقم الهاتف (سيكون اسم المستخدم)" class="w-full p-3 bg-gray-50 border rounded-xl">
-            <input type="email" id="reg-email" placeholder="البريد الإلكتروني (اختياري)" class="w-full p-3 bg-gray-50 border rounded-xl">
-            <input type="password" id="reg-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl">
-            
-            <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
-                <label class="text-xs font-bold text-gray-500 block mb-2">نوع الحساب:</label>
-                <div class="flex gap-2">
-                    <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="role" value="client" checked class="hidden peer">
-                        <div class="text-center py-2 bg-white border peer-checked:bg-blue-600 peer-checked:text-white rounded-lg text-sm transition">👤 زبون</div>
-                    </label>
-                    <label class="flex-1 cursor-pointer">
-                        <input type="radio" name="role" value="tech" class="hidden peer">
-                        <div class="text-center py-2 bg-white border peer-checked:bg-green-600 peer-checked:text-white rounded-lg text-sm transition">🔧 فني</div>
-                    </label>
+            <!-- فورم الدخول (Login) -->
+            <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
+                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+                    <h2 class="font-bold text-xl mb-4 text-center">تسجيل الدخول</h2>
+                    <input type="tel" id="login-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500">
+                    <input type="password" id="login-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
+                    <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">دخول</button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-500 mb-2">ليس لديك حساب؟</p>
+                    <button onclick="switchView('register')" class="text-blue-700 font-bold bg-blue-50 px-6 py-2 rounded-full text-sm">✨ إنشاء حساب جديد</button>
+                </div>
+                
+                <div class="mt-8 text-center border-t pt-4">
+                    <button onclick="demoAdmin()" class="text-xs text-gray-400">الدخول كـ مدير (Admin Demo)</button>
                 </div>
             </div>
 
-            <button onclick="auth.register()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">تسجيل الحساب</button>
-            
-            <p class="text-center text-sm mt-4">
-                لديك حساب بالفعل؟ <span onclick="auth.switch('login')" class="text-blue-600 font-bold cursor-pointer">تسجيل الدخول</span>
-            </p>
-        </div>
+            <!-- فورم التسجيل (Register) -->
+            <div id="view-register" class="w-full max-w-sm space-y-3 d-none fade-in">
+                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+                    <h2 class="font-bold text-xl mb-4 text-center text-green-600">حساب جديد</h2>
+                    
+                    <input type="text" id="reg-name" placeholder="الاسم الكامل" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
+                    <input type="tel" id="reg-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
+                    <input type="password" id="reg-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
+                    
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-gray-500 block mb-2">أنا أريد التسجيل كـ:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="role" value="client" checked class="peer hidden">
+                                <div class="border p-2 rounded-lg text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm">👤 زبون</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="role" value="tech" class="peer hidden">
+                                <div class="border p-2 rounded-lg text-center peer-checked:bg-green-600 peer-checked:text-white text-sm">🔧 فني</div>
+                            </label>
+                        </div>
+                    </div>
 
-        <!-- زر الطوارئ (Admin Demo) -->
-        <div class="mt-10 pt-10 border-t w-full text-center">
-            <button onclick="auth.quickAdmin()" class="text-xs text-gray-300 hover:text-gray-500">دخول سريع كـ مدير (Admin Demo)</button>
+                    <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">تسجيل</button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button onclick="switchView('login')" class="text-gray-500 font-bold text-sm">🔙 الرجوع لتسجيل الدخول</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
-
-    <!-- ================= 2. لوحة التحكم الرئيسية (تظهر بعد الدخول) ================= -->
-    <div id="main-app" class="hidden">
+    <!-- ================= 2. لوحة التحكم (Dashboard) ================= -->
+    <div id="main-app" class="d-none">
         
-        <!-- الشريط العلوي -->
+        <!-- Navbar -->
         <nav class="bg-blue-900 text-white p-4 sticky top-0 z-40 shadow-md">
             <div class="flex justify-between items-center max-w-2xl mx-auto">
                 <div>
-                    <h1 class="font-bold text-lg">سات فيكس</h1>
-                    <p id="welcome-msg" class="text-[10px] text-blue-200">مرحباً</p>
+                    <h1 class="font-bold">سات فيكس</h1>
+                    <span id="user-welcome" class="text-[10px] text-blue-200">...</span>
                 </div>
-                <button onclick="auth.logout()" class="text-xs bg-red-500/20 hover:bg-red-500 text-red-100 px-3 py-1 rounded-lg border border-red-500/50 transition">
-                    خروج <i class="fas fa-sign-out-alt mr-1"></i>
-                </button>
+                <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded">خروج</button>
             </div>
         </nav>
 
-        <div class="max-w-2xl mx-auto p-4 space-y-6">
-
-            <!-- A. واجهة الزبون -->
-            <div id="panel-client" class="hidden fade-in">
-                <!-- زر طلب الخدمة -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-                    <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">🛠️</div>
-                    <h2 class="text-xl font-bold text-gray-800">اطلب فني الآن</h2>
-                    <p class="text-sm text-gray-500 mb-4">خدمة سريعة ومضمونة في منطقتك</p>
-                    <button onclick="document.getElementById('modal-service').classList.remove('hidden')" class="bg-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow hover:bg-purple-700 w-full">طلب صيانة</button>
-                </div>
-
-                <h3 class="font-bold text-gray-800 mt-6 mb-3">🛒 المنتجات المتاحة</h3>
-                <div id="list-client-products" class="grid grid-cols-2 gap-3"></div>
-            </div>
-
-            <!-- B. واجهة الفني -->
-            <div id="panel-tech" class="hidden fade-in">
-                <!-- بطاقة المحفظة -->
-                <div class="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
-                    <p class="text-gray-400 text-xs font-bold">رصيدك الحالي</p>
-                    <div class="flex items-end gap-2 mt-1">
-                        <h2 id="tech-wallet" class="text-4xl font-black">0</h2>
-                        <span class="text-sm mb-1 text-gray-400">درهم</span>
-                    </div>
-                    <div class="mt-4 flex gap-2">
-                        <span class="text-[10px] bg-green-500/20 text-green-300 px-2 py-1 rounded">+ عمولات البيع</span>
-                        <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-1 rounded">+ أجور التركيب</span>
-                    </div>
-                </div>
-
-                <!-- تبويبات -->
-                <div class="flex bg-white p-1 rounded-xl shadow border my-4">
-                    <button onclick="app.techTab('prod')" id="tab-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-900">شراء قطع</button>
-                    <button onclick="app.techTab('req')" id="tab-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-500">طلبات العمل</button>
-                </div>
-
-                <div id="view-tech-products" class="space-y-3"></div>
-                <div id="view-tech-requests" class="hidden space-y-3"></div>
-            </div>
-
-            <!-- C. واجهة الإدارة -->
-            <div id="panel-admin" class="hidden fade-in">
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-white p-4 rounded-xl shadow text-center">
-                        <h3 class="font-bold text-2xl text-blue-900" id="admin-users-count">0</h3>
-                        <p class="text-xs text-gray-500">مشترك</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center">
-                        <h3 class="font-bold text-2xl text-green-600" id="admin-sales-count">0</h3>
-                        <p class="text-xs text-gray-500">مبيعات</p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-xl border">
-                    <h3 class="font-bold text-sm mb-3">➕ إضافة منتج جديد</h3>
-                    <input id="new-prod-name" type="text" placeholder="اسم المنتج" class="w-full mb-2 p-2 bg-gray-50 border rounded text-sm">
-                    <div class="flex gap-2">
-                        <input id="new-prod-price" type="number" placeholder="سعر البيع" class="w-full mb-2 p-2 bg-gray-50 border rounded text-sm">
-                        <input id="new-prod-comm" type="number" placeholder="العمولة" class="w-full mb-2 p-2 bg-gray-50 border rounded text-sm">
-                    </div>
-                    <button onclick="app.addProduct()" class="w-full bg-black text-white py-2 rounded-lg text-sm font-bold">إضافة</button>
-                </div>
-
-                <div id="list-admin-products" class="space-y-2 mt-4"></div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- نافذة منبثقة لطلب الخدمة -->
-    <div id="modal-service" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6">
-            <h3 class="font-bold text-lg mb-4 text-center">طلب فني جديد</h3>
-            <select id="srv-type" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
-                <option>ضبط إشارة (Parabole)</option>
-                <option>تركيب تلفاز</option>
-                <option>تمديد كابلات</option>
-            </select>
-            <input id="srv-addr" type="text" placeholder="عنوانك والمدينة" class="w-full p-3 bg-gray-50 border rounded-xl mb-4">
-            <button onclick="app.submitRequest()" class="w-full bg-purple-600 text-white py-3 rounded-xl font-bold">تأكيد الطلب</button>
-            <button onclick="document.getElementById('modal-service').classList.add('hidden')" class="w-full text-gray-400 text-sm mt-3">إلغاء</button>
-        </div>
-    </div>
-
-    <!-- ================= 3. كود البرمجة (Logic) ================= -->
-    <script>
-        // 1. إدارة البيانات (تخزين في الهاتف)
-        const db = {
-            users: JSON.parse(localStorage.getItem('sf_users')) || [],
-            currentUser: JSON.parse(localStorage.getItem('sf_current_user')) || null,
-            products: JSON.parse(localStorage.getItem('sf_products')) || [
-                { id: 1, name: "رسيفر Echolink", price: 250, comm: 50 },
-                { id: 2, name: "لاقط LNB 4k", price: 80, comm: 20 }
-            ],
-            requests: JSON.parse(localStorage.getItem('sf_requests')) || [],
+        <div class="max-w-2xl mx-auto p-4 min-h-screen">
             
-            save: function() {
-                localStorage.setItem('sf_users', JSON.stringify(this.users));
-                localStorage.setItem('sf_products', JSON.stringify(this.products));
-                localStorage.setItem('sf_requests', JSON.stringify(this.requests));
-                localStorage.setItem('sf_current_user', JSON.stringify(this.currentUser));
+            <!-- A. لوحة الزبون -->
+            <div id="panel-client" class="d-none">
+                <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
+                    <h2 class="text-2xl font-bold mb-2">خدمة الصيانة</h2>
+                    <p class="text-sm opacity-90 mb-4">هل لديك عطل؟ اطلب فني الآن</p>
+                    <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow">طلب خدمة</button>
+                </div>
+                <h3 class="font-bold text-gray-700 mb-3">🛒 المنتجات</h3>
+                <div id="list-client" class="grid grid-cols-2 gap-3"></div>
+            </div>
+
+            <!-- B. لوحة الفني -->
+            <div id="panel-tech" class="d-none">
+                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg">
+                    <p class="text-gray-400 text-xs">الرصيد</p>
+                    <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">د.م</small></h2>
+                </div>
+                <!-- أزرار التبديل -->
+                <div class="flex gap-2 mb-4">
+                    <button onclick="techTab('prod')" id="btn-prod" class="flex-1 bg-blue-900 text-white py-2 rounded-lg text-sm font-bold">شراء</button>
+                    <button onclick="techTab('req')" id="btn-req" class="flex-1 bg-gray-200 text-gray-600 py-2 rounded-lg text-sm font-bold">طلبات</button>
+                </div>
+                <div id="view-tech-prod" class="space-y-3"></div>
+                <div id="view-tech-req" class="d-none space-y-3"></div>
+            </div>
+
+            <!-- C. لوحة الإدارة -->
+            <div id="panel-admin" class="d-none">
+                <div class="bg-white p-4 rounded-xl shadow mb-4">
+                    <h3 class="font-bold mb-2">إضافة منتج</h3>
+                    <input id="adm-name" placeholder="الاسم" class="border p-2 w-full rounded mb-2">
+                    <input id="adm-price" placeholder="السعر" type="number" class="border p-2 w-full rounded mb-2">
+                    <input id="adm-comm" placeholder="العمولة" type="number" class="border p-2 w-full rounded mb-2">
+                    <button onclick="addProd()" class="bg-black text-white w-full py-2 rounded font-bold">إضافة</button>
+                </div>
+                <div id="list-admin" class="space-y-2"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal طلب خدمة -->
+    <div id="modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6">
+            <h3 class="font-bold text-lg mb-3">طلب جديد</h3>
+            <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50"><option>ضبط إشارة</option><option>تركيب تلفاز</option></select>
+            <input id="srv-addr" placeholder="العنوان" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
+            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold">تأكيد</button>
+            <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script>
+        // --- 1. إدارة البيانات بأمان (Try-Catch) ---
+        function getSafeData(key, defaultVal) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : defaultVal;
+            } catch (e) {
+                return defaultVal; // في حالة الخطأ نرجع القيمة الافتراضية
             }
+        }
+
+        let db = {
+            users: getSafeData('sf_users_v2', []),
+            products: getSafeData('sf_prods_v2', [
+                {id:1, name:'رسيفر HD', price:200, comm:40},
+                {id:2, name:'لاقط LNB', price:50, comm:10}
+            ]),
+            requests: getSafeData('sf_reqs_v2', []),
+            current: getSafeData('sf_curr_v2', null)
         };
 
-        // 2. نظام المصادقة (Auth)
-        const auth = {
-            init: function() {
-                if(db.currentUser) {
-                    this.showDashboard(db.currentUser);
-                }
-            },
+        function save() {
+            localStorage.setItem('sf_users_v2', JSON.stringify(db.users));
+            localStorage.setItem('sf_prods_v2', JSON.stringify(db.products));
+            localStorage.setItem('sf_reqs_v2', JSON.stringify(db.requests));
+            localStorage.setItem('sf_curr_v2', JSON.stringify(db.current));
+        }
 
-            switch: function(screen) {
-                if(screen === 'register') {
-                    document.getElementById('form-login').classList.add('hidden');
-                    document.getElementById('form-register').classList.remove('hidden');
-                } else {
-                    document.getElementById('form-register').classList.add('hidden');
-                    document.getElementById('form-login').classList.remove('hidden');
-                }
-            },
+        // --- 2. التحكم في الواجهات ---
+        function switchView(view) {
+            if(view === 'register') {
+                document.getElementById('view-login').classList.add('d-none');
+                document.getElementById('view-register').classList.remove('d-none');
+            } else {
+                document.getElementById('view-register').classList.add('d-none');
+                document.getElementById('view-login').classList.remove('d-none');
+            }
+        }
 
-            register: function() {
-                const name = document.getElementById('reg-name').value;
-                const phone = document.getElementById('reg-phone').value;
-                const pass = document.getElementById('reg-pass').value;
-                const role = document.querySelector('input[name="role"]:checked').value;
+        // --- 3. المصادقة ---
+        function tryRegister() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const pass = document.getElementById('reg-pass').value;
+            const role = document.querySelector('input[name="role"]:checked').value;
 
-                if(!name || !phone || !pass) return alert("المرجو ملء جميع البيانات");
+            if(!name || !phone || !pass) return alert("المرجو ملء جميع البيانات");
+            
+            if(db.users.find(u => u.phone === phone)) return alert("رقم الهاتف مستخدم مسبقاً");
 
-                // التحقق هل الهاتف مسجل سابقاً
-                if(db.users.find(u => u.phone === phone)) return alert("رقم الهاتف مسجل مسبقاً!");
+            const user = { id: Date.now(), name, phone, pass, role, wallet: 0 };
+            db.users.push(user);
+            db.current = user;
+            save();
+            loadApp();
+        }
 
-                const newUser = { 
-                    id: Date.now(), 
-                    name, phone, pass, role, 
-                    wallet: 0 // للفنيين فقط
-                };
+        function tryLogin() {
+            const phone = document.getElementById('login-phone').value;
+            const pass = document.getElementById('login-pass').value;
+            const user = db.users.find(u => u.phone === phone && u.pass === pass);
+            
+            if(user) {
+                db.current = user;
+                save();
+                loadApp();
+            } else {
+                alert("معلومات خاطئة");
+            }
+        }
 
-                db.users.push(newUser);
-                db.currentUser = newUser;
-                db.save();
+        function demoAdmin() {
+            db.current = { name: "Admin", role: "admin" };
+            save();
+            loadApp();
+        }
 
-                alert("✅ تم إنشاء الحساب بنجاح!");
-                this.showDashboard(newUser);
-            },
+        function doLogout() {
+            db.current = null;
+            save();
+            location.reload();
+        }
 
-            login: function() {
-                const phone = document.getElementById('login-phone').value;
-                const pass = document.getElementById('login-pass').value;
-
-                const user = db.users.find(u => u.phone === phone && u.pass === pass);
-
-                if(user) {
-                    db.currentUser = user;
-                    db.save();
-                    this.showDashboard(user);
-                } else {
-                    alert("❌ رقم الهاتف أو كلمة المرور غير صحيحة");
-                }
-            },
-
-            quickAdmin: function() {
-                const adminUser = { name: "المدير", role: "admin" };
-                db.currentUser = adminUser;
-                db.save();
-                this.showDashboard(adminUser);
-            },
-
-            logout: function() {
-                db.currentUser = null;
-                db.save();
+        function hardReset() {
+            if(confirm("هل تريد مسح جميع البيانات وإصلاح المشاكل؟")) {
+                localStorage.clear();
                 location.reload();
-            },
-
-            showDashboard: function(user) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('welcome-msg').innerText = `مرحباً، ${user.name} (${user.role === 'tech' ? 'فني' : user.role === 'client' ? 'زبون' : 'مدير'})`;
-
-                // توجيه للوحة المناسبة
-                if(user.role === 'client') app.renderClient();
-                if(user.role === 'tech') app.renderTech();
-                if(user.role === 'admin') app.renderAdmin();
             }
-        };
+        }
 
-        // 3. منطق التطبيق (App Logic)
-        const app = {
-            renderClient: function() {
-                document.getElementById('panel-client').classList.remove('hidden');
-                const container = document.getElementById('list-client-products');
-                container.innerHTML = db.products.map(p => `
-                    <div class="bg-white p-3 rounded-xl border text-center shadow-sm">
-                        <div class="bg-gray-100 h-20 rounded mb-2 flex items-center justify-center text-3xl">📦</div>
-                        <h4 class="font-bold text-sm">${p.name}</h4>
-                        <p class="text-blue-600 font-bold">${p.price} درهم</p>
-                        <button class="w-full mt-2 bg-blue-50 text-blue-700 text-xs py-2 rounded font-bold">شراء</button>
+        // --- 4. تشغيل التطبيق ---
+        function loadApp() {
+            if(!db.current) return; // البقاء في شاشة الدخول
+
+            document.getElementById('auth-container').classList.add('d-none');
+            document.getElementById('main-app').classList.remove('d-none');
+            
+            const u = db.current;
+            document.getElementById('user-welcome').innerText = `${u.name} (${u.role})`;
+
+            document.getElementById('panel-client').classList.add('d-none');
+            document.getElementById('panel-tech').classList.add('d-none');
+            document.getElementById('panel-admin').classList.add('d-none');
+
+            if(u.role === 'client') loadClient();
+            if(u.role === 'tech') loadTech();
+            if(u.role === 'admin') loadAdmin();
+        }
+
+        // --- 5. دوال الزبون ---
+        function loadClient() {
+            document.getElementById('panel-client').classList.remove('d-none');
+            document.getElementById('list-client').innerHTML = db.products.map(p => `
+                <div class="bg-white p-3 rounded border text-center">
+                    <div class="text-3xl mb-2">📦</div>
+                    <div class="font-bold text-sm">${p.name}</div>
+                    <div class="text-blue-600 font-bold">${p.price} د.م</div>
+                </div>
+            `).join('');
+        }
+
+        function openModal() { document.getElementById('modal').classList.remove('d-none'); }
+        function closeModal() { document.getElementById('modal').classList.add('d-none'); }
+
+        function sendReq() {
+            const type = document.getElementById('srv-type').value;
+            const addr = document.getElementById('srv-addr').value;
+            if(!addr) return alert("اكتب العنوان");
+            
+            db.requests.push({ 
+                id: Date.now(), 
+                client: db.current.name, 
+                phone: db.current.phone || '060000',
+                type, addr, status: 'pending' 
+            });
+            save();
+            closeModal();
+            alert("تم الطلب!");
+        }
+
+        // --- 6. دوال الفني ---
+        function loadTech() {
+            document.getElementById('panel-tech').classList.remove('d-none');
+            document.getElementById('tech-wallet').innerText = db.current.wallet;
+
+            // منتجات
+            document.getElementById('view-tech-prod').innerHTML = db.products.map(p => `
+                <div class="bg-white p-4 rounded shadow flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">${p.name}</div>
+                        <div class="text-xs text-gray-500">الزبون: ${p.price} د.م</div>
                     </div>
-                `).join('');
-            },
+                    <button onclick="buy(${p.id})" class="bg-blue-900 text-white px-3 py-1 rounded text-xs font-bold">شراء (+${p.comm})</button>
+                </div>
+            `).join('');
 
-            submitRequest: function() {
-                const type = document.getElementById('srv-type').value;
-                const addr = document.getElementById('srv-addr').value;
-                if(!addr) return alert("المرجو كتابة العنوان");
+            // طلبات
+            const pending = db.requests.filter(r => r.status === 'pending');
+            document.getElementById('view-tech-req').innerHTML = pending.length ? pending.map(r => `
+                <div class="bg-white p-4 rounded shadow border-r-4 border-yellow-400">
+                    <div class="font-bold">${r.type}</div>
+                    <div class="text-sm text-gray-600">${r.addr}</div>
+                    <div class="text-xs text-gray-400">من: ${r.client}</div>
+                    <button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-1 rounded mt-2 text-sm">قبول</button>
+                </div>
+            `).join('') : '<p class="text-center text-gray-400">لا طلبات جديدة</p>';
+        }
 
-                db.requests.push({
-                    id: Date.now(),
-                    client: db.currentUser.name,
-                    phone: db.currentUser.phone,
-                    type, addr, status: 'pending'
-                });
-                db.save();
-                document.getElementById('modal-service').classList.add('hidden');
-                alert("✅ تم إرسال الطلب للفنيين!");
-            },
-
-            renderTech: function() {
-                document.getElementById('panel-tech').classList.remove('hidden');
-                document.getElementById('tech-wallet').innerText = db.currentUser.wallet;
-
-                // منتجات الفني
-                document.getElementById('view-tech-products').innerHTML = db.products.map(p => `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center">
-                        <div>
-                            <h4 class="font-bold">${p.name}</h4>
-                            <span class="text-xs text-gray-500">سعر البيع: ${p.price}</span>
-                        </div>
-                        <button onclick="app.techBuy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow">
-                            شراء (+${p.comm} درهم)
-                        </button>
-                    </div>
-                `).join('');
-
-                // طلبات الفني
-                const reqList = document.getElementById('view-tech-requests');
-                const pending = db.requests.filter(r => r.status === 'pending');
-                if(pending.length === 0) {
-                    reqList.innerHTML = '<p class="text-center text-gray-400 py-4">لا توجد طلبات جديدة</p>';
-                } else {
-                    reqList.innerHTML = pending.map(r => `
-                        <div class="bg-white border-r-4 border-yellow-400 p-4 rounded shadow-sm">
-                            <h4 class="font-bold">${r.type}</h4>
-                            <p class="text-sm text-gray-600">📍 ${r.addr}</p>
-                            <p class="text-xs text-gray-400">الزبون: ${r.client}</p>
-                            <button onclick="app.acceptReq(${r.id})" class="w-full mt-2 bg-gray-800 text-white py-2 rounded text-xs">قبول</button>
-                        </div>
-                    `).join('');
-                }
-            },
-
-            techTab: function(tab) {
-                if(tab === 'prod') {
-                    document.getElementById('view-tech-products').classList.remove('hidden');
-                    document.getElementById('view-tech-requests').classList.add('hidden');
-                    document.getElementById('tab-prod').className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-900";
-                    document.getElementById('tab-req').className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-500";
-                } else {
-                    document.getElementById('view-tech-products').classList.add('hidden');
-                    document.getElementById('view-tech-requests').classList.remove('hidden');
-                    document.getElementById('tab-prod').className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-500";
-                    document.getElementById('tab-req').className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-900";
-                }
-            },
-
-            techBuy: function(id) {
-                const prod = db.products.find(p => p.id === id);
-                if(confirm(`تأكيد عملية الشراء؟`)) {
-                    db.currentUser.wallet += parseInt(prod.comm);
-                    // تحديث المستخدم في المصفوفة الرئيسية أيضاً
-                    const idx = db.users.findIndex(u => u.id === db.currentUser.id);
-                    if(idx !== -1) db.users[idx].wallet = db.currentUser.wallet;
-                    
-                    db.save();
-                    this.renderTech();
-                    alert("💰 تمت إضافة العمولة!");
-                }
-            },
-
-            acceptReq: function(id) {
-                const r = db.requests.find(x => x.id === id);
-                r.status = 'accepted';
-                db.save();
-                this.renderTech();
-                alert(`✅ تم قبول الطلب.\nرقم الزبون: ${r.phone}`);
-            },
-
-            renderAdmin: function() {
-                document.getElementById('panel-admin').classList.remove('hidden');
-                document.getElementById('admin-users-count').innerText = db.users.length;
-                
-                document.getElementById('list-admin-products').innerHTML = db.products.map(p => `
-                    <div class="flex justify-between p-3 bg-gray-50 rounded border text-sm">
-                        <span>${p.name} (${p.price} د.م)</span>
-                        <span class="text-red-500 cursor-pointer" onclick="app.delProd(${p.id})">حذف</span>
-                    </div>
-                `).join('');
-            },
-
-            addProduct: function() {
-                const name = document.getElementById('new-prod-name').value;
-                const price = document.getElementById('new-prod-price').value;
-                const comm = document.getElementById('new-prod-comm').value;
-                if(!name) return;
-                db.products.push({ id: Date.now(), name, price, comm });
-                db.save();
-                this.renderAdmin();
-                document.getElementById('new-prod-name').value = '';
-            },
-
-            delProd: function(id) {
-                if(confirm('حذف؟')) {
-                    db.products = db.products.filter(p => p.id !== id);
-                    db.save();
-                    this.renderAdmin();
-                }
+        function techTab(t) {
+            if(t === 'prod') {
+                document.getElementById('view-tech-prod').classList.remove('d-none');
+                document.getElementById('view-tech-req').classList.add('d-none');
+                document.getElementById('btn-prod').className = "flex-1 bg-blue-900 text-white py-2 rounded-lg text-sm font-bold";
+                document.getElementById('btn-req').className = "flex-1 bg-gray-200 text-gray-600 py-2 rounded-lg text-sm font-bold";
+            } else {
+                document.getElementById('view-tech-prod').classList.add('d-none');
+                document.getElementById('view-tech-req').classList.remove('d-none');
+                document.getElementById('btn-req').className = "flex-1 bg-blue-900 text-white py-2 rounded-lg text-sm font-bold";
+                document.getElementById('btn-prod').className = "flex-1 bg-gray-200 text-gray-600 py-2 rounded-lg text-sm font-bold";
             }
-        };
+        }
 
-        // تشغيل التحقق عند بدء التطبيق
-        auth.init();
+        function buy(id) {
+            if(confirm("تأكيد الشراء؟")) {
+                const p = db.products.find(x => x.id === id);
+                db.current.wallet += parseInt(p.comm);
+                // تحديث المستخدم في القائمة الرئيسية
+                const idx = db.users.findIndex(u => u.id === db.current.id);
+                if(idx !== -1) db.users[idx].wallet = db.current.wallet;
+                save();
+                loadTech();
+                alert("تمت إضافة العمولة");
+            }
+        }
+
+        function accept(id) {
+            const r = db.requests.find(x => x.id === id);
+            r.status = 'accepted';
+            save();
+            loadTech();
+            alert(`تم قبول الطلب.\nهاتف الزبون: ${r.phone}`);
+        }
+
+        // --- 7. دوال الإدارة ---
+        function loadAdmin() {
+            document.getElementById('panel-admin').classList.remove('d-none');
+            document.getElementById('list-admin').innerHTML = db.products.map(p => `
+                <div class="bg-white p-3 rounded flex justify-between border">
+                    <span>${p.name}</span>
+                    <button onclick="delProd(${p.id})" class="text-red-500 text-xs">حذف</button>
+                </div>
+            `).join('');
+        }
+
+        function addProd() {
+            const name = document.getElementById('adm-name').value;
+            const price = document.getElementById('adm-price').value;
+            const comm = document.getElementById('adm-comm').value;
+            if(!name) return;
+            db.products.push({ id: Date.now(), name, price, comm });
+            save();
+            loadAdmin();
+            document.getElementById('adm-name').value = '';
+        }
+
+        function delProd(id) {
+            if(confirm('حذف؟')) {
+                db.products = db.products.filter(p => p.id !== id);
+                save();
+                loadAdmin();
+            }
+        }
+
+        // بدء التشغيل
+        loadApp();
 
     </script>
 </body>
