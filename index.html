@@ -201,3 +201,234 @@
                 { id: 2, name: "لاقط LNB 4k", price: 80, comm: 20 }
             ],
             requests: JSON.parse(localStorage.getItem('sf_requests')) || [],
+            
+            save: function() {
+                localStorage.setItem('sf_users', JSON.stringify(this.users));
+                localStorage.setItem('sf_products', JSON.stringify(this.products));
+                localStorage.setItem('sf_requests', JSON.stringify(this.requests));
+                localStorage.setItem('sf_current_user', JSON.stringify(this.currentUser));
+            }
+        };
+
+        // 2. نظام المصادقة (Auth)
+        const auth = {
+            init: function() {
+                if(db.currentUser) {
+                    this.showDashboard(db.currentUser);
+                }
+            },
+
+            switch: function(screen) {
+                if(screen === 'register') {
+                    document.getElementById('form-login').classList.add('hidden');
+                    document.getElementById('form-register').classList.remove('hidden');
+                } else {
+                    document.getElementById('form-register').classList.add('hidden');
+                    document.getElementById('form-login').classList.remove('hidden');
+                }
+            },
+
+            register: function() {
+                const name = document.getElementById('reg-name').value;
+                const phone = document.getElementById('reg-phone').value;
+                const pass = document.getElementById('reg-pass').value;
+                const role = document.querySelector('input[name="role"]:checked').value;
+
+                if(!name || !phone || !pass) return alert("المرجو ملء جميع البيانات");
+
+                // التحقق هل الهاتف مسجل سابقاً
+                if(db.users.find(u => u.phone === phone)) return alert("رقم الهاتف مسجل مسبقاً!");
+
+                const newUser = { 
+                    id: Date.now(), 
+                    name, phone, pass, role, 
+                    wallet: 0 // للفنيين فقط
+                };
+
+                db.users.push(newUser);
+                db.currentUser = newUser;
+                db.save();
+
+                alert("✅ تم إنشاء الحساب بنجاح!");
+                this.showDashboard(newUser);
+            },
+
+            login: function() {
+                const phone = document.getElementById('login-phone').value;
+                const pass = document.getElementById('login-pass').value;
+
+                const user = db.users.find(u => u.phone === phone && u.pass === pass);
+
+                if(user) {
+                    db.currentUser = user;
+                    db.save();
+                    this.showDashboard(user);
+                } else {
+                    alert("❌ رقم الهاتف أو كلمة المرور غير صحيحة");
+                }
+            },
+
+            quickAdmin: function() {
+                const adminUser = { name: "المدير", role: "admin" };
+                db.currentUser = adminUser;
+                db.save();
+                this.showDashboard(adminUser);
+            },
+
+            logout: function() {
+                db.currentUser = null;
+                db.save();
+                location.reload();
+            },
+
+            showDashboard: function(user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('welcome-msg').innerText = `مرحباً، ${user.name} (${user.role === 'tech' ? 'فني' : user.role === 'client' ? 'زبون' : 'مدير'})`;
+
+                // توجيه للوحة المناسبة
+                if(user.role === 'client') app.renderClient();
+                if(user.role === 'tech') app.renderTech();
+                if(user.role === 'admin') app.renderAdmin();
+            }
+        };
+
+        // 3. منطق التطبيق (App Logic)
+        const app = {
+            renderClient: function() {
+                document.getElementById('panel-client').classList.remove('hidden');
+                const container = document.getElementById('list-client-products');
+                container.innerHTML = db.products.map(p => `
+                    <div class="bg-white p-3 rounded-xl border text-center shadow-sm">
+                        <div class="bg-gray-100 h-20 rounded mb-2 flex items-center justify-center text-3xl">📦</div>
+                        <h4 class="font-bold text-sm">${p.name}</h4>
+                        <p class="text-blue-600 font-bold">${p.price} درهم</p>
+                        <button class="w-full mt-2 bg-blue-50 text-blue-700 text-xs py-2 rounded font-bold">شراء</button>
+                    </div>
+                `).join('');
+            },
+
+            submitRequest: function() {
+                const type = document.getElementById('srv-type').value;
+                const addr = document.getElementById('srv-addr').value;
+                if(!addr) return alert("المرجو كتابة العنوان");
+
+                db.requests.push({
+                    id: Date.now(),
+                    client: db.currentUser.name,
+                    phone: db.currentUser.phone,
+                    type, addr, status: 'pending'
+                });
+                db.save();
+                document.getElementById('modal-service').classList.add('hidden');
+                alert("✅ تم إرسال الطلب للفنيين!");
+            },
+
+            renderTech: function() {
+                document.getElementById('panel-tech').classList.remove('hidden');
+                document.getElementById('tech-wallet').innerText = db.currentUser.wallet;
+
+                // منتجات الفني
+                document.getElementById('view-tech-products').innerHTML = db.products.map(p => `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold">${p.name}</h4>
+                            <span class="text-xs text-gray-500">سعر البيع: ${p.price}</span>
+                        </div>
+                        <button onclick="app.techBuy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold shadow">
+                            شراء (+${p.comm} درهم)
+                        </button>
+                    </div>
+                `).join('');
+
+                // طلبات الفني
+                const reqList = document.getElementById('view-tech-requests');
+                const pending = db.requests.filter(r => r.status === 'pending');
+                if(pending.length === 0) {
+                    reqList.innerHTML = '<p class="text-center text-gray-400 py-4">لا توجد طلبات جديدة</p>';
+                } else {
+                    reqList.innerHTML = pending.map(r => `
+                        <div class="bg-white border-r-4 border-yellow-400 p-4 rounded shadow-sm">
+                            <h4 class="font-bold">${r.type}</h4>
+                            <p class="text-sm text-gray-600">📍 ${r.addr}</p>
+                            <p class="text-xs text-gray-400">الزبون: ${r.client}</p>
+                            <button onclick="app.acceptReq(${r.id})" class="w-full mt-2 bg-gray-800 text-white py-2 rounded text-xs">قبول</button>
+                        </div>
+                    `).join('');
+                }
+            },
+
+            techTab: function(tab) {
+                if(tab === 'prod') {
+                    document.getElementById('view-tech-products').classList.remove('hidden');
+                    document.getElementById('view-tech-requests').classList.add('hidden');
+                    document.getElementById('tab-prod').className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-900";
+                    document.getElementById('tab-req').className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-500";
+                } else {
+                    document.getElementById('view-tech-products').classList.add('hidden');
+                    document.getElementById('view-tech-requests').classList.remove('hidden');
+                    document.getElementById('tab-prod').className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-500";
+                    document.getElementById('tab-req').className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-100 text-blue-900";
+                }
+            },
+
+            techBuy: function(id) {
+                const prod = db.products.find(p => p.id === id);
+                if(confirm(`تأكيد عملية الشراء؟`)) {
+                    db.currentUser.wallet += parseInt(prod.comm);
+                    // تحديث المستخدم في المصفوفة الرئيسية أيضاً
+                    const idx = db.users.findIndex(u => u.id === db.currentUser.id);
+                    if(idx !== -1) db.users[idx].wallet = db.currentUser.wallet;
+                    
+                    db.save();
+                    this.renderTech();
+                    alert("💰 تمت إضافة العمولة!");
+                }
+            },
+
+            acceptReq: function(id) {
+                const r = db.requests.find(x => x.id === id);
+                r.status = 'accepted';
+                db.save();
+                this.renderTech();
+                alert(`✅ تم قبول الطلب.\nرقم الزبون: ${r.phone}`);
+            },
+
+            renderAdmin: function() {
+                document.getElementById('panel-admin').classList.remove('hidden');
+                document.getElementById('admin-users-count').innerText = db.users.length;
+                
+                document.getElementById('list-admin-products').innerHTML = db.products.map(p => `
+                    <div class="flex justify-between p-3 bg-gray-50 rounded border text-sm">
+                        <span>${p.name} (${p.price} د.م)</span>
+                        <span class="text-red-500 cursor-pointer" onclick="app.delProd(${p.id})">حذف</span>
+                    </div>
+                `).join('');
+            },
+
+            addProduct: function() {
+                const name = document.getElementById('new-prod-name').value;
+                const price = document.getElementById('new-prod-price').value;
+                const comm = document.getElementById('new-prod-comm').value;
+                if(!name) return;
+                db.products.push({ id: Date.now(), name, price, comm });
+                db.save();
+                this.renderAdmin();
+                document.getElementById('new-prod-name').value = '';
+            },
+
+            delProd: function(id) {
+                if(confirm('حذف؟')) {
+                    db.products = db.products.filter(p => p.id !== id);
+                    db.save();
+                    this.renderAdmin();
+                }
+            }
+        };
+
+        // تشغيل التحقق عند بدء التطبيق
+        auth.init();
+
+    </script>
+</body>
+</html>
