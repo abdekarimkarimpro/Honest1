@@ -113,12 +113,20 @@
     <div id="main-app" class="d-none">
         
         <nav class="bg-blue-900 text-white p-4 sticky top-0 z-40 shadow-md">
-            <div class="flex justify-between items-center max-w-2xl mx-auto">
-                <div>
-                    <h1 class="font-bold" data-i18n="app_title">Honest Sat</h1>
-                    <span id="user-welcome" class="text-[10px] text-blue-200">...</span>
+            <div class="flex justify-between items-center max-w-2xl mx-auto relative">
+                
+                <div class="flex-1 min-w-0">
+                    <span id="user-welcome" class="text-[10px] text-blue-200 truncate block">...</span>
                 </div>
-                <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition" data-i18n="logout_button">Logout</button>
+                
+                <div class="absolute inset-x-0 top-0 h-full flex items-center justify-center pointer-events-none">
+                    <h1 class="font-black text-lg pointer-events-auto" data-i18n="app_title">Honest Sat</h1>
+                </div>
+
+                <div class="flex-1 flex justify-end">
+                    <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition pointer-events-auto" data-i18n="logout_button">Logout</button>
+                </div>
+
             </div>
         </nav>
 
