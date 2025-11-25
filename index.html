@@ -11,21 +11,137 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <style>
-        /* CSS الخاص بالتطبيق (تم اختصاره هنا لتوفير المساحة، افترض أنه موجود كما هو) */
-        body { font-family: 'Arial', sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 0; }
-        .app-container { max-width: 400px; margin: 20px auto; background-color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background-color: #007bff; color: white; padding: 15px; text-align: center; }
-        .title { margin: 0 0 15px; font-size: 1.5em; display: flex; align-items: center; justify-content: center; }
-        .view { padding: 20px; display: none; }
-        .active { display: block; }
-        input[type="text"], input[type="password"], input[type="number"], textarea, select { width: 100%; padding: 12px; margin: 8px 0; display: inline-block; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .btn-primary, .btn-secondary, .btn-danger { background-color: #007bff; color: white; padding: 12px 20px; margin: 8px 0; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1em; transition: background-color 0.3s; }
-        .btn-secondary { background-color: #6c757d; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .list-item { background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .list-item strong { color: #007bff; }
-        .list-item .item-actions button { width: auto; margin: 0 5px; padding: 8px 15px; font-size: 0.9em; }
+        /* 🎨 التنسيقات المبسطة والمعدلة */
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background-color: #f0f0f0; /* خلفية أفتح */
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; /* تغيير ليتناسب مع الشاشات الطويلة */
+            min-height: 100vh;
+        }
+        .app-container { 
+            max-width: 400px; 
+            width: 95%;
+            margin: 20px 0; /* مسافة بسيطة من الأعلى والأسفل */
+            background-color: white; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+        }
+        .header { 
+            background-color: #3f51b5; /* لون أزرق هادئ */
+            color: white; 
+            padding: 15px; 
+            text-align: center; 
+            border-radius: 8px 8px 0 0;
+        }
+        .title { 
+            margin: 0 0 15px; 
+            font-size: 1.4em; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+        }
+        .view { 
+            padding: 15px; 
+            display: none; 
+        }
+        .active { 
+            display: block; 
+        }
+        
+        /* تنسيق الحقول */
+        input[type="text"], input[type="password"], input[type="number"], textarea, select { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 8px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            box-sizing: border-box; 
+        }
+        
+        /* تنسيق الأزرار */
+        .btn-primary, .btn-secondary, .btn-danger { 
+            background-color: #007bff; 
+            color: white; 
+            padding: 10px 15px; 
+            margin: 8px 0; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 1em; 
+            transition: background-color 0.3s; 
+        }
+        .btn-secondary { 
+            background-color: #6c757d; 
+        }
+        .btn-danger { 
+            background-color: #dc3545; 
+        }
+        .btn-primary:hover { 
+            background-color: #0056b3; 
+        }
+        
+        /* تنسيق عناصر القائمة */
+        .list-item { 
+            background: #f9f9f9; 
+            border: 1px solid #eee; 
+            border-radius: 5px; 
+            padding: 12px; 
+            margin-bottom: 8px; 
+            display: flex; 
+            flex-direction: column; /* جعل العناصر تتراصف عمودياً */
+            gap: 5px;
+        }
+        .list-item strong { 
+            color: #3f51b5; 
+            font-size: 1.1em;
+        }
+        .item-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end; /* وضع الأزرار على اليسار/اليمين حسب الاتجاه */
+            gap: 8px;
+        }
+        .item-actions button { 
+            width: auto; 
+            padding: 7px 12px; 
+            font-size: 0.85em;
+            margin: 0;
+        }
+
+        /* تنسيق رسائل التوست والتحميل */
+        .toast { /* ... (نفس تنسيق التوست السابق) */ }
+        .loader { /* ... (نفس تنسيق التحميل السابق) */ }
+        
+        /* تنسيق خاص باختيار الدور */
+        .role-selection { display: flex; justify-content: space-around; margin: 15px 0; }
+        .role-option { text-align: center; padding: 10px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .role-option.selected { border-color: #3f51b5; background-color: #f0f3ff; }
+        .role-option input { display: none; }
+        .empty-state { text-align: center; color: #6c757d; padding: 15px; border: 1px dashed #ccc; border-radius: 5px; font-size: 0.9em; }
+
+        /* تنسيق قائمة الموافقات للمدير (مبسط) */
+        #pending-approvals-list .list-item {
+            flex-direction: row; /* إرجاع الصف الأفقي في قائمة المدير فقط */
+            justify-content: space-between;
+            align-items: center;
+        }
+        #pending-approvals-list .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+        #pending-approvals-list .item-actions {
+            margin-top: 0;
+        }
+        
+        /* التنسيق الأصلي للتوست والتحميل (محتفظ به لتشغيل الدوال) */
         .toast { visibility: hidden; min-width: 250px; background-color: #333; color: white; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: 30px; opacity: 0; transition: opacity 0.3s; }
         .toast.show { visibility: visible; opacity: 1; }
         .toast.success { background-color: #28a745; }
@@ -33,127 +149,95 @@
         .toast.info { background-color: #17a2b8; }
         .loader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.8); z-index: 1001; display: none; justify-content: center; align-items: center; }
         .loader.show { display: flex; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3f51b5; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Admin Dashboard Styles */
-        .stats-cards { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .stat-card { background: #e9ecef; border-radius: 8px; padding: 15px; text-align: center; flex: 1; margin: 0 5px; }
-        .stat-value { font-size: 1.8em; font-weight: bold; color: #007bff; }
-        .admin-sections h4 { border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-top: 25px; }
-        .empty-state { text-align: center; color: #6c757d; padding: 20px; border: 1px dashed #ccc; border-radius: 8px; }
-        
-        /* Language Selector Style */
-        .lang-select { margin-bottom: 15px; text-align: center; }
-        .lang-select button { padding: 5px 10px; margin: 0 5px; border: 1px solid #007bff; background: white; color: #007bff; border-radius: 5px; cursor: pointer; }
-        .lang-select button.active { background: #007bff; color: white; }
-
-        /* Role Selection Style */
-        .role-selection { display: flex; justify-content: space-around; margin: 15px 0; }
-        .role-option { text-align: center; padding: 10px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
-        .role-option.selected { border-color: #007bff; background-color: #e6f2ff; }
-        .role-option input { display: none; }
-
     </style>
 </head>
 <body>
     <div class="app-container">
         <div class="header">
-            <h1 data-translate="Tech Services Platform">Tech Services Platform</h1>
+            <h1 data-translate="Tech Services Platform">منصة الخدمات التقنية</h1>
             <div id="welcome-user"></div>
             <button id="logout-btn" class="btn-secondary" style="display:none; margin-top: 10px;" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> <span data-translate="Logout">Logout</span>
+                <i class="fas fa-sign-out-alt"></i> <span data-translate="Logout">تسجيل الخروج</span>
             </button>
         </div>
 
-        <div class="lang-select">
-            <button onclick="setLanguage('ar')" id="lang-ar" class="active">العربية</button>
-            <button onclick="setLanguage('en')" id="lang-en">English</button>
+        <div class="view" style="display: block; text-align: center; padding: 10px 15px;">
+            <button onclick="setLanguage('ar')" id="lang-ar" class="btn-secondary" style="width: 45%; margin: 0; padding: 5px;">العربية</button>
+            <button onclick="setLanguage('en')" id="lang-en" class="btn-secondary" style="width: 45%; margin: 0; padding: 5px;">English</button>
         </div>
 
         <div id="login-view" class="view active">
-            <h3 class="title"><i class="fas fa-sign-in-alt"></i> <span data-translate="Login">Login</span></h3>
+            <h3 class="title"><i class="fas fa-sign-in-alt"></i> <span data-translate="Login">تسجيل الدخول</span></h3>
             <input type="number" id="login-phone" placeholder="9665xxxxxxxx" data-translate-placeholder="Phone Number">
             <input type="password" id="login-pass" placeholder="Password" data-translate-placeholder="Password">
-            <button class="btn-primary" onclick="tryLogin()"><i class="fas fa-arrow-right"></i> <span data-translate="Login">Login</span></button>
-            <button class="btn-secondary" onclick="switchView('register-view')"><i class="fas fa-user-plus"></i> <span data-translate="Register">Register</span></button>
+            <button class="btn-primary" onclick="tryLogin()"><i class="fas fa-arrow-right"></i> <span data-translate="Login">تسجيل الدخول</span></button>
+            <button class="btn-secondary" onclick="switchView('register-view')"><i class="fas fa-user-plus"></i> <span data-translate="Register">تسجيل</span></button>
         </div>
 
         <div id="register-view" class="view">
-            <h3 class="title"><i class="fas fa-user-plus"></i> <span data-translate="Register Account">Register Account</span></h3>
+            <h3 class="title"><i class="fas fa-user-plus"></i> <span data-translate="Register Account">تسجيل حساب</span></h3>
             <input type="text" id="reg-name" placeholder="Full Name" data-translate-placeholder="Full Name">
             <input type="number" id="reg-phone" placeholder="9665xxxxxxxx" data-translate-placeholder="Phone Number">
             <input type="password" id="reg-pass" placeholder="Password (Min 8 characters, Upper/Lower/Number)" data-translate-placeholder="Password (Min 8 characters, Upper/Lower/Number)">
 
-            <label data-translate="Select Role:">Select Role:</label>
+            <label data-translate="Select Role:">اختر الدور:</label>
             <div class="role-selection" id="role-selection">
                 <label for="role-client" class="role-option selected" data-role="client">
                     <input type="radio" name="role" id="role-client" value="client" checked>
-                    <i class="fas fa-user"></i> <span data-translate="Client">Client</span>
+                    <i class="fas fa-user"></i> <span data-translate="Client">عميل</span>
                 </label>
                 <label for="role-tech" class="role-option" data-role="tech">
                     <input type="radio" name="role" id="role-tech" value="tech">
-                    <i class="fas fa-tools"></i> <span data-translate="Technician">Technician</span>
+                    <i class="fas fa-tools"></i> <span data-translate="Technician">فني</span>
                 </label>
-                <label for="role-admin" class="role-option" data-role="admin">
+                <label for="role-admin" class="role-option" data-role="admin" style="display: none;">
                     <input type="radio" name="role" id="role-admin" value="admin">
-                    <i class="fas fa-shield-alt"></i> <span data-translate="Admin">Admin</span>
+                    <i class="fas fa-shield-alt"></i> <span data-translate="Admin">مدير</span>
                 </label>
             </div>
 
-            <button class="btn-primary" onclick="tryRegister()"><i class="fas fa-user-plus"></i> <span data-translate="Register">Register</span></button>
-            <button class="btn-secondary" onclick="switchView('login-view')"><i class="fas fa-arrow-left"></i> <span data-translate="Back to Login">Back to Login</span></button>
+            <button class="btn-primary" onclick="tryRegister()"><i class="fas fa-user-plus"></i> <span data-translate="Register">تسجيل</span></button>
+            <button class="btn-secondary" onclick="switchView('login-view')"><i class="fas fa-arrow-left"></i> <span data-translate="Back to Login">العودة لتسجيل الدخول</span></button>
         </div>
 
         <div id="client-view" class="view">
-            <h3 class="title"><i class="fas fa-home"></i> <span data-translate="Client Home">Client Home</span></h3>
-            <button class="btn-primary" onclick="switchView('request-view')"><i class="fas fa-plus-circle"></i> <span data-translate="New Request">New Request</span></button>
-            <h4 data-translate="My Requests">My Requests</h4>
+            <h3 class="title"><i class="fas fa-home"></i> <span data-translate="Client Home">صفحة العميل الرئيسية</span></h3>
+            <button class="btn-primary" onclick="switchViewToRequest()"><i class="fas fa-plus-circle"></i> <span data-translate="New Request">طلب جديد</span></button>
+            <h4><span data-translate="My Requests">طلباتي</span></h4>
             <div id="client-requests-list"></div>
         </div>
         
         <div id="tech-view" class="view">
-            <h3 class="title"><i class="fas fa-wrench"></i> <span data-translate="Technician Dashboard">Technician Dashboard</span></h3>
-            <h4 data-translate="Available Requests">Available Requests</h4>
+            <h3 class="title"><i class="fas fa-wrench"></i> <span data-translate="Technician Dashboard">لوحة تحكم الفني</span></h3>
+            <h4><span data-translate="Wallet Balance">الرصيد</span>: <span id="tech-wallet">0</span> <span data-translate="SAR">ر.س</span></h4>
+            
+            <h4><span data-translate="Available Requests">الطلبات المتاحة</span></h4>
             <div id="available-requests-list"></div>
-            <h4 data-translate="My Active Requests">My Active Requests</h4>
+            
+            <h4><span data-translate="My Active Requests">طلباتي النشطة</span></h4>
             <div id="tech-active-requests-list"></div>
-            <h4 data-translate="Wallet Balance">Wallet Balance: <span id="tech-wallet">0</span> SAR</h4>
         </div>
 
         <div id="admin-view" class="view">
-            <h3 class="title"><i class="fas fa-chart-line"></i> <span data-translate="Admin Dashboard">Admin Dashboard</span></h3>
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <h4 data-translate="Pending Techs">Pending Techs</h4>
-                    <p id="admin-pending-count" class="stat-value">0</p>
-                </div>
-                <div class="stat-card">
-                    <h4 data-translate="Total Clients">Total Clients</h4>
-                    <p id="admin-client-count" class="stat-value">0</p>
-                </div>
-                <div class="stat-card">
-                    <h4 data-translate="Total Requests">Total Requests</h4>
-                    <p id="admin-request-count" class="stat-value">0</p>
-                </div>
+            <h3 class="title"><i class="fas fa-chart-line"></i> <span data-translate="Admin Dashboard">لوحة تحكم المدير</span></h3>
+            
+            <h4><i class="fas fa-user-check"></i> <span data-translate="Approval Management">إدارة الموافقات</span></h4>
+            <div id="pending-approvals-list" class="list-container">
             </div>
-
-            <div class="admin-sections">
-                <h4><i class="fas fa-user-check"></i> <span data-translate="Approval Management">Approval Management</span></h4>
-                <div id="pending-approvals-list" class="list-container">
-                </div>
-                
-                <h4><i class="fas fa-list-alt"></i> <span data-translate="Request Oversight">Request Oversight</span></h4>
-                <p data-translate="Manage all requests here...">Manage all requests here...</p>
-            </div>
+            
+            <h4 style="margin-top: 20px;"><i class="fas fa-list-alt"></i> <span data-translate="Request Oversight">متابعة الطلبات</span></h4>
+            <p data-translate="Manage all requests here...">إدارة جميع الطلبات من هنا...</p>
         </div>
 
         <div id="request-view" class="view">
-            <h3 class="title"><i class="fas fa-plus-circle"></i> <span data-translate="Submit New Request">Submit New Request</span></h3>
+            <h3 class="title"><i class="fas fa-plus-circle"></i> <span data-translate="Submit New Request">إرسال طلب جديد</span></h3>
             <select id="request-product-id"></select>
             <input type="text" id="request-details" placeholder="Detailed description of the problem..." data-translate-placeholder="Detailed description of the problem...">
             <input type="number" id="request-price" placeholder="Proposed Price (SAR)" data-translate-placeholder="Proposed Price (SAR)">
-            <button class="btn-primary" onclick="submitRequest()"><i class="fas fa-paper-plane"></i> <span data-translate="Submit Request">Submit Request</span></button>
-            <button class="btn-secondary" onclick="loadApp()"><i class="fas fa-arrow-left"></i> <span data-translate="Back">Back</span></button>
+            <button class="btn-primary" onclick="submitRequest()"><i class="fas fa-paper-plane"></i> <span data-translate="Submit Request">إرسال الطلب</span></button>
+            <button class="btn-secondary" onclick="loadApp()"><i class="fas fa-arrow-left"></i> <span data-translate="Back">رجوع</span></button>
         </div>
 
     </div>
@@ -248,7 +332,21 @@
             "Approve": "Approve",
             "Reject": "Reject",
             "Reg:": "Reg:",
-            "Welcome": "Welcome"
+            "Welcome": "Welcome",
+            "Select a Service": "Select a Service",
+            "Logout successful!": "Logout successful!",
+            "Please fill in all request details correctly.": "Please fill in all request details correctly.",
+            "Request submitted successfully!": "Request submitted successfully!",
+            "A new request has been submitted and is awaiting a technician.": "A new request has been submitted and is awaiting a technician.",
+            "Technician approved!": "Technician approved!",
+            "User rejected and removed.": "User rejected and removed.",
+            "No requests found.": "No requests found.",
+            "Status": "Status",
+            "Price": "Price",
+            "No available requests.": "No available requests.",
+            "Accept": "Accept",
+            "No active requests.": "No active requests.",
+            "Finish": "Finish"
         },
         'ar': {
             "Tech Services App": "تطبيق الخدمات التقنية",
@@ -271,7 +369,7 @@
             "Available Requests": "الطلبات المتاحة",
             "My Active Requests": "طلباتي النشطة",
             "Wallet Balance": "الرصيد",
-            "SAR": "ريال سعودي",
+            "SAR": "ر.س",
             "Admin Dashboard": "لوحة تحكم المدير",
             "Pending Techs": "الفنيون بانتظار الموافقة",
             "Total Clients": "إجمالي العملاء",
@@ -299,7 +397,21 @@
             "Approve": "موافقة",
             "Reject": "رفض",
             "Reg:": "تاريخ التسجيل:",
-            "Welcome": "أهلاً"
+            "Welcome": "أهلاً",
+            "Select a Service": "اختر خدمة",
+            "Logout successful!": "تم تسجيل الخروج بنجاح!",
+            "Please fill in all request details correctly.": "الرجاء ملء تفاصيل الطلب بالكامل وبشكل صحيح.",
+            "Request submitted successfully!": "تم إرسال الطلب بنجاح!",
+            "A new request has been submitted and is awaiting a technician.": "تم إرسال طلب جديد وهو بانتظار فني.",
+            "Technician approved!": "تمت الموافقة على الفني!",
+            "User rejected and removed.": "تم رفض المستخدم وإزالته.",
+            "No requests found.": "لم يتم العثور على طلبات.",
+            "Status": "الحالة",
+            "Price": "السعر",
+            "No available requests.": "لا توجد طلبات متاحة.",
+            "Accept": "قبول",
+            "No active requests.": "لا توجد طلبات نشطة.",
+            "Finish": "إنهاء"
         }
     };
     
@@ -350,7 +462,6 @@
         document.getElementById(`lang-${lang}`).classList.add('active');
         document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
         applyTranslations();
-        // إعادة تحميل الواجهة عند تغيير اللغة بعد تسجيل الدخول
         if (db.current) {
             loadApp();
         }
@@ -365,31 +476,34 @@
             const key = el.getAttribute('data-translate-placeholder');
             el.placeholder = t(key);
         });
-        // تحديث خيارات المنتجات في شاشة الطلب
         if (db.current) updateProductOptions();
     }
 
     // دالة محاكاة التحميل الأولي للبيانات
     function getSafeData() {
-        // في البيئة الحقيقية، هذه الدالة ستجلب البيانات من Firebase / Firestore
-        // لكن حالياً، سنحاكي جلب البيانات من التخزين المحلي
         const data = localStorage.getItem('tech_services_db');
         if (data) {
             db = JSON.parse(data);
+        }
+        // تحميل الكاش (المستخدم الحالي واللغة)
+        const cache = localStorage.getItem('tech_services_cache');
+        if (cache) {
+            const cacheData = JSON.parse(cache);
+            db.current = cacheData.current;
+            db.lang = cacheData.lang;
         }
     }
 
     // دالة محاكاة الحفظ
     function save() {
-        // في البيئة الحقيقية، لن نحفظ كل شيء محلياً بعد الآن.
-        // فقط سنحفظ المستخدم الحالي واللغة.
+        // حفظ المستخدم الحالي واللغة في الكاش
         const currentData = {
             current: db.current,
             lang: db.lang
         };
         localStorage.setItem('tech_services_cache', JSON.stringify(currentData));
         // لحفظ جميع البيانات (للتجربة المحلية فقط):
-        // localStorage.setItem('tech_services_db', JSON.stringify(db));
+        localStorage.setItem('tech_services_db', JSON.stringify(db));
     }
 
     // =================================================================
@@ -419,9 +533,6 @@
             return showToast(t("Password must be at least 8 characters, including uppercase, lowercase, and a number."), 'error');
         }
 
-        // ⚠️ ملاحظة: في الكود الحقيقي، هنا يتم استخدام `auth.createUserWithEmailAndPassword(email, pass)`
-        // ومتابعة تخزين البيانات الإضافية في Firestore (db_cloud)
-
         // محاكاة تسجيل المستخدم محلياً (للتجربة)
         const existing = db.users.find(u => u.phone === phone);
         if (existing) {
@@ -432,7 +543,7 @@
             id: Date.now(),
             name,
             phone,
-            pass, // في الحقيقي، يجب تخزين الـ UID بدلاً من كلمة المرور
+            pass, 
             role,
             wallet: 0,
             isApproved: (role === 'admin' || role === 'client'),
@@ -440,8 +551,7 @@
         };
 
         db.users.push(newUser);
-        // يجب حذف السطر التالي عند الانتقال إلى قاعدة بيانات حقيقية
-        localStorage.setItem('tech_services_db', JSON.stringify(db)); 
+        save(); 
 
         switchView('login-view');
         const msg = (role === 'tech') 
@@ -457,9 +567,6 @@
         if (!phone || !pass) {
             return showToast(t("Please fill in all fields."), 'error');
         }
-
-        // ⚠️ ملاحظة: في الكود الحقيقي، هنا يتم استخدام `auth.signInWithEmailAndPassword(email, pass)`
-        // ومتابعة جلب البيانات من Firestore
 
         // محاكاة تسجيل الدخول محلياً (للتجربة)
         const user = db.users.find(u => u.phone === phone && u.pass === pass);
@@ -480,7 +587,6 @@
     }
 
     function logout() {
-        // ⚠️ في الكود الحقيقي: auth.signOut().then(...)
         db.current = null;
         save();
         switchView('login-view');
@@ -516,15 +622,15 @@
     // 💡 دالة تحميل شاشة العميل (Client)
     function loadClient() {
         switchView('client-view');
-        // ⚠️ هنا يجب جلب طلبات العميل من Firestore
         const clientRequests = db.requests.filter(req => req.clientId === db.current.id);
         const listElm = document.getElementById('client-requests-list');
         listElm.innerHTML = clientRequests.length === 0 
             ? `<p class="empty-state">${t("No requests found.")}</p>`
             : clientRequests.map(req => `
                 <div class="list-item">
-                    <div><strong>${req.productName}</strong> - ${req.details}</div>
-                    <small>${t("Status")}: ${req.status} | ${t("Price")}: ${req.price} SAR</small>
+                    <div><strong>${req.productName}</strong></div>
+                    <small>${t("Status")}: ${t(req.status)} | ${t("Price")}: ${req.price} SAR</small>
+                    <small>${req.details}</small>
                 </div>
             `).join('');
     }
@@ -534,7 +640,6 @@
         switchView('tech-view');
         document.getElementById('tech-wallet').innerText = db.current.wallet;
         
-        // ⚠️ هنا يجب جلب الطلبات المتاحة والطلبات النشطة من Firestore
         const availableRequests = db.requests.filter(req => req.status === 'Pending');
         const activeRequests = db.requests.filter(req => req.techId === db.current.id && (req.status === 'Accepted' || req.status === 'InProgress'));
 
@@ -543,7 +648,9 @@
             : availableRequests.map(req => `
                 <div class="list-item">
                     <div><strong>${req.productName}</strong> - ${req.details}</div>
-                    <button class="btn-primary" style="width: auto;" onclick="acceptRequest(${req.id})">${t("Accept")}</button>
+                    <div class="item-actions">
+                        <button class="btn-primary" onclick="acceptRequest(${req.id})">${t("Accept")}</button>
+                    </div>
                 </div>
             `).join('');
             
@@ -552,7 +659,9 @@
             : activeRequests.map(req => `
                 <div class="list-item">
                     <div><strong>${req.productName}</strong> - ${req.details}</div>
-                    <button class="btn-secondary" style="width: auto;" onclick="finishRequest(${req.id})">${t("Finish")}</button>
+                    <div class="item-actions">
+                        <button class="btn-secondary" onclick="finishRequest(${req.id})">${t("Finish")}</button>
+                    </div>
                 </div>
             `).join('');
     }
@@ -561,17 +670,8 @@
     function loadAdmin() {
         switchView('admin-view');
         
-        // ⚠️ هنا يجب جلب جميع البيانات من Firestore
         const pendingTechs = db.users.filter(u => u.role === 'tech' && !u.isApproved);
-        const totalClients = db.users.filter(u => u.role === 'client').length;
-        const totalRequests = db.requests.length;
-
-        // تحديث الإحصائيات
-        document.getElementById('admin-pending-count').innerText = pendingTechs.length;
-        document.getElementById('admin-client-count').innerText = totalClients;
-        document.getElementById('admin-request-count').innerText = totalRequests;
-
-        // قائمة الموافقات المعلقة
+        
         const listElement = document.getElementById('pending-approvals-list');
         listElement.innerHTML = ''; 
 
@@ -619,9 +719,6 @@
     // =========== 5. دوال العمليات (CRUD - محاكاة) =====================
     // =================================================================
 
-    // ⚠️ ملاحظة: كل هذه الدوال تحتاج إلى استخدام `db_cloud.collection('X').doc('Y').update(Z)`
-    // بدلاً من التعديل على المصفوفة المحلية (`db.users` أو `db.requests`) والحفظ عبر `save()`.
-
     function submitRequest() {
         const productId = document.getElementById('request-product-id').value;
         const details = document.getElementById('request-details').value.trim();
@@ -645,7 +742,7 @@
         };
 
         db.requests.push(newRequest);
-        // localStorage.setItem('tech_services_db', JSON.stringify(db)); // للتجربة
+        save();
         
         showToast(t("Request submitted successfully!"), 'success');
         notifyUser(t("A new request has been submitted and is awaiting a technician."), 'info');
@@ -653,27 +750,47 @@
     }
 
     function approveUser(userId) {
-        // ⚠️ هنا يتم تحديث Firestore: db_cloud.collection('users').doc(UID).update({ isApproved: true })
         const user = db.users.find(u => u.id === userId);
         if (user) {
             user.isApproved = true;
-            // localStorage.setItem('tech_services_db', JSON.stringify(db)); // للتجربة
+            save(); 
             showToast(t("Technician approved!"), 'success');
             loadAdmin();
-            // إشعار للفني بأن حسابه أصبح جاهزاً
-            // notifyUser(t("Your account has been approved and is ready to use!"), 'success'); 
         }
     }
 
     function deleteUser(userId) {
-        // ⚠️ هنا يتم حذف المستخدم من Firebase Auth و Firestore
         db.users = db.users.filter(u => u.id !== userId);
-        // localStorage.setItem('tech_services_db', JSON.stringify(db)); // للتجربة
+        save(); 
         showToast(t("User rejected and removed."), 'warning');
         loadAdmin();
     }
     
-    // ... باقي دوال العمليات (Accept, Finish, إلخ) تحتاج إلى تحديث مشابه ...
+    function acceptRequest(requestId) {
+        const request = db.requests.find(r => r.id === requestId);
+        if (request) {
+            request.status = 'Accepted';
+            request.techId = db.current.id;
+            save();
+            showToast("Request accepted. Start working!", 'success');
+            loadTech();
+            // إشعار للعميل
+            // notifyUser("Your request has been accepted by a technician!", 'info');
+        }
+    }
+
+    function finishRequest(requestId) {
+        const request = db.requests.find(r => r.id === requestId);
+        if (request && request.techId === db.current.id) {
+            request.status = 'Completed';
+            db.current.wallet += request.price; // إضافة الرصيد
+            save();
+            showToast("Request completed successfully! Wallet updated.", 'success');
+            loadTech();
+            // إشعار للعميل
+            // notifyUser("Your service request has been completed!", 'success');
+        }
+    }
 
     // =================================================================
     // =========== 6. التهيئ الأولي (Initial Setup) ===================
@@ -691,8 +808,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         getSafeData();
-        setLanguage(db.lang); // تطبيق اللغة المحفوظة أو الافتراضية
-        loadApp(); // بدء تحميل التطبيق إما بشاشة الدخول أو الواجهة الرئيسية
+        setLanguage(db.lang);
+        loadApp();
     });
 </script>
 
