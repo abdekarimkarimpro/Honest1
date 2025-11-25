@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سات فيكس | SatFix (Pro)</title>
+    <title>سات فيكس | SatFix (Pro - Secure)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -41,8 +41,8 @@
             <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
                 <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
                     <h2 class="font-bold text-xl mb-4 text-center">تسجيل الدخول</h2>
-                    <input type="tel" id="login-phone" value="1" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
-                    <input type="password" id="login-pass" value="1" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
+                    <input type="tel" id="login-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
+                    <input type="password" id="login-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
                     <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">دخول</button>
                 </div>
 
@@ -52,7 +52,7 @@
                 </div>
                 
                 <div class="mt-8 text-center border-t pt-4">
-                    <button onclick="demoAdmin()" class="text-xs text-gray-400 hover:text-gray-600 transition">الدخول كـ مدير (Admin Demo)</button>
+                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ الدخول كـ مدير (للمسؤولين فقط)</button>
                 </div>
             </div>
 
@@ -232,7 +232,7 @@
                 {id:3, name:'تجديد اشتراك IPTV', price:350, comm:70, img:'📺'}
             ]),
             requests: getSafeData('sf_reqs_v2', []),
-            techLogs: getSafeData('sf_tech_logs_v2', []), // سجل الأرباح
+            techLogs: getSafeData('sf_tech_logs_v2', []), 
             current: getSafeData('sf_curr_v2', null)
         };
 
@@ -259,7 +259,7 @@
             const role = document.querySelector('input[name="role"]:checked').value;
 
             if(!name || !phone || !pass) return showToast("المرجو ملء جميع البيانات.", 'error');
-            if(isNaN(phone)) return showToast("رقم الهاتف يجب أن يتكون من أرقام فقط.", 'error');
+            if(isNaN(phone) || phone.length < 5) return showToast("رقم الهاتف غير صحيح.", 'error');
             if(pass.length < 3) return showToast("كلمة المرور قصيرة جداً.", 'error');
             
             if(db.users.find(u => u.phone === phone)) return showToast("رقم الهاتف مستخدم مسبقاً.", 'error');
@@ -280,7 +280,7 @@
             const user = db.users.find(u => u.phone === phone && u.pass === pass);
             
             if(user) {
-                // تحديث بيانات المستخدم الحالي من القائمة الرئيسية لضمان أن المحفظة محدثة
+                // التأكد من أن المستخدم الحالي هو نفس المستخدم الموجود في القائمة الرئيسية
                 const mainUser = db.users.find(u => u.id === user.id); 
                 db.current = mainUser || user;
                 save();
@@ -292,17 +292,23 @@
         }
 
         function demoAdmin() {
-            showLoader();
-            let adminUser = db.users.find(u => u.id === 0 && u.role === "admin");
-            if (!adminUser) {
-                 // استخدام قيم حقيقية لسهولة الدخول اللاحق
-                 adminUser = { id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1' }; 
-                 db.users.push(adminUser);
-            }
-            db.current = adminUser;
-            save();
-            setTimeout(loadApp, 500);
+             const phone = document.getElementById('login-phone').value.trim();
+             const pass = document.getElementById('login-pass').value.trim();
+            
+             showLoader();
+             // **الأمان هنا:** يتم البحث عن مستخدم لديه دور "admin"
+             const adminUser = db.users.find(u => u.role === "admin" && u.phone === phone && u.pass === pass);
+            
+             if (adminUser) {
+                 db.current = adminUser;
+                 save();
+                 setTimeout(loadApp, 500);
+             } else {
+                 hideLoader();
+                 showToast("⚠️ غير مصرح لك بالدخول. (مدير، تحقق من الهاتف وكلمة المرور).", 'error');
+             }
         }
+
 
         function doLogout() {
             db.current = null;
@@ -338,8 +344,13 @@
             document.getElementById('panel-admin').classList.add('d-none');
 
             if(u.role === 'client') loadClient();
-            if(u.role === 'tech') loadTech();
-            if(u.role === 'admin') loadAdmin();
+            else if(u.role === 'tech') loadTech();
+            else if(u.role === 'admin') loadAdmin(); 
+            // **هنا الحماية:** لن يتم تحميل أي لوحة تحكم إذا لم يكن الدور صحيحاً
+            else {
+                 showToast("⚠️ دور المستخدم غير معروف. جارٍ تسجيل الخروج.", 'error');
+                 doLogout();
+            }
         }
 
         // --- 5. دوال الزبون ---
@@ -542,7 +553,7 @@
             const r = db.requests.find(x => x.id === id);
             if(!r) return;
 
-            const jobCommission = 50; // عمولة ثابتة لطلب الخدمة
+            const jobCommission = 50; 
             r.status = 'completed';
             
             db.current.wallet += jobCommission; 
@@ -660,14 +671,14 @@
                 save();
                 loadAdmin();
                 // تحديث واجهة الزبون (لإزالة المنتج)
-                if (db.current.role === 'client') loadClient();
+                if (db.current && db.current.role === 'client') loadClient();
                 showToast("تم حذف المنتج بنجاح.", 'success');
             }
         }
 
         // بدء التشغيل
         document.addEventListener('DOMContentLoaded', () => {
-             // تحديد قيم Demo Admin لسهولة الاختبار
+             // تحديد قيم Demo Admin لسهولة الاختبار (هاتف: 1، كلمة سر: 1)
             if (!db.users.find(u => u.id === 0 && u.role === "admin")) {
                 db.users.push({ id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1' }); 
                 save();
