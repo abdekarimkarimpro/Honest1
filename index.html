@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سات فيكس | SatFix</title>
+    <title>سات فيكس | SatFix (Pro)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -15,7 +15,6 @@
         .d-none { display: none !important; }
         .fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* لتسهيل التفاعل مع الأزرار في الهواتف */
         .active\:scale-95:active { transform: scale(0.95); }
     </style>
 </head>
@@ -24,6 +23,12 @@
     <button onclick="hardReset()" class="fixed top-2 left-2 z-[9999] bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded border border-red-200 opacity-50 hover:opacity-100 transition">
         ♻️ تنظيف الذاكرة
     </button>
+
+    <div id="toast-container" class="fixed top-4 right-4 z-[9000] space-y-2"></div>
+
+    <div id="app-loader" class="fixed inset-0 bg-white/70 z-[8000] d-none flex items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-opacity-75"></div>
+    </div>
 
     <div id="auth-container" class="fixed inset-0 bg-white z-50 overflow-y-auto">
         <div class="min-h-screen flex flex-col items-center justify-center p-6">
@@ -36,8 +41,8 @@
             <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
                 <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
                     <h2 class="font-bold text-xl mb-4 text-center">تسجيل الدخول</h2>
-                    <input type="tel" id="login-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
-                    <input type="password" id="login-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
+                    <input type="tel" id="login-phone" value="1" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
+                    <input type="password" id="login-pass" value="1" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
                     <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">دخول</button>
                 </div>
 
@@ -99,29 +104,46 @@
         <div class="max-w-2xl mx-auto p-4 min-h-screen">
             
             <div id="panel-client" class="d-none">
-                <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
-                    <h2 class="text-2xl font-bold mb-2">خدمة الصيانة</h2>
-                    <p class="text-sm opacity-90 mb-4">هل لديك عطل؟ اطلب فني الآن</p>
-                    <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition">طلب خدمة</button>
+                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
+                    <button onclick="clientTab('prod')" id="btn-client-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">🛒 تسوق المنتجات</button>
+                    <button onclick="clientTab('req')" id="btn-client-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">📜 طلباتي السابقة</button>
                 </div>
-                <h3 class="font-bold text-gray-700 mb-3">🛒 المنتجات</h3>
-                <div id="list-client" class="grid grid-cols-2 gap-3"></div>
+
+                <div id="view-client-prod">
+                    <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
+                        <h2 class="text-2xl font-bold mb-2">خدمة الصيانة</h2>
+                        <p class="text-sm opacity-90 mb-4">هل لديك عطل؟ اطلب فني الآن</p>
+                        <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition">طلب خدمة</button>
+                    </div>
+                    <h3 class="font-bold text-gray-700 mb-3">⭐ المنتجات المتاحة</h3>
+                    <div id="list-client" class="grid grid-cols-2 gap-3"></div>
+                </div>
+
+                <div id="view-client-req" class="d-none space-y-3">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">سجل طلبات الصيانة</h3>
+                    <div id="list-client-req"></div>
+                </div>
             </div>
 
             <div id="panel-tech" class="d-none">
-                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg">
+                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
                     <p class="text-gray-400 text-xs">الرصيد المتاح</p>
                     <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">د.م</small></h2>
-                    <button onclick="alert('طلب سحب قيد المعالجة')" class="absolute bottom-3 left-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition"><i class="fas fa-hand-holding-usd ml-1"></i> سحب الأرباح</button>
+                    <button onclick="showToast('تم إرسال طلب السحب للإدارة.', 'info')" class="absolute bottom-3 left-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd ml-1"></i> سحب الأرباح</button>
                 </div>
                 
                 <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
                     <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">شراء منتجات</button>
                     <button onclick="techTab('req')" id="btn-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">طلبات العمل</button>
+                    <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">سجل الأرباح</button>
                 </div>
                 
                 <div id="view-tech-prod" class="space-y-3"></div>
                 <div id="view-tech-req" class="d-none space-y-3"></div>
+                <div id="view-tech-log" class="d-none space-y-3">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">سجل الأرباح والعمولات</h3>
+                    <div id="list-tech-log"></div>
+                </div>
             </div>
 
             <div id="panel-admin" class="d-none">
@@ -133,8 +155,11 @@
                     <input id="adm-comm" placeholder="عمولة الفني" type="number" class="border p-2 w-full rounded mb-3">
                     <button onclick="addProd()" class="bg-black text-white w-full py-2 rounded font-bold hover:bg-gray-800 transition">إضافة المنتج</button>
                 </div>
-                <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">📦 إدارة المنتجات (${db.products.length})</h3>
+                <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" id="admin-prod-header">📦 إدارة المنتجات (0)</h3>
                 <div id="list-admin" class="space-y-2"></div>
+
+                <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2">🛠️ إدارة الطلبات المكتملة</h3>
+                <div id="list-admin-reqs" class="space-y-2"></div>
             </div>
 
         </div>
@@ -145,12 +170,49 @@
             <h3 class="font-bold text-lg mb-3">طلب جديد</h3>
             <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50"><option>ضبط إشارة</option><option>تركيب تلفاز</option><option>صيانة عامة</option></select>
             <input id="srv-addr" placeholder="العنوان بالتفصيل" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
-            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">تأكيد الطلب</button>
+            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">تأكيد الطلب</button>
             <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition">إلغاء</button>
         </div>
     </div>
 
     <script>
+        // --- 0. نظام الإشعارات (Toast) ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            let bgColor, icon;
+
+            if (type === 'success') {
+                bgColor = 'bg-green-500';
+                icon = 'fas fa-check-circle';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-500';
+                icon = 'fas fa-times-circle';
+            } else if (type === 'info') {
+                bgColor = 'bg-blue-500';
+                icon = 'fas fa-info-circle';
+            } else {
+                bgColor = 'bg-yellow-500';
+                icon = 'fas fa-exclamation-triangle';
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-xl text-white font-bold text-sm flex items-center gap-3 ${bgColor} transition transform translate-x-full duration-300`;
+            toast.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // دخول التوست (Fade in)
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10); 
+
+            // إزالة التوست بعد 4 ثواني
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 4000);
+        }
+
         // --- 1. إدارة البيانات بأمان (Try-Catch) ---
         function getSafeData(key, defaultVal) {
             try {
@@ -170,6 +232,7 @@
                 {id:3, name:'تجديد اشتراك IPTV', price:350, comm:70, img:'📺'}
             ]),
             requests: getSafeData('sf_reqs_v2', []),
+            techLogs: getSafeData('sf_tech_logs_v2', []), // سجل الأرباح
             current: getSafeData('sf_curr_v2', null)
         };
 
@@ -177,18 +240,15 @@
             localStorage.setItem('sf_users_v2', JSON.stringify(db.users));
             localStorage.setItem('sf_prods_v2', JSON.stringify(db.products));
             localStorage.setItem('sf_reqs_v2', JSON.stringify(db.requests));
+            localStorage.setItem('sf_tech_logs_v2', JSON.stringify(db.techLogs));
             localStorage.setItem('sf_curr_v2', JSON.stringify(db.current));
         }
 
         // --- 2. التحكم في الواجهات ---
         function switchView(view) {
-            if(view === 'register') {
-                document.getElementById('view-login').classList.add('d-none');
-                document.getElementById('view-register').classList.remove('d-none');
-            } else {
-                document.getElementById('view-register').classList.add('d-none');
-                document.getElementById('view-login').classList.remove('d-none');
-            }
+            document.getElementById('view-login').classList.add('d-none');
+            document.getElementById('view-register').classList.add('d-none');
+            document.getElementById(`view-${view}`).classList.remove('d-none');
         }
 
         // --- 3. المصادقة ---
@@ -198,20 +258,25 @@
             const pass = document.getElementById('reg-pass').value.trim();
             const role = document.querySelector('input[name="role"]:checked').value;
 
-            if(!name || !phone || !pass) return alert("المرجو ملء جميع البيانات");
+            if(!name || !phone || !pass) return showToast("المرجو ملء جميع البيانات.", 'error');
+            if(isNaN(phone)) return showToast("رقم الهاتف يجب أن يتكون من أرقام فقط.", 'error');
+            if(pass.length < 3) return showToast("كلمة المرور قصيرة جداً.", 'error');
             
-            if(db.users.find(u => u.phone === phone)) return alert("رقم الهاتف مستخدم مسبقاً");
+            if(db.users.find(u => u.phone === phone)) return showToast("رقم الهاتف مستخدم مسبقاً.", 'error');
 
+            showLoader();
             const user = { id: Date.now(), name, phone, pass, role, wallet: 0 };
             db.users.push(user);
             db.current = user;
             save();
-            loadApp();
+            setTimeout(loadApp, 500);
         }
 
         function tryLogin() {
             const phone = document.getElementById('login-phone').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
+            
+            showLoader();
             const user = db.users.find(u => u.phone === phone && u.pass === pass);
             
             if(user) {
@@ -219,22 +284,24 @@
                 const mainUser = db.users.find(u => u.id === user.id); 
                 db.current = mainUser || user;
                 save();
-                loadApp();
+                setTimeout(loadApp, 500);
             } else {
-                alert("معلومات خاطئة (الهاتف/كلمة المرور)");
+                hideLoader();
+                showToast("معلومات خاطئة (الهاتف/كلمة المرور).", 'error');
             }
         }
 
         function demoAdmin() {
-            // إنشاء مستخدم "Admin" إذا لم يكن موجوداً
-            let adminUser = db.users.find(u => u.name === "Admin" && u.role === "admin");
+            showLoader();
+            let adminUser = db.users.find(u => u.id === 0 && u.role === "admin");
             if (!adminUser) {
-                 adminUser = { id: 0, name: "Admin", role: "admin", wallet: 99999, phone: 'N/A', pass: 'N/A' };
+                 // استخدام قيم حقيقية لسهولة الدخول اللاحق
+                 adminUser = { id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1' }; 
                  db.users.push(adminUser);
             }
             db.current = adminUser;
             save();
-            loadApp();
+            setTimeout(loadApp, 500);
         }
 
         function doLogout() {
@@ -244,14 +311,19 @@
         }
 
         function hardReset() {
-            if(confirm("تحذير: هذا سيؤدي لمسح جميع بيانات النظام المحلية (المستخدمين، المنتجات، الطلبات). هل أنت متأكد؟")) {
+            if(confirm("تحذير: هذا سيؤدي لمسح جميع بيانات النظام المحلية. هل أنت متأكد؟")) {
                 localStorage.clear();
                 location.reload();
             }
         }
 
+        // Loader functions
+        function showLoader() { document.getElementById('app-loader').classList.remove('d-none'); }
+        function hideLoader() { document.getElementById('app-loader').classList.add('d-none'); }
+
         // --- 4. تشغيل التطبيق ---
         function loadApp() {
+            hideLoader();
             if(!db.current) return; 
 
             document.getElementById('auth-container').classList.add('d-none');
@@ -273,13 +345,62 @@
         // --- 5. دوال الزبون ---
         function loadClient() {
             document.getElementById('panel-client').classList.remove('d-none');
+            clientTab('prod'); // افتراضياً المنتجات
+            
+            // قائمة المنتجات
             document.getElementById('list-client').innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition">
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg">
                     <div class="text-3xl mb-2">${p.img}</div>
                     <div class="font-bold text-sm h-10 overflow-hidden">${p.name}</div>
                     <div class="text-blue-600 font-bold mt-2">${p.price} د.م</div>
                 </div>
             `).join('');
+
+            // قائمة طلباتي السابقة
+            updateClientRequestsList();
+        }
+
+        function clientTab(t) {
+            const isProd = t === 'prod';
+            document.getElementById('view-client-prod').classList.toggle('d-none', !isProd);
+            document.getElementById('view-client-req').classList.toggle('d-none', isProd);
+            
+            document.getElementById('btn-client-prod').classList.toggle('bg-blue-900', isProd);
+            document.getElementById('btn-client-prod').classList.toggle('text-white', isProd);
+            document.getElementById('btn-client-prod').classList.toggle('text-gray-600', !isProd);
+            
+            document.getElementById('btn-client-req').classList.toggle('bg-blue-900', !isProd);
+            document.getElementById('btn-client-req').classList.toggle('text-white', !isProd);
+            document.getElementById('btn-client-req').classList.toggle('text-gray-600', isProd);
+
+            if (t === 'req') updateClientRequestsList();
+        }
+
+        function updateClientRequestsList() {
+            const container = document.getElementById('list-client-req');
+            const clientReqs = db.requests.filter(r => r.phone === db.current.phone);
+
+            if(clientReqs.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تطلب أي خدمات صيانة بعد.</p>`;
+                return;
+            }
+
+            container.innerHTML = clientReqs.map(r => {
+                let statusClass, statusText;
+                if(r.status === 'pending') { statusClass = 'border-yellow-500'; statusText = 'قيد الانتظار'; }
+                else if(r.status === 'accepted') { statusClass = 'border-blue-500'; statusText = 'تم القبول (قيد العمل)'; }
+                else if(r.status === 'completed') { statusClass = 'border-green-500'; statusText = 'مكتمل'; }
+                
+                return `
+                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass} flex justify-between items-center">
+                        <div>
+                            <div class="font-bold">${r.type}</div>
+                            <div class="text-xs text-gray-500">${r.addr}</div>
+                        </div>
+                        <span class="text-xs font-bold text-gray-700">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function openModal() { document.getElementById('modal').classList.remove('d-none'); }
@@ -288,12 +409,12 @@
         function sendReq() {
             const type = document.getElementById('srv-type').value.trim();
             const addr = document.getElementById('srv-addr').value.trim();
-            if(!addr) return alert("الرجاء كتابة العنوان");
+            if(!addr) return showToast("الرجاء كتابة العنوان.", 'error');
             
             db.requests.push({ 
                 id: Date.now(), 
                 client: db.current.name, 
-                phone: db.current.phone || 'N/A', // ضمان وجود رقم هاتف
+                phone: db.current.phone,
                 type, 
                 addr, 
                 status: 'pending',
@@ -302,44 +423,16 @@
             });
             save();
             closeModal();
-            alert("✅ تم إرسال الطلب بنجاح! سيتم إخطار الفنيين.");
+            showToast("✅ تم إرسال الطلب بنجاح! سيتم إخطار الفنيين.", 'success');
         }
 
         // --- 6. دوال الفني ---
         function loadTech() {
             document.getElementById('panel-tech').classList.remove('d-none');
             document.getElementById('tech-wallet').innerText = db.current.wallet;
-            techTab('prod'); // عرض المنتجات افتراضياً
+            techTab('prod'); // افتراضياً المنتجات
 
-            // تحديث الطلبات عندما يتم تفعيل تبويب الطلبات
-            const updateRequestsList = () => {
-                const pendingAndAccepted = db.requests.filter(r => r.status === 'pending' || r.status === 'accepted');
-                document.getElementById('view-tech-req').innerHTML = pendingAndAccepted.length ? pendingAndAccepted.map(r => `
-                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${r.status === 'pending' ? 'border-yellow-500' : 'border-green-500'}">
-                        <div class="flex justify-between items-center">
-                            <div class="font-bold text-lg">${r.type}</div>
-                            <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'جديد' : 'مقبول'}</span>
-                        </div>
-                        <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 ml-1"></i> ${r.addr}</div>
-                        <div class="text-xs text-gray-400 mt-1">الزبون: ${r.client}</div>
-                        
-                        ${r.status === 'pending' ? 
-                            `<button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-2 rounded-xl mt-3 text-sm hover:bg-black transition active:scale-[0.98]">قبول العمل</button>` :
-                            `
-                            <div class="mt-3 bg-green-50 p-3 rounded-lg text-green-800">
-                                <p class="text-sm font-bold">تواصل مع الزبون:</p>
-                                <a href="tel:${r.phone}" class="font-mono text-lg underline">${r.phone}</a>
-                            </div>
-                            <button onclick="finishRequest(${r.id})" class="w-full bg-red-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-red-700 transition active:scale-[0.98]"><i class="fas fa-check-circle ml-1"></i> تم إكمال العمل</button>
-                            `
-                        }
-                    </div>
-                `).join('') : '<p class="text-center text-gray-400 py-10">لا طلبات عمل جديدة حالياً.</p>';
-            };
-            
-            updateRequestsList();
-
-            // المنتجات - تم تحديث العرض ليكون أوضح
+            // المنتجات
             document.getElementById('view-tech-prod').innerHTML = db.products.map(p => `
                 <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center transition hover:shadow-md">
                     <div class="flex items-center gap-3">
@@ -353,89 +446,194 @@
                 </div>
             `).join('');
 
-             // لإعادة تحميل قائمة الطلبات في كل مرة نفتح فيها التبويب
-             document.getElementById('btn-req').onclick = () => {
-                techTab('req');
-                updateRequestsList();
-            };
+            updateRequestsList();
+            updateTechLogs();
         }
 
         function techTab(t) {
-            // تحديث التنسيق لزر التبويب الحالي
-            const activate = (btnId, viewId) => {
-                document.getElementById(btnId).className = "flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition";
-                document.getElementById(viewId).classList.remove('d-none');
-            };
-            // إزالة التنسيق من زر التبويب الآخر
-            const deactivate = (btnId, viewId) => {
-                document.getElementById(btnId).className = "flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 bg-gray-200 transition";
-                document.getElementById(viewId).classList.add('d-none');
-            };
-
-            if(t === 'prod') {
-                activate('btn-prod', 'view-tech-prod');
-                deactivate('btn-req', 'view-tech-req');
-            } else {
-                activate('btn-req', 'view-tech-req');
-                deactivate('btn-prod', 'view-tech-prod');
-                // تحديث القائمة فور التبديل
-                loadTech(); 
+            const views = { 'prod': 'view-tech-prod', 'req': 'view-tech-req', 'log': 'view-tech-log' };
+            const btns = { 'prod': 'btn-prod', 'req': 'btn-req', 'log': 'btn-log' };
+            
+            for (let key in views) {
+                document.getElementById(views[key]).classList.add('d-none');
+                document.getElementById(btns[key]).classList.remove('bg-blue-900', 'text-white');
+                document.getElementById(btns[key]).classList.add('bg-gray-200', 'text-gray-600');
             }
+
+            document.getElementById(views[t]).classList.remove('d-none');
+            document.getElementById(btns[t]).classList.add('bg-blue-900', 'text-white');
+            document.getElementById(btns[t]).classList.remove('bg-gray-200', 'text-gray-600');
+
+            if (t === 'req') updateRequestsList(); // تحديث الطلبات فقط
+            if (t === 'log') updateTechLogs(); // تحديث السجل فقط
         }
 
         function buy(id) {
             const p = db.products.find(x => x.id === id);
             if(confirm(`تأكيد شراء ${p.name}؟\n ستحصل على عمولة: ${p.comm} د.م`)) {
                 
-                // 1. تحديث محفظة المستخدم الحالي
                 db.current.wallet += parseInt(p.comm);
                 
-                // 2. تحديث المستخدم في القائمة الرئيسية (الأمان والاستمرارية)
                 const idx = db.users.findIndex(u => u.id === db.current.id);
                 if(idx !== -1) db.users[idx].wallet = db.current.wallet;
+
+                db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'product', amount: parseInt(p.comm), desc: `عمولة بيع: ${p.name}`, date: new Date().toLocaleDateString('ar-EG') });
                 
                 save();
-                loadTech(); // إعادة تحميل الواجهة لعرض الرصيد الجديد
-                alert(`💰 تمت إضافة ${p.comm} د.م إلى رصيدك!`);
+                document.getElementById('tech-wallet').innerText = db.current.wallet; // تحديث فوري للرصيد
+                showToast(`💰 تمت إضافة ${p.comm} د.م إلى رصيدك!`, 'success');
             }
+        }
+        
+        function updateRequestsList() {
+            const container = document.getElementById('view-tech-req');
+            const pendingAndAccepted = db.requests.filter(r => r.status === 'pending' || (r.status === 'accepted' && r.technician_id === db.current.id));
+            
+            if(pendingAndAccepted.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-10">لا طلبات عمل جديدة أو مقبولة حالياً.</p>';
+                return;
+            }
+
+            container.innerHTML = pendingAndAccepted.map(r => {
+                let statusClass, btn;
+
+                if (r.status === 'pending') {
+                    statusClass = 'border-yellow-500';
+                    btn = `<button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-2 rounded-xl mt-3 text-sm hover:bg-black transition active:scale-[0.98]">قبول العمل</button>`;
+                } else {
+                    statusClass = 'border-green-500';
+                    btn = `
+                        <div class="mt-3 bg-green-50 p-3 rounded-lg text-green-800">
+                            <p class="text-sm font-bold">تواصل مع الزبون:</p>
+                            <a href="tel:${r.phone}" class="font-mono text-lg underline">${r.phone}</a>
+                        </div>
+                        <button onclick="finishRequest(${r.id})" class="w-full bg-red-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-red-700 transition active:scale-[0.98]"><i class="fas fa-check-circle ml-1"></i> تم إكمال العمل</button>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass}">
+                        <div class="flex justify-between items-center">
+                            <div class="font-bold text-lg">${r.type}</div>
+                            <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'جديد' : 'مقبول'}</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 ml-1"></i> ${r.addr}</div>
+                        <div class="text-xs text-gray-400 mt-1">الزبون: ${r.client}</div>
+                        ${btn}
+                    </div>
+                `;
+            }).join('');
         }
 
         function accept(id) {
             const r = db.requests.find(x => x.id === id);
-            if (r) {
-                r.status = 'accepted';
-                r.technician_id = db.current.id; // ربط الطلب بالفني الحالي
-                save();
-                loadTech();
-                alert(`✅ تم قبول الطلب.\nهاتف الزبون للتواصل: ${r.phone}`);
-            }
+            if (!r) return;
+
+            r.status = 'accepted';
+            r.technician_id = db.current.id; 
+            save();
+            updateRequestsList();
+            showToast(`✅ تم قبول الطلب. هاتف الزبون: ${r.phone}`, 'info');
         }
         
         function finishRequest(id) {
-            if(confirm("هل أنت متأكد من إنهاء هذا العمل؟ سيختفي من قائمة الطلبات النشطة.")) {
-                const r = db.requests.find(x => x.id === id);
-                if (r) {
-                    r.status = 'completed'; // حالة جديدة للمكتمل
-                    save();
-                    loadTech(); 
-                    alert("🥳 العمل مكتمل! يُرجى الاتصال بالإدارة لتوثيق العمولة (إذا لم تكن عمولة فورية).");
-                }
+            if(!confirm("هل أنت متأكد من إنهاء هذا العمل؟ سيتم إغلاقه وإضافة العمولة.")) return;
+
+            const r = db.requests.find(x => x.id === id);
+            if(!r) return;
+
+            const jobCommission = 50; // عمولة ثابتة لطلب الخدمة
+            r.status = 'completed';
+            
+            db.current.wallet += jobCommission; 
+            const idx = db.users.findIndex(u => u.id === db.current.id);
+            if(idx !== -1) db.users[idx].wallet = db.current.wallet;
+            
+            db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'job', amount: jobCommission, desc: `عمولة خدمة: ${r.type}`, date: new Date().toLocaleDateString('ar-EG') });
+
+            save();
+            updateRequestsList(); 
+            document.getElementById('tech-wallet').innerText = db.current.wallet;
+            showToast(`🎉 تم إغلاق الطلب! تمت إضافة ${jobCommission} د.م إلى رصيدك.`, 'success');
+        }
+
+        function updateTechLogs() {
+            const container = document.getElementById('list-tech-log');
+            const techLogs = db.techLogs.filter(log => log.techId === db.current.id).reverse();
+
+            if (techLogs.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تحقق أي أرباح بعد.</p>`;
+                return;
             }
+            
+            container.innerHTML = techLogs.map(log => `
+                <div class="bg-white p-3 rounded-xl shadow border-l-4 ${log.type === 'product' ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
+                    <div>
+                        <div class="font-bold">${log.desc}</div>
+                        <div class="text-xs text-gray-500">${log.date}</div>
+                    </div>
+                    <span class="font-bold text-green-600">+${log.amount} د.م</span>
+                </div>
+            `).join('');
         }
 
 
         // --- 7. دوال الإدارة ---
         function loadAdmin() {
             document.getElementById('panel-admin').classList.remove('d-none');
+            
+            // تحديث عدد المنتجات
+            document.getElementById('admin-prod-header').innerHTML = `📦 إدارة المنتجات (${db.products.length})`;
+            
             document.getElementById('list-admin').innerHTML = db.products.map(p => `
                 <div class="bg-white p-3 rounded flex justify-between items-center border shadow-sm">
                     <div>
                         <span class="font-bold">${p.name}</span>
                         <div class="text-xs text-gray-500">السعر: ${p.price} | عمولة: ${p.comm}</div>
                     </div>
-                    <button onclick="delProd(${p.id})" class="text-red-500 text-sm hover:text-red-700 transition"><i class="fas fa-trash-alt"></i></button>
+                    <div class="space-x-2 space-x-reverse">
+                        <button onclick="delProd(${p.id})" class="text-red-500 text-sm hover:text-red-700 transition"><i class="fas fa-trash-alt"></i></button>
+                    </div>
                 </div>
             `).join('');
+            
+            updateAdminRequestsList();
+        }
+
+        function updateAdminRequestsList() {
+             const container = document.getElementById('list-admin-reqs');
+             const completedReqs = db.requests.filter(r => r.status === 'completed' || r.status === 'accepted').reverse();
+
+             if(completedReqs.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-4">لا توجد طلبات للمراجعة.</p>`;
+                return;
+             }
+
+             container.innerHTML = completedReqs.map(r => {
+                const tech = db.users.find(u => u.id === r.technician_id);
+                const statusColor = r.status === 'completed' ? 'text-green-600' : 'text-blue-600';
+                const actionBtn = r.status === 'completed' ? `<button onclick="deleteRequest(${r.id})" class="text-red-500 text-sm hover:text-red-700">حذف</button>` : `<button onclick="deleteRequest(${r.id})" class="text-gray-500 text-sm hover:text-gray-700">إلغاء</button>`;
+
+                return `
+                    <div class="bg-white p-3 rounded shadow-sm border ${r.status === 'completed' ? 'border-green-100' : 'border-blue-100'} flex justify-between items-center">
+                        <div>
+                            <span class="font-bold ${statusColor}">${r.type}</span> 
+                            <span class="text-xs text-gray-500 ml-2">(${r.date})</span>
+                            <div class="text-xs text-gray-700">الفني: ${tech ? tech.name : 'غير محدد'}</div>
+                        </div>
+                        ${actionBtn}
+                    </div>
+                `;
+             }).join('');
+        }
+
+        function deleteRequest(id) {
+            if(confirm('حذف هذا الطلب من السجل؟')) {
+                db.requests = db.requests.filter(r => r.id !== id);
+                save();
+                updateAdminRequestsList();
+                showToast("تم حذف الطلب بنجاح.", 'success');
+            }
         }
 
         function addProd() {
@@ -443,8 +641,8 @@
             const price = parseInt(document.getElementById('adm-price').value.trim());
             const comm = parseInt(document.getElementById('adm-comm').value.trim());
             
-            if(!name || isNaN(price) || isNaN(comm) || price <= 0) {
-                return alert("الرجاء إدخال بيانات صحيحة (الاسم، السعر، العمولة).");
+            if(!name || isNaN(price) || isNaN(comm) || price <= 0 || comm < 0) {
+                return showToast("الرجاء إدخال بيانات صحيحة (الاسم، السعر، العمولة).", 'error');
             }
             
             db.products.push({ id: Date.now(), name, price, comm, img: '📦' });
@@ -453,6 +651,7 @@
             document.getElementById('adm-name').value = '';
             document.getElementById('adm-price').value = '';
             document.getElementById('adm-comm').value = '';
+            showToast("✅ تمت إضافة المنتج بنجاح.", 'success');
         }
 
         function delProd(id) {
@@ -460,13 +659,21 @@
                 db.products = db.products.filter(p => p.id !== id);
                 save();
                 loadAdmin();
-                // تحديث الواجهات الأخرى
+                // تحديث واجهة الزبون (لإزالة المنتج)
                 if (db.current.role === 'client') loadClient();
+                showToast("تم حذف المنتج بنجاح.", 'success');
             }
         }
 
         // بدء التشغيل
-        document.addEventListener('DOMContentLoaded', loadApp);
+        document.addEventListener('DOMContentLoaded', () => {
+             // تحديد قيم Demo Admin لسهولة الاختبار
+            if (!db.users.find(u => u.id === 0 && u.role === "admin")) {
+                db.users.push({ id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1' }); 
+                save();
+            }
+            loadApp();
+        });
 
     </script>
 </body>
