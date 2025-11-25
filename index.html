@@ -150,7 +150,7 @@
                 <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
                     <p class="text-gray-400 text-xs" data-i18n="tech_balance">Available Balance</p>
                     <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">DH</small></h2>
-                    <button onclick="showToast('Withdrawal request sent to management.', 'info')" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> <span data-i18n="tech_withdraw">Withdraw Earnings</span></button>
+                    <button onclick="showToast(t('Withdrawal request sent to management.'), 'info')" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> <span data-i18n="tech_withdraw">Withdraw Earnings</span></button>
                 </div>
                 
                 <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
@@ -219,6 +219,17 @@
             <input id="srv-addr" data-i18n-placeholder="service_addr" placeholder="Detailed Address" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
             <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]" data-i18n="confirm_request">Confirm Request</button>
             <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+        </div>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 bg-black/70 z-[6000] d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-xl mb-4 border-b pb-2 text-blue-900" data-i18n="product_details_title">Product Details</h3>
+            
+            <div id="product-details-content">
+                </div>
+
+            <button onclick="closeProductModal()" class="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-300 transition" data-i18n="close_details_button">Close</button>
         </div>
     </div>
 
@@ -301,6 +312,20 @@
                 'req_closed_success': 'تم إغلاق الطلب بنجاح!',
                 'req_accepted_info': 'تم قبول الطلب. رقم العميل:',
                 'no_requests_log': 'لا توجد طلبات في السجل.',
+                'product_details_title': 'تفاصيل المنتج',
+                'product_name_label': 'الاسم:',
+                'product_price_label': 'سعر العميل:',
+                'product_comm_label': 'عمولة الفني:',
+                'close_details_button': 'إغلاق',
+                'Confirm purchase of': 'تأكيد شراء',
+                'You will earn a commission of': 'ستكسب عمولة قدرها',
+                'added to your balance': 'أضيفت إلى رصيدك',
+                'Account for': 'تم تفعيل حساب',
+                'activated. They can now log in.': 'يمكنه الآن تسجيل الدخول.',
+                'Delete this request permanently from the log?': 'هل تريد حذف هذا الطلب نهائياً من السجل؟',
+                'User deleted successfully.': 'تم حذف المستخدم بنجاح.',
+                'Are you sure you want to permanently delete this user?': 'هل أنت متأكد من حذف هذا المستخدم نهائياً؟',
+                'Product not found.': 'المنتج غير موجود.',
             },
             'fr': {
                 'app_title': 'Honest Sat',
@@ -377,6 +402,20 @@
                 'req_closed_success': 'Demande clôturée avec succès !',
                 'req_accepted_info': 'Demande acceptée. Tél. du client:',
                 'no_requests_log': 'Aucune demande dans le journal.',
+                'product_details_title': 'Détails du Produit',
+                'product_name_label': 'Nom:',
+                'product_price_label': 'Prix Client:',
+                'product_comm_label': 'Commission Technicien:',
+                'close_details_button': 'Fermer',
+                'Confirm purchase of': 'Confirmer l\'achat de',
+                'You will earn a commission of': 'Vous gagnerez une commission de',
+                'added to your balance': 'ajoutés à votre solde',
+                'Account for': 'Compte pour',
+                'activated. They can now log in.': 'activé. Ils peuvent maintenant se connecter.',
+                'Delete this request permanently from the log?': 'Supprimer définitivement cette demande du journal ?',
+                'User deleted successfully.': 'Utilisateur supprimé avec succès.',
+                'Are you sure you want to permanently delete this user?': 'Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?',
+                'Product not found.': 'Produit non trouvé.',
             },
             'en': {
                 'app_title': 'Honest Sat',
@@ -453,6 +492,20 @@
                 'req_closed_success': 'Request closed successfully!',
                 'req_accepted_info': 'Request accepted. Client phone:',
                 'no_requests_log': 'No requests in the log.',
+                'product_details_title': 'Product Details',
+                'product_name_label': 'Name:',
+                'product_price_label': 'Client Price:',
+                'product_comm_label': 'Tech Commission:',
+                'close_details_button': 'Close',
+                'Confirm purchase of': 'Confirm purchase of',
+                'You will earn a commission of': 'You will earn a commission of',
+                'added to your balance': 'added to your balance',
+                'Account for': 'Account for',
+                'activated. They can now log in.': 'activated. They can now log in.',
+                'Delete this request permanently from the log?': 'Delete this request permanently from the log?',
+                'User deleted successfully.': 'User deleted successfully.',
+                'Are you sure you want to permanently delete this user?': 'Are you sure you want to permanently delete this user?',
+                'Product not found.': 'Product not found.',
             }
         };
 
@@ -697,8 +750,9 @@
             document.getElementById('panel-client').classList.remove('d-none');
             clientTab('prod');
             
+            // MODIFIED: Added onclick to open product details modal
             document.getElementById('list-client').innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg">
+                <div onclick="openProductModal(${p.id})" class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg cursor-pointer">
                     ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img mx-auto mb-2">` : `<div class="prod-icon mb-2">${p.icon || '📦'}</div>`}
                     <div class="font-bold text-sm h-10 overflow-hidden">${p.name}</div>
                     <div class="text-blue-600 font-bold mt-2">${p.price} DH</div>
@@ -780,6 +834,49 @@
             save();
             closeModal();
             showToast(t("Request sent successfully! Technicians will be notified."), 'success');
+        }
+        
+        // --- NEW: Product Details Modal Functions ---
+        function openProductModal(productId) {
+            const product = db.products.find(p => p.id === productId);
+            if (!product) {
+                return showToast(t("Product not found."), 'error');
+            }
+
+            const contentDiv = document.getElementById('product-details-content');
+            
+            // Use HTML template for details
+            contentDiv.innerHTML = `
+                <div class="text-center mb-4">
+                    ${product.imgURL ? `<img src="${product.imgURL}" alt="${product.name}" class="prod-img w-24 h-24 mx-auto mb-3 border p-1">` : `<div class="text-6xl mb-3">${product.icon || '📦'}</div>`}
+                </div>
+                
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                        <span class="font-semibold text-gray-600" data-i18n="product_name_label">${t('product_name_label')}</span>
+                        <span class="font-bold text-gray-800">${product.name}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                        <span class="font-semibold text-gray-600" data-i18n="product_price_label">${t('product_price_label')}</span>
+                        <span class="font-bold text-blue-600">${product.price} DH</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                        <span class="font-semibold text-gray-600" data-i18n="product_comm_label">${t('product_comm_label')}</span>
+                        <span class="font-bold text-green-600">${product.comm} DH</span>
+                    </div>
+                </div>
+            `;
+
+            // Apply translations on dynamically injected elements
+            updateUI(currentLang); 
+            
+            document.getElementById('product-modal').classList.remove('d-none');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('d-none');
         }
 
         // --- 6. Technician Functions ---
@@ -984,7 +1081,7 @@
                             <div class="text-xs text-gray-400 mt-1">${t('Registration Date')}: ${u.regDate || 'N/A'}</div>
                         </div>
                         <div class="space-x-2 space-x-reverse">
-                            <button onclick="deleteUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">${t('admin_delete_user')}</button>
+                            <button onclick="deleteUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">${t('delete_button')}</button>
                         </div>
                     </div>
                 `;
