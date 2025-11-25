@@ -1,88 +1,1457 @@
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use App\Models\PurchaseOrder; // تأكد من وجود نموذج PurchaseOrder
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-
-class PurchaseWorkflowController extends Controller
-{
-    /**
-     * [1] وظيفة إرسال الطلب (Submit): ينفذها الفني.
-     * تحديث الحالة وتعيين المدير المُراجع.
-     */
-    public function submitPurchaseOrder(Request $request)
-    {
-        // تحقق من صحة البيانات (يجب تكييفها حسب بياناتك)
-        $request->validate([
-            'description' => 'required|string',
-            'total_amount' => 'required|numeric|min:1',
-        ]);
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="app_title">Honest Sat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* CSS مخصص للتحكم في اتجاه النص وتفاصيل العرض */
+        :root {
+            --direction: rtl; 
+        }
+        [dir="ltr"] {
+            --direction: ltr;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8; /* لون خلفية أفتح */
+            direction: var(--direction);
+        }
+        .d-none { display: none !important; }
+        .grid-cols-auto { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        .prod-img { object-fit: cover; }
+        .space-x-reverse > * { margin-right: 0.5rem; margin-left: 0; }
+        .space-x-reverse > *:first-child { margin-right: 0; }
         
-        // **التحديد الحاسم 1: تحديد هوية المدير**
-        // يجب أن يتم جلب الـ ID الخاص بمدير المشتريات من إعدادات النظام أو قاعدة البيانات
-        $managerId = 5; // 👈 مثال: ID المدير. يجب استبدالها بدالة تجلب ID المدير الفعلي.
-
-        try {
-            $order = PurchaseOrder::create([
-                'submitter_id' => Auth::id(),
-                'approver_id' => $managerId,
-                'status' => 'pending_manager_approval', // 👈 تعيين حالة الطلب بدقة
-                'description' => $request->input('description'),
-                'total_amount' => $request->input('total_amount'),
-            ]);
-
-            return redirect()->back()->with('success', '✅ تم إرسال طلب الشراء. بانتظار تأكيد المدير.');
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', '❌ فشل في إرسال الطلب.');
+        /* تصميم شريط التوست */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
         }
-    }
-
-
-    /**
-     * [2] وظيفة عرض لوحة المدير (Dashboard): ينفذها المدير.
-     * هذا هو الكود الذي يصلح مشكلة "عدم ظهور الطلبات".
-     */
-    public function approvalDashboard()
-    {
-        if (!Auth::check()) {
-            return redirect('/login');
+        .toast {
+            animation: fadeInOut 4s forwards;
+            min-width: 250px;
         }
-
-        $currentManagerId = Auth::id();
-
-        // **التحديد الحاسم 2: الاستعلام الصحيح (Query)**
-        $pendingOrders = PurchaseOrder::where('status', 'pending_manager_approval') 
-                                      ->where('approver_id', $currentManagerId)    
-                                      ->with('submitter') // لجلب اسم الفني
-                                      ->orderBy('id', 'desc')
-                                      ->get();
-
-        return view('manager.approvals_view', [
-            'pendingOrders' => $pendingOrders,
-            'managerName' => Auth::user()->name ?? 'المدير'
-        ]);
-    }
-
-
-    /**
-     * [3] وظيفة تأكيد الطلب (Approve): ينفذها المدير.
-     */
-    public function approveOrder(Request $request, PurchaseOrder $order)
-    {
-        // تحقق من الصلاحيات والحالة قبل التأكيد
-        if ($order->approver_id !== Auth::id() || $order->status !== 'pending_manager_approval') {
-            return back()->with('error', 'غير مصرح لك بتأكيد هذا الطلب أو الطلب مؤكد مسبقاً.');
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(100%); }
+            10% { opacity: 1; transform: translateX(0); }
+            90% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(100%); }
         }
+        /* تصميم البطاقات الإحصائية - إضافة تدرج ولون بارز */
+        .stat-card {
+            background: #ffffff;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 8px; /* شريط جانبي */
+        }
+        .stat-card.yellow::before { background-color: #f59e0b; }
+        .stat-card.green::before { background-color: #10b981; }
+        .stat-card.blue::before { background-color: #3b82f6; }
+        .stat-card.red::before { background-color: #ef4444; }
+        .stat-card.purple::before { background-color: #9333ea; }
 
-        $order->status = 'approved';
-        $order->save();
+        /* تجميل شاشة الدخول */
+        #view-auth {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        }
+    </style>
+</head>
+<body>
 
-        // (اختياري) إرسال إشعار للفني بأن طلبه تم تأكيده
+    <div id="toast-container"></div>
+
+    <div id="view-auth" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md backdrop-blur-sm bg-opacity-95">
+            <h1 class="text-3xl font-black text-center mb-8 text-blue-700" data-i18n="app_title">Honest Sat</h1>
+
+            <div id="auth-login">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800" data-i18n="login_title">تسجيل الدخول 👋</h2>
+                <input id="login-phone" type="number" data-i18n-placeholder="phone_placeholder" placeholder="رقم الهاتف (مثال: 1 للمدير، 2 للتاجر)" class="border p-4 w-full rounded-xl mb-4 bg-gray-50 text-center text-lg focus:ring-2 focus:ring-blue-500 transition" dir="ltr">
+                <input id="login-pass" type="password" data-i18n-placeholder="pass_placeholder" placeholder="كلمة المرور" class="border p-4 w-full rounded-xl mb-6 bg-gray-50 text-center text-lg focus:ring-2 focus:ring-blue-500 transition">
+                <button onclick="tryLogin()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg" data-i18n="login_button">دخول <i class="fas fa-sign-in-alt ml-2"></i></button>
+                <button onclick="toggleAuth(false)" class="w-full text-blue-600 py-3 mt-4 text-sm hover:underline" data-i18n="switch_to_register">ليس لديك حساب؟ سجل الآن</button>
+            </div>
+
+            <div id="auth-register" class="d-none">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800" data-i18n="register_title">تسجيل حساب جديد 📝</h2>
+                <input id="register-name" type="text" data-i18n-placeholder="name_placeholder" placeholder="اسمك الكامل" class="border p-3 w-full rounded-lg mb-3 bg-gray-50 focus:ring-2 focus:ring-green-500">
+                <input id="register-phone" type="number" data-i18n-placeholder="phone_placeholder" placeholder="رقم الهاتف" class="border p-3 w-full rounded-lg mb-3 bg-gray-50 text-center focus:ring-2 focus:ring-green-500" dir="ltr">
+                <input id="register-pass" type="password" data-i18n-placeholder="pass_placeholder" placeholder="كلمة المرور" class="border p-3 w-full rounded-lg mb-4 bg-gray-50 focus:ring-2 focus:ring-green-500">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-600 mb-2" data-i18n="register_as">أرغب بالتسجيل كـ:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="role" value="client" checked class="peer hidden">
+                            <div class="border p-3 rounded-xl text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm transition font-semibold hover:border-blue-600" data-i18n="role_client">👤 عميل</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="role" value="tech" class="peer hidden">
+                            <div class="border p-3 rounded-xl text-center peer-checked:bg-green-600 peer-checked:text-white text-sm transition font-semibold hover:border-green-600" data-i18n="role_tech">🔧 فني</div>
+                        </label>
+                         <label class="cursor-pointer">
+                            <input type="radio" name="role" value="merchant" class="peer hidden">
+                            <div class="border p-3 rounded-xl text-center peer-checked:bg-purple-600 peer-checked:text-white text-sm transition font-semibold hover:border-purple-600" data-i18n="role_merchant">🏪 تاجر</div>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition shadow-lg" data-i18n="register_button">تسجيل <i class="fas fa-user-plus ml-2"></i></button>
+                <button onclick="toggleAuth(true)" class="w-full text-green-600 py-3 mt-4 text-sm hover:underline" data-i18n="switch_to_login">لديك حساب؟ سجل الدخول</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="min-h-screen d-none p-4 lg:p-8">
         
-        return back()->with('success', '✅ تم تأكيد طلب الشراء بنجاح.');
-    }
-}
+        <header class="bg-white p-4 rounded-2xl shadow-xl flex justify-between items-center mb-8 sticky top-0 z-10">
+            <h1 class="text-xl md:text-2xl font-black text-blue-700" data-i18n="app_title">Honest Sat</h1>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <span id="user-welcome" class="text-sm font-semibold text-gray-700 hidden sm:block"></span>
+                <button onclick="changeLanguage()" class="text-gray-500 hover:text-blue-600 transition text-sm flex items-center gap-1">
+                    <i class="fas fa-globe"></i> <span id="lang-indicator">EN</span>
+                </button>
+                <button onclick="logout()" class="bg-red-500 text-white p-2 px-4 rounded-xl hover:bg-red-600 transition text-sm flex items-center gap-1 font-semibold">
+                    <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline" data-i18n="logout_button">خروج</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto">
+
+            <div id="panel-client" class="d-none">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="stat-card blue p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="client_total_orders">إجمالي الطلبات</p>
+                        <p id="client-total-orders" class="text-3xl font-bold text-blue-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card yellow p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="client_pending_orders">طلبات معلقة</p>
+                        <p id="client-pending-orders" class="text-3xl font-bold text-yellow-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card green p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="client_completed_orders">طلبات مكتملة</p>
+                        <p id="client-completed-orders" class="text-3xl font-bold text-green-700 mt-2">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-2xl mb-8 border-b-8 border-blue-500">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-700 flex items-center gap-2"><i class="fas fa-tools"></i> <span data-i18n="client_service_title">طلب خدمة صيانة/تركيب</span></h2>
+                    <select id="service-type" class="border p-3 w-full rounded-xl mb-3 bg-gray-50 focus:ring-2 focus:ring-blue-500">
+                        <option value="" disabled selected data-i18n="select_service">--- اختر نوع الخدمة المطلوبة ---</option>
+                        <option value="Installation" data-i18n="service_installation">تركيب جهاز جديد</option>
+                        <option value="Repair" data-i18n="service_repair">صيانة/إصلاح طبق</option>
+                        <option value="Settings" data-i18n="service_settings">ضبط الإعدادات والقنوات</option>
+                    </select>
+                    <textarea id="service-details" data-i18n-placeholder="service_details_placeholder" placeholder="وصف تفصيلي للمشكلة والعنوان الدقيق" rows="3" class="border p-3 w-full rounded-xl mb-4 bg-gray-50 focus:ring-2 focus:ring-blue-500"></textarea>
+                    <button onclick="submitServiceRequest()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-md" data-i18n="submit_service_button">إرسال طلب الخدمة <i class="fas fa-paper-plane ml-2"></i></button>
+                </div>
+
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold mb-5 text-blue-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-shopping-cart"></i> <span data-i18n="client_products_title">تصفح المنتجات وطلب الشراء</span></h2>
+                    <div id="list-client-products" class="grid grid-cols-auto gap-6">
+                        </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold mb-5 text-blue-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-history"></i> <span data-i18n="client_orders_title">طلباتي السابقة (خدمة وشراء)</span></h2>
+                    <div id="list-client-orders" class="space-y-4">
+                        </div>
+                </div>
+
+            </div>
+
+            <div id="panel-tech" class="d-none">
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card green p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="tech_total_balance">رصيدي الحالي</p>
+                        <p id="tech-balance" class="text-3xl font-bold text-green-700 mt-2">0.00 د.إ</p>
+                    </div>
+                    <div class="stat-card purple p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="tech_expected_commission">عمولة متوقعة</p>
+                        <p id="tech-expected-commission" class="text-3xl font-bold text-purple-700 mt-2">0.00 د.إ</p>
+                    </div>
+                    <div class="stat-card blue p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="tech_completed_orders">طلبات مكتملة</p>
+                        <p id="tech-completed-count" class="text-3xl font-bold text-blue-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card red p-5 rounded-xl shadow-lg flex flex-col justify-between">
+                        <button onclick="openWithdrawalModal()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md" data-i18n="tech_withdraw_button">طلب سحب رصيد</button>
+                        <p id="tech-pending-withdrawals" class="text-sm text-gray-500 mt-3 text-center" data-i18n="tech_pending_requests">طلبات السحب المعلقة: 0</p>
+                    </div>
+                </div>
+
+                <div class="mb-8 bg-white p-6 rounded-3xl shadow-2xl border-b-8 border-yellow-500">
+                    <h2 class="text-2xl font-bold mb-5 text-yellow-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-list-ul"></i> <span data-i18n="tech_pending_jobs">طلبات العمل المتاحة</span></h2>
+                    <div id="list-tech-pending-jobs" class="space-y-4">
+                        </div>
+                </div>
+
+                <div class="mb-8 bg-white p-6 rounded-3xl shadow-2xl border-b-8 border-green-500">
+                    <h2 class="text-2xl font-bold mb-5 text-green-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-clipboard-check"></i> <span data-i18n="tech_my_jobs">مهامي الحالية والمكتملة</span></h2>
+                    <div id="list-tech-my-jobs" class="space-y-4">
+                        </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold mb-5 text-green-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-satellite-dish"></i> <span data-i18n="client_products_title">طلب عمولة المنتجات</span></h2>
+                    <div id="list-tech-products" class="grid grid-cols-auto gap-6">
+                        </div>
+                </div>
+
+            </div>
+
+            <div id="panel-merchant" class="d-none">
+                <h2 class="text-2xl font-black mb-6 text-purple-700" data-i18n="merchant_panel_title">لوحة تحكم التاجر <i class="fas fa-store ml-2"></i></h2>
+
+                <div class="bg-white p-6 rounded-3xl shadow-2xl mb-8 border-b-8 border-purple-500">
+                    <h3 class="text-xl font-bold mb-4 text-purple-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-plus-circle"></i> <span data-i18n="merchant_add_prod">إضافة منتج خاص</span></h3>
+                    
+                    <input id="merch-name" data-i18n-placeholder="admin_prod_name" placeholder="اسم المنتج" class="border p-3 w-full rounded-xl mb-3 bg-gray-50 focus:ring-2 focus:ring-purple-500">
+                    <textarea id="merch-desc" data-i18n-placeholder="admin_prod_desc" placeholder="وصف المنتج التفصيلي" rows="3" class="border p-3 w-full rounded-xl mb-3 bg-gray-50 focus:ring-2 focus:ring-purple-500"></textarea>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <input id="merch-price" data-i18n-placeholder="admin_prod_price" placeholder="سعر العميل" type="number" class="border p-3 w-full rounded-xl bg-gray-50 focus:ring-2 focus:ring-purple-500">
+                        <input id="merch-comm" data-i18n-placeholder="admin_prod_comm" placeholder="عمولة الفني" type="number" class="border p-3 w-full rounded-xl bg-gray-50 focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    
+                    <label class="block text-sm font-bold text-gray-700 mb-1" data-i18n="admin_prod_image_file">صورة المنتج</label>
+                    <input type="file" id="merch-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-2 border p-3 rounded-xl bg-gray-50">
+                    <input id="merch-imgurl" data-i18n-placeholder="admin_prod_image_url" placeholder="أو أدخل رابط الصورة المباشر" class="border p-3 w-full rounded-xl mb-4 text-xs bg-gray-50" dir="ltr"> 
+                    
+                    <button onclick="addMerchantProduct()" class="w-full bg-purple-600 text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition shadow-md" data-i18n="admin_add_prod">إضافة المنتج <i class="fas fa-box-open ml-2"></i></button>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-2xl border-b-8 border-yellow-500">
+                    <h4 class="text-xl font-bold mb-4 text-gray-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-cubes"></i> <span id="merch-prod-header" data-i18n="my_products_count">منتجاتي الحالية (0)</span></h4>
+                    <div id="list-merchant-products" class="space-y-3">
+                        </div>
+                </div>
+            </div>
+
+            <div id="panel-admin" class="d-none">
+                
+                <h2 class="text-3xl font-black mb-6 text-red-700" data-i18n="admin_panel_title">لوحة تحكم المدير 👑</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                    <div class="stat-card yellow p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="admin_users_count">إجمالي المستخدمين</p>
+                        <p id="admin-user-count" class="text-3xl font-bold text-yellow-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card green p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="admin_pending_activations">طلب تفعيل</p>
+                        <p id="admin-pending-users" class="text-3xl font-bold text-green-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card blue p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="admin_open_jobs">طلبات صيانة مفتوحة</p>
+                        <p id="admin-open-jobs-count" class="text-3xl font-bold text-blue-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card red p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="admin_withdrawal_requests">طلبات سحب الرصيد</p>
+                        <p id="admin-withdrawal-requests-count" class="text-3xl font-bold text-red-700 mt-2">0</p>
+                    </div>
+                    <div class="stat-card purple p-5 rounded-xl shadow-lg">
+                        <p class="text-sm text-gray-500" data-i18n="admin_total_commission_paid">إجمالي العمولات المدفوعة</p>
+                        <p id="admin-total-commission-paid" class="text-2xl font-bold text-purple-700 mt-2">0.00 د.إ</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded-3xl shadow-2xl mb-6 border-b-8 border-red-500">
+                        <h3 class="text-xl font-bold mb-4 text-red-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-boxes"></i> <span data-i18n="admin_products_title">إدارة منتجات النظام (الرئيسية)</span></h3>
+                        
+                        <input id="admin-prod-name" data-i18n-placeholder="admin_prod_name" placeholder="اسم المنتج" class="border p-3 w-full rounded-xl mb-2 bg-gray-50 focus:ring-2 focus:ring-red-500">
+                        <textarea id="admin-prod-desc" data-i18n-placeholder="admin_prod_desc" placeholder="وصف المنتج التفصيلي" rows="2" class="border p-3 w-full rounded-xl mb-3 bg-gray-50 focus:ring-2 focus:ring-red-500"></textarea>
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <input id="admin-prod-price" data-i18n-placeholder="admin_prod_price" placeholder="سعر العميل" type="number" class="border p-3 w-full rounded-xl bg-gray-50 focus:ring-2 focus:ring-red-500">
+                            <input id="admin-prod-comm" data-i18n-placeholder="admin_prod_comm" placeholder="عمولة الفني" type="number" class="border p-3 w-full rounded-xl bg-gray-50 focus:ring-2 focus:ring-red-500">
+                        </div>
+
+                        <label class="block text-sm font-bold text-gray-700 mb-1" data-i18n="admin_prod_image_file">صورة المنتج</label>
+                        <input type="file" id="admin-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-2 border p-3 rounded-xl bg-gray-50">
+                        <input id="admin-prod-imgurl" data-i18n-placeholder="admin_prod_image_url" placeholder="أو أدخل رابط الصورة المباشر" class="border p-3 w-full rounded-xl mb-4 text-xs bg-gray-50" dir="ltr"> 
+                        
+                        <button onclick="addProd()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md" data-i18n="admin_add_prod">إضافة المنتج <i class="fas fa-plus ml-2"></i></button>
+                        
+                        <div id="list-admin-products" class="mt-6 space-y-3">
+                            <h4 class="font-bold text-gray-700 border-t pt-3" data-i18n="admin_current_products">المنتجات الحالية:</h4>
+                            </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-3xl shadow-2xl mb-6 border-b-8 border-yellow-500">
+                        <h3 class="text-xl font-bold mb-4 text-yellow-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-users-cog"></i> <span data-i18n="admin_user_management">إدارة المستخدمين</span></h3>
+                        <div id="list-admin-users" class="space-y-3">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl shadow-2xl border-b-8 border-green-500 mb-6">
+                    <h3 class="text-xl font-bold mb-4 text-green-700 border-b pb-3 flex items-center gap-2"><i class="fas fa-money-bill-wave"></i> <span data-i18n="admin_finance_management">إدارة الشؤون المالية</span></h3>
+                    
+                    <div class="mb-5">
+                        <h4 class="font-bold mb-3 text-green-600" data-i18n="admin_withdrawal_requests_title">طلبات سحب الرصيد المعلقة:</h4>
+                        <div id="list-admin-withdrawals" class="space-y-3">
+                             </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold mb-3 text-green-600 border-t pt-3" data-i18n="admin_tech_balances">أرصدة الفنيين والتجار:</h4>
+                        <div id="list-admin-balances" class="space-y-3">
+                             </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <div id="product-modal" class="d-none fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-lg animate-fade-in">
+            <div id="product-modal-content">
+                </div>
+            <button onclick="closeModal('product-modal')" class="w-full mt-5 bg-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 transition" data-i18n="close_button">إغلاق</button>
+        </div>
+    </div>
+    
+    <div id="withdrawal-modal" class="d-none fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm animate-fade-in">
+            <h3 class="text-xl font-bold mb-4 border-b pb-2 text-red-600" data-i18n="tech_withdraw_title">طلب سحب الرصيد</h3>
+            <p id="withdraw-current-balance" class="mb-4 text-lg font-semibold text-gray-700 text-center p-2 bg-yellow-100 rounded-lg"></p>
+            <input id="withdraw-amount" type="number" data-i18n-placeholder="withdraw_amount_placeholder" placeholder="المبلغ المطلوب سحبه" class="border p-3 w-full rounded-xl mb-3 bg-gray-50 text-center focus:ring-2 focus:ring-red-500">
+            <textarea id="withdraw-details" data-i18n-placeholder="withdraw_details_placeholder" placeholder="بيانات الدفع (الحساب المصرفي/رقم المحفظة)" rows="3" class="border p-3 w-full rounded-xl mb-4 bg-gray-50 focus:ring-2 focus:ring-red-500"></textarea>
+            <button onclick="submitWithdrawalRequest()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-md" data-i18n="submit_withdraw_button">إرسال طلب السحب</button>
+            <button onclick="closeModal('withdrawal-modal')" class="w-full text-gray-500 py-2 mt-3 text-sm hover:underline" data-i18n="cancel_button">إلغاء</button>
+        </div>
+    </div>
+
+    <script>
+        
+        // =========================================================================
+        // قاعدة البيانات المحلية والبيانات الافتراضية
+        // =========================================================================
+        
+        // عمولة ثابتة لخدمة الصيانة (إضافة جديدة)
+        const SERVICE_COMMISSION = 50; 
+        
+        function getSafeData(key, defaultValue) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : defaultValue;
+            } catch (e) {
+                console.error("Error retrieving data from localStorage for key:", key, e);
+                return defaultValue;
+            }
+        }
+
+        function save() {
+            try {
+                localStorage.setItem('sf_users_v6', JSON.stringify(db.users));
+                localStorage.setItem('sf_prods_v6', JSON.stringify(db.products));
+                localStorage.setItem('sf_orders_v6', JSON.stringify(db.orders));
+                localStorage.setItem('sf_withdraws_v6', JSON.stringify(db.withdrawals));
+            } catch (e) {
+                console.error("Error saving data to localStorage:", e);
+            }
+        }
+        
+        const defaultImageUrl = 'https://picsum.photos/seed/';
+        
+        let db = {
+            users: getSafeData('sf_users_v6', [
+                {id: 1, name: 'المدير العام', phone: '1', pass: '1', role: 'admin', balance: 0, isActive: true},
+                {id: 2, name: 'تاجر المحل التجريبي', phone: '2', pass: '2', role: 'merchant', balance: 0, isActive: true},
+                {id: 3, name: 'الفني التجريبي', phone: '3', pass: '3', role: 'tech', balance: 100, isActive: true}, // إضافة رصيد افتراضي للاختبار
+                {id: 4, name: 'العميل التجريبي', phone: '4', pass: '4', role: 'client', balance: 0, isActive: true},
+            ]),
+            products: getSafeData('sf_prods_v6', [
+                {id:1, name:'جهاز استقبال Echolink HD', description: 'ريسيفر عالي الجودة يدعم جميع الأقمار.', price:200, comm:40, imgURL: defaultImageUrl + '1/300/200', icon:'📡', vendorId: 0}, 
+                {id:2, name:'LNB عالي الكفاءة', description: 'لإشارة قوية ومستقرة، يدعم HD.', price:50, comm:10, imgURL: defaultImageUrl + '2/300/200', icon:'📡', vendorId: 0},
+                {id:3, name:'تجديد اشتراك IPTV لمدة سنة', description: 'جميع القنوات الرياضية والترفيهية.', price:350, comm:70, imgURL: defaultImageUrl + '3/300/200', icon:'📺', vendorId: 0}
+            ]),
+            orders: getSafeData('sf_orders_v6', []),
+            withdrawals: getSafeData('sf_withdraws_v6', []),
+            current: null, 
+            lang: localStorage.getItem('app_lang') || 'ar' 
+        };
+
+        // =========================================================================
+        // الترجمة
+        // =========================================================================
+
+        const translations = {
+            'ar': {
+                // ... (الترجمات العربية كما هي، مع إضافة المفاتيح الجديدة)
+                'app_title': 'Honest Sat - إدارة الخدمات',
+                'login_title': 'تسجيل الدخول',
+                'register_title': 'تسجيل حساب جديد',
+                'phone_placeholder': 'رقم الهاتف',
+                'pass_placeholder': 'كلمة المرور',
+                'name_placeholder': 'اسمك الكامل',
+                'login_button': 'دخول',
+                'logout_button': 'خروج',
+                'switch_to_register': 'ليس لديك حساب؟ سجل الآن',
+                'switch_to_login': 'لديك حساب؟ سجل الدخول',
+                'role_client': '👤 عميل',
+                'role_tech': '🔧 فني',
+                'role_merchant': '🏪 تاجر',
+                'register_as': 'أرغب بالتسجيل كـ:',
+                'reg_success': 'تم تسجيل حسابك بنجاح. يرجى انتظار تفعيل المدير.',
+                'login_fail': 'فشل تسجيل الدخول. تأكد من رقم الهاتف وكلمة المرور.',
+                'account_inactive': 'حسابك غير مُفعّل. يرجى التواصل مع الإدارة.',
+                'client_service_title': '🛠️ طلب خدمة صيانة/تركيب',
+                'select_service': '--- اختر نوع الخدمة المطلوبة ---',
+                'service_installation': 'تركيب جهاز جديد',
+                'service_repair': 'صيانة/إصلاح طبق',
+                'service_settings': 'ضبط الإعدادات والقنوات',
+                'service_details_placeholder': 'وصف تفصيلي للمشكلة والعنوان الدقيق',
+                'submit_service_button': 'إرسال طلب الخدمة',
+                'service_request_success': 'تم إرسال طلب الخدمة بنجاح. سيتم التواصل معك قريباً.',
+                'client_products_title': '🛒 تصفح المنتجات وطلب الشراء',
+                'client_orders_title': '📜 طلباتي السابقة (خدمة وشراء)',
+                'order_status_pending': '🟡 معلق',
+                'order_status_accepted': '🟠 مقبول (جاري التنفيذ)',
+                'order_status_completed': '🟢 مكتمل',
+                'order_status_rejected': '⚫️ مرفوض/ملغي',
+                'order_type_service': 'طلب صيانة',
+                'order_type_buy': 'طلب شراء',
+                'order_details': 'التفاصيل:',
+                'order_tech': 'الفني:',
+                'price': 'السعر:',
+                'tech_balance_title': 'عمولتك:',
+                'tech_total_balance': 'رصيدي الحالي',
+                'tech_completed_orders': 'مهام/طلبات مكتملة',
+                'tech_expected_commission': 'عمولة متوقعة (قيد المراجعة)', // NEW
+                'tech_withdraw_button': 'طلب سحب رصيد',
+                'tech_pending_requests': 'طلبات السحب المعلقة: ',
+                'tech_pending_jobs': '🛠️ طلبات العمل المتاحة',
+                'tech_my_jobs': '📝 مهامي الحالية والمكتملة',
+                'accept_job_button': 'قبول الطلب',
+                'complete_job_button': 'المهمة اكتملت',
+                'job_accepted': 'تم قبول الطلب بنجاح. معلومات العميل متاحة.',
+                'job_completed': 'تم إرسال إشعار اكتمال المهمة. سيتم إضافة العمولة بعد موافقة المدير.',
+                'tech_withdraw_title': 'طلب سحب الرصيد',
+                'withdraw_amount_placeholder': 'المبلغ المطلوب سحبه',
+                'withdraw_details_placeholder': 'بيانات الدفع (الحساب المصرفي/رقم المحفظة)',
+                'submit_withdraw_button': 'إرسال طلب السحب',
+                'withdraw_success': 'تم إرسال طلب السحب. سيتم معالجته قريباً.',
+                'withdraw_low_balance': 'رصيدك غير كافٍ.',
+                'close_button': 'إغلاق',
+                'cancel_button': 'إلغاء',
+                'admin_panel_title': 'لوحة تحكم المدير',
+                'admin_welcome': 'أهلاً بك',
+                'admin_users_count': 'إجمالي المستخدمين',
+                'admin_pending_activations': 'طلب تفعيل',
+                'admin_open_jobs': 'طلبات صيانة مفتوحة',
+                'admin_withdrawal_requests': 'طلبات سحب الرصيد',
+                'admin_total_commission_paid': 'إجمالي العمولات المدفوعة', // NEW
+                'admin_products_title': '📦 إدارة منتجات النظام (الرئيسية)',
+                'admin_prod_name': 'اسم المنتج',
+                'admin_prod_desc': 'وصف المنتج',
+                'admin_prod_price': 'سعر العميل',
+                'admin_prod_comm': 'عمولة الفني',
+                'admin_prod_image_file': 'صورة المنتج',
+                'admin_prod_image_url': 'أو أدخل رابط الصورة المباشر',
+                'admin_add_prod': 'إضافة المنتج',
+                'admin_current_products': 'المنتجات الحالية:',
+                'admin_user_management': '👤 إدارة المستخدمين',
+                'activate_button': 'تفعيل',
+                'admin_finance_management': '💰 إدارة الشؤون المالية',
+                'admin_withdrawal_requests_title': 'طلبات سحب الرصيد المعلقة:',
+                'admin_tech_balances': 'أرصدة الفنيين والتجار:',
+                'approve_withdrawal': 'موافقة وسحب',
+                'manual_deduct': 'خصم يدوي',
+                'deduct_amount': 'المبلغ المراد خصمه',
+                'deduct_reason': 'سبب الخصم',
+                'apply_deduction': 'تطبيق الخصم',
+                'product_vendor_label': 'البائع:',
+                'merchant_panel_title': 'لوحة تحكم التاجر',
+                'merchant_add_prod': '➕ إضافة منتج خاص',
+                'merchant_my_prods': '📦 منتجاتي الخاصة',
+                'merchant_prod_added': 'تم إضافة المنتج بنجاح. سيتم عرضه للعملاء.',
+                'my_products_count': 'منتجاتي الحالية',
+                'No products added yet.': 'لم يتم إضافة منتجات بعد.',
+                'delete_button': 'حذف',
+                'Please enter valid data (Name, Price, Commission).': 'الرجاء إدخال بيانات صحيحة (الاسم، السعر، العمولة).',
+                'client_total_orders': 'إجمالي الطلبات', // NEW
+                'client_pending_orders': 'طلبات معلقة', // NEW
+                'client_completed_orders': 'طلبات مكتملة', // NEW
+                'order_accepted_commission_success': 'تم احتساب عمولة قدرها {amount} د.إ لـ {techName} على الطلب.', // NEW
+                'order_completed_by_tech': 'الطلب مكتمل من الفني (بانتظار الموافقة المالية)' // NEW
+            },
+            'en': {
+                'app_title': 'Honest Sat - Services Management',
+                'login_title': 'Login',
+                'register_title': 'Register New Account',
+                'phone_placeholder': 'Phone Number (e.g., 1 for Admin, 2 for Merchant)',
+                'pass_placeholder': 'Password',
+                'name_placeholder': 'Full Name',
+                'login_button': 'Login',
+                'logout_button': 'Logout',
+                'switch_to_register': 'Don\'t have an account? Register now',
+                'switch_to_login': 'Have an account? Login',
+                'role_client': '👤 Client',
+                'role_tech': '🔧 Technician',
+                'role_merchant': '🏪 Merchant',
+                'register_as': 'I want to register as:',
+                'reg_success': 'Your account has been registered. Please wait for Admin activation.',
+                'login_fail': 'Login failed. Check your phone number and password.',
+                'account_inactive': 'Your account is not active. Please contact administration.',
+                'client_service_title': '🛠️ Request Maintenance/Installation Service',
+                'select_service': '--- Select Required Service Type ---',
+                'service_installation': 'New Device Installation',
+                'service_repair': 'Dish Maintenance/Repair',
+                'service_settings': 'Settings and Channel Adjustment',
+                'service_details_placeholder': 'Detailed description of the issue and exact address',
+                'submit_service_button': 'Submit Service Request',
+                'service_request_success': 'Service request submitted successfully. You will be contacted soon.',
+                'client_products_title': '🛒 Browse and Request Products',
+                'client_orders_title': '📜 My Previous Orders (Service and Purchase)',
+                'order_status_pending': '🟡 Pending',
+                'order_status_accepted': '🟠 Accepted (In Progress)',
+                'order_status_completed': '🟢 Completed',
+                'order_status_rejected': '⚫️ Rejected/Cancelled',
+                'order_type_service': 'Service Request',
+                'order_type_buy': 'Purchase Request',
+                'order_details': 'Details:',
+                'order_tech': 'Technician:',
+                'price': 'Price:',
+                'tech_balance_title': 'Your Commission:',
+                'tech_total_balance': 'My Current Balance',
+                'tech_completed_orders': 'Completed Jobs/Orders',
+                'tech_expected_commission': 'Expected Commission (Under Review)',
+                'tech_withdraw_button': 'Request Withdrawal',
+                'tech_pending_requests': 'Pending Withdrawal Requests: ',
+                'tech_pending_jobs': '🛠️ Available Job Requests',
+                'tech_my_jobs': '📝 My Current & Completed Jobs',
+                'accept_job_button': 'Accept Job',
+                'complete_job_button': 'Job Completed',
+                'job_accepted': 'Job accepted successfully. Client info is available.',
+                'job_completed': 'Job completion notification sent. Commission will be added after Admin approval.',
+                'tech_withdraw_title': 'Withdrawal Request',
+                'withdraw_amount_placeholder': 'Amount to Withdraw',
+                'withdraw_details_placeholder': 'Payment Details (Bank Account/Wallet No.)',
+                'submit_withdraw_button': 'Submit Withdrawal Request',
+                'withdraw_success': 'Withdrawal request submitted. It will be processed soon.',
+                'withdraw_low_balance': 'Insufficient balance.',
+                'close_button': 'Close',
+                'cancel_button': 'Cancel',
+                'admin_panel_title': 'Admin Panel',
+                'admin_welcome': 'Welcome',
+                'admin_users_count': 'Total Users',
+                'admin_pending_activations': 'Activation Requests',
+                'admin_open_jobs': 'Open Service Requests',
+                'admin_withdrawal_requests': 'Withdrawal Requests',
+                'admin_total_commission_paid': 'Total Commission Paid',
+                'admin_products_title': '📦 System Product Management (Main)',
+                'admin_prod_name': 'Product Name',
+                'admin_prod_desc': 'Product Description',
+                'admin_prod_price': 'Client Price',
+                'admin_prod_comm': 'Tech Commission',
+                'admin_prod_image_file': 'Product Image File',
+                'admin_prod_image_url': 'Or enter direct image URL',
+                'admin_add_prod': 'Add Product',
+                'admin_current_products': 'Current Products:',
+                'admin_user_management': '👤 User Management',
+                'activate_button': 'Activate',
+                'admin_finance_management': '💰 Financial Management',
+                'admin_withdrawal_requests_title': 'Pending Withdrawal Requests:',
+                'admin_tech_balances': 'Tech & Merchant Balances:',
+                'approve_withdrawal': 'Approve & Deduct',
+                'manual_deduct': 'Manual Deduction',
+                'deduct_amount': 'Amount to Deduct',
+                'deduct_reason': 'Reason for Deduction',
+                'apply_deduction': 'Apply Deduction',
+                'product_vendor_label': 'Vendor:',
+                'merchant_panel_title': 'Merchant Panel',
+                'merchant_add_prod': '➕ Add Your Product',
+                'merchant_my_prods': '📦 My Products',
+                'merchant_prod_added': 'Product added successfully. It will be displayed to clients.',
+                'my_products_count': 'My Current Products',
+                'No products added yet.': 'No products added yet.',
+                'delete_button': 'Delete',
+                'Please enter valid data (Name, Price, Commission).': 'Please enter valid data (Name, Price, Commission).',
+                'client_total_orders': 'Total Orders',
+                'client_pending_orders': 'Pending Orders',
+                'client_completed_orders': 'Completed Orders',
+                'order_accepted_commission_success': 'Commission of {amount} AED successfully credited to {techName} for the order.',
+                'order_completed_by_tech': 'Order completed by technician (pending financial approval)'
+            }
+        };
+
+        const t = (key, replacements = {}) => {
+            let message = translations[db.lang][key] || key;
+            for (const [placeholder, value] of Object.entries(replacements)) {
+                message = message.replace(`{${placeholder}}`, value);
+            }
+            return message;
+        };
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                element.innerText = t(key);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                element.placeholder = t(key);
+            });
+            document.documentElement.lang = db.lang;
+            document.documentElement.dir = (db.lang === 'ar' ? 'rtl' : 'ltr');
+            document.getElementById('lang-indicator').innerText = (db.lang === 'ar' ? 'EN' : 'AR');
+        }
+
+        function changeLanguage() {
+            db.lang = (db.lang === 'ar' ? 'en' : 'ar');
+            localStorage.setItem('app_lang', db.lang);
+            applyTranslations();
+        }
+
+
+        // =========================================================================
+        // التوثيق وتسجيل الدخول / الخروج
+        // =========================================================================
+
+        function toggleAuth(isLogin) {
+            document.getElementById('auth-login').classList.toggle('d-none', !isLogin);
+            document.getElementById('auth-register').classList.toggle('d-none', isLogin);
+        }
+
+        function tryLogin() {
+            const phone = document.getElementById('login-phone').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+
+            const user = db.users.find(u => u.phone === phone && u.pass === pass);
+
+            if (user) {
+                if (user.isActive) {
+                    // تحديث بيانات المستخدم الحالي من DB لضمان أحدث رصيد وحالة
+                    db.current = {...user}; 
+                    localStorage.setItem('sf_current', JSON.stringify(db.current));
+                    loadApp();
+                } else {
+                    showToast(t('account_inactive'), 'warning');
+                }
+            } else {
+                showToast(t('login_fail'), 'error');
+            }
+        }
+
+        function tryRegister() {
+            const name = document.getElementById('register-name').value.trim();
+            const phone = document.getElementById('register-phone').value.trim();
+            const pass = document.getElementById('register-pass').value.trim();
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            if (!name || !phone || !pass || db.users.some(u => u.phone === phone)) {
+                return showToast(t("الرجاء إدخال بيانات صالحة ورقم هاتف غير مستخدم."), 'error');
+            }
+
+            db.users.push({
+                id: Date.now(),
+                name,
+                phone,
+                pass,
+                role,
+                balance: 0,
+                isActive: (role === 'client' || role === 'tech') ? false : true // الفني والعميل يحتاجان تفعيل
+            });
+            save();
+            
+            showToast(t('reg_success'), 'success');
+            toggleAuth(true);
+        }
+
+        function logout() {
+            db.current = null;
+            localStorage.removeItem('sf_current');
+            document.getElementById('view-auth').classList.remove('d-none');
+            document.getElementById('main-app').classList.add('d-none');
+            // مسح حقول الدخول
+            document.getElementById('login-phone').value = '';
+            document.getElementById('login-pass').value = '';
+        }
+
+        // =========================================================================
+        // إدارة التوجه (Routing) والتحميل
+        // =========================================================================
+
+        function loadApp() {
+            const u = db.current;
+            if (!u) return logout();
+
+            // تحديث بيانات المستخدم الحالي من الـ DB لضمان أحدث رصيد وحالة
+            const userInDb = db.users.find(user => user.id === u.id);
+            if (!userInDb || !userInDb.isActive) return logout(); // إذا تم إلغاء التفعيل أثناء الجلسة
+            db.current = {...userInDb}; // تحديث البيانات الحالية
+
+            document.getElementById('view-auth').classList.add('d-none');
+            document.getElementById('main-app').classList.remove('d-none');
+
+            let roleText = u.role === 'client' ? t('role_client') : u.role === 'tech' ? t('role_tech') : u.role === 'merchant' ? t('role_merchant') : t('admin_panel_title');
+            let welcomeText = `${t('admin_welcome')}: ${u.name} (${roleText})`;
+            document.getElementById('user-welcome').innerText = welcomeText;
+
+            // إخفاء جميع اللوحات أولاً
+            document.getElementById('panel-client').classList.add('d-none');
+            document.getElementById('panel-tech').classList.add('d-none');
+            document.getElementById('panel-admin').classList.add('d-none');
+            document.getElementById('panel-merchant').classList.add('d-none');
+
+            // عرض اللوحة المناسبة
+            if (u.role === 'client') loadClient();
+            else if (u.role === 'tech') loadTech();
+            else if (u.role === 'admin') loadAdmin();
+            else if (u.role === 'merchant') loadMerchant();
+            
+            applyTranslations();
+        }
+
+        // =========================================================================
+        // لوحة العميل (Client)
+        // =========================================================================
+
+        function loadClient() {
+            document.getElementById('panel-client').classList.remove('d-none');
+            updateClientStats(); // NEW
+            loadClientProducts();
+            loadClientOrders();
+        }
+        
+        function updateClientStats() {
+            const u = db.current;
+            const clientOrders = db.orders.filter(o => o.clientId === u.id);
+            const totalOrders = clientOrders.length;
+            const pendingOrders = clientOrders.filter(o => o.status === 'pending' || o.status === 'accepted').length;
+            const completedOrders = clientOrders.filter(o => o.status === 'completed').length;
+            
+            document.getElementById('client-total-orders').innerText = totalOrders;
+            document.getElementById('client-pending-orders').innerText = pendingOrders;
+            document.getElementById('client-completed-orders').innerText = completedOrders;
+        }
+
+        function submitServiceRequest() {
+            const serviceType = document.getElementById('service-type').value;
+            const details = document.getElementById('service-details').value.trim();
+            const u = db.current;
+
+            if (!serviceType || !details) {
+                return showToast("الرجاء تحديد نوع الخدمة وإدخال التفاصيل.", 'error');
+            }
+
+            db.orders.push({
+                id: Date.now(),
+                clientId: u.id,
+                clientName: u.name,
+                clientPhone: u.phone,
+                type: 'service',
+                details: details,
+                serviceType: serviceType,
+                serviceCommission: SERVICE_COMMISSION, // عمولة ثابتة للخدمة
+                status: 'pending',
+                date: new Date().toLocaleString()
+            });
+            save();
+
+            document.getElementById('service-details').value = '';
+            document.getElementById('service-type').value = '';
+
+            loadClientOrders();
+            updateClientStats();
+            updateAdminDashboard(); // تحديث لوحة المدير
+            loadTechJobs(); // تحديث لوحة الفنيين
+            
+            showToast(t('service_request_success'), 'success');
+        }
+
+        function loadClientProducts() {
+            const container = document.getElementById('list-client-products');
+            container.innerHTML = db.products.map(p => `
+                <div class="bg-white p-4 rounded-xl shadow-lg border-2 border-transparent hover:border-blue-500 transition cursor-pointer flex flex-col justify-between" onclick="openProductModal(${p.id}, 'client')">
+                    <img src="${p.imgURL}" alt="${p.name}" class="prod-img w-full h-32 object-cover rounded-lg mb-3">
+                    <div>
+                        <p class="font-bold text-gray-800 truncate">${p.name}</p>
+                        <p class="text-sm text-gray-500">${t('product_vendor_label')} ${getVendorName(p.vendorId)}</p>
+                        <p class="text-lg text-blue-600 font-black mt-2">${p.price} د.إ</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getVendorName(vendorId) {
+            const vendor = db.users.find(u => u.id === vendorId);
+            return vendor ? vendor.name : 'النظام';
+        }
+
+        function loadClientOrders() {
+            const container = document.getElementById('list-client-orders');
+            const u = db.current;
+            const clientOrders = db.orders.filter(o => o.clientId === u.id).sort((a, b) => b.id - a.id);
+
+            container.innerHTML = clientOrders.map(o => {
+                const isCompleted = o.status === 'completed';
+                const statusClass = isCompleted ? 'bg-green-100 text-green-700' :
+                                   o.status === 'accepted' ? 'bg-orange-100 text-orange-700' :
+                                   o.status === 'rejected' ? 'bg-gray-100 text-gray-700' :
+                                   'bg-yellow-100 text-yellow-700';
+
+                let techName = '';
+                if (o.techId) {
+                    const tech = db.users.find(u => u.id === o.techId);
+                    techName = tech ? tech.name : 'N/A';
+                }
+
+                return `
+                    <div class="bg-white p-4 rounded-xl shadow-md border-r-8 ${isCompleted ? 'border-green-500' : 'border-blue-500'}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-lg text-gray-800">${o.type === 'service' ? t('order_type_service') : t('order_type_buy')}: ${o.type === 'service' ? t(`service_${o.serviceType.toLowerCase()}`) : o.productName}</span>
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full ${statusClass} whitespace-nowrap">${t(`order_status_${o.status}`)}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">${t('order_details')} ${o.details.substring(0, 100)}${o.details.length > 100 ? '...' : ''}</p>
+                        ${o.techId ? `<p class="text-xs text-gray-500 mt-2"><i class="fas fa-wrench ml-1"></i> ${t('order_tech')} ${techName}</p>` : ''}
+                        ${o.productPrice ? `<p class="text-xs text-gray-500 mt-1"><i class="fas fa-tag ml-1"></i> ${t('price')} ${o.productPrice} د.إ</p>` : ''}
+                        <p class="text-xs text-gray-400 mt-2">${o.date}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buyProduct(productId) {
+            const product = db.products.find(p => p.id === productId);
+            const u = db.current;
+
+            db.orders.push({
+                id: Date.now(),
+                clientId: u.id,
+                clientName: u.name,
+                clientPhone: u.phone,
+                type: 'buy',
+                productName: product.name,
+                productId: productId,
+                productPrice: product.price,
+                productComm: product.comm,
+                vendorId: product.vendorId, 
+                details: `طلب شراء المنتج: ${product.name}`,
+                status: 'pending',
+                date: new Date().toLocaleString()
+            });
+            save();
+            closeModal('product-modal');
+            loadClientOrders();
+            updateClientStats();
+            showToast(t('تم تسجيل طلب شراء ') + product.name + t('. سيتم التواصل معك.'), 'success');
+            updateAdminDashboard(); 
+        }
+
+        // =========================================================================
+        // لوحة الفني (Technician)
+        // =========================================================================
+
+        function loadTech() {
+            document.getElementById('panel-tech').classList.remove('d-none');
+            updateTechStats();
+            loadTechJobs();
+            loadTechProducts();
+        }
+        
+        function updateTechStats() {
+            const u = db.current;
+            const tech = db.users.find(user => user.id === u.id);
+
+            // إحصائيات الأوامر المكتملة
+            const completedJobs = db.orders.filter(o => o.techId === u.id && o.status === 'completed');
+            
+            // عمولة متوقعة (التي لم يتم مراجعتها بعد)
+            const expectedCommission = completedJobs.reduce((sum, order) => {
+                const commission = order.type === 'service' ? order.serviceCommission : order.productComm;
+                return sum + commission;
+            }, 0);
+
+            // تحديث رصيد الفني (يجب أن يتم تحديثه في DB عند الموافقة)
+            if (tech) {
+                document.getElementById('tech-balance').innerText = `${tech.balance.toFixed(2)} د.إ`;
+                db.current.balance = tech.balance;
+            }
+
+            const pendingWithdrawals = db.withdrawals.filter(w => w.userId === u.id && w.status === 'pending').length;
+            
+            document.getElementById('tech-expected-commission').innerText = `${expectedCommission.toFixed(2)} د.إ`;
+            document.getElementById('tech-completed-count').innerText = completedJobs.length;
+            document.getElementById('tech-pending-withdrawals').innerText = `${t('tech_pending_requests')} ${pendingWithdrawals}`;
+        }
+        
+        function loadTechProducts() {
+            const container = document.getElementById('list-tech-products');
+            container.innerHTML = db.products.map(p => `
+                <div class="bg-white p-4 rounded-xl shadow-lg border-2 border-transparent hover:border-green-500 transition cursor-pointer flex flex-col justify-between" onclick="openProductModal(${p.id}, 'tech')">
+                    <img src="${p.imgURL}" alt="${p.name}" class="prod-img w-full h-32 object-cover rounded-lg mb-3">
+                    <div>
+                        <p class="font-bold text-gray-800 truncate">${p.name}</p>
+                        <p class="text-sm text-gray-500">${t('product_vendor_label')} ${getVendorName(p.vendorId)}</p>
+                        <p class="text-lg text-blue-600 font-black mt-2">${p.price} د.إ</p>
+                        <p class="text-sm text-green-600 font-semibold mt-1"><i class="fas fa-hand-holding-usd ml-1"></i> ${t('tech_balance_title')} ${p.comm} د.إ</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadTechJobs() {
+            const pendingContainer = document.getElementById('list-tech-pending-jobs');
+            const myJobsContainer = document.getElementById('list-tech-my-jobs');
+            const u = db.current;
+            
+            // 1. طلبات متاحة للقبول (خدمة فقط، معلقة، وليس لها فني معين)
+            const availableJobs = db.orders.filter(o => o.type === 'service' && o.status === 'pending' && !o.techId);
+
+            pendingContainer.innerHTML = availableJobs.length === 0 
+                ? `<p class="text-center text-gray-500 py-4 p-4 bg-gray-50 rounded-xl">لا توجد طلبات عمل متاحة حالياً. <i class="far fa-frown"></i></p>`
+                : availableJobs.map(o => `
+                    <div class="bg-white p-4 rounded-xl shadow border-r-8 border-yellow-500 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-gray-800">${t('order_type_service')}: ${t(`service_${o.serviceType.toLowerCase()}`)}</p>
+                            <p class="text-sm text-gray-600">${o.details.substring(0, 50)}${o.details.length > 50 ? '...' : ''}</p>
+                            <p class="text-xs text-gray-400 mt-1">${o.date}</p>
+                        </div>
+                        <button onclick="acceptJob(${o.id})" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition text-sm font-semibold" data-i18n="accept_job_button">قبول الطلب</button>
+                    </div>
+                `).join('');
+
+            // 2. مهامي الحالية والمكتملة (خدمة فقط)
+            const myJobs = db.orders.filter(o => o.techId === u.id && o.type === 'service').sort((a, b) => b.id - a.id);
+
+            myJobsContainer.innerHTML = myJobs.length === 0 
+                ? `<p class="text-center text-gray-500 py-4 p-4 bg-gray-50 rounded-xl">لم تقم بقبول أي مهمة بعد. <i class="far fa-grin"></i></p>`
+                : myJobs.map(o => {
+                    const isCompleted = o.status === 'completed';
+                    const statusClass = isCompleted ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+                    const borderClass = isCompleted ? 'border-green-500' : 'border-orange-500';
+
+                    return `
+                        <div class="bg-white p-4 rounded-xl shadow border-r-8 ${borderClass}">
+                            <div class="flex justify-between items-center mb-2">
+                                <p class="font-bold text-gray-800">${t('order_type_service')}: ${t(`service_${o.serviceType.toLowerCase()}`)}</p>
+                                <span class="text-xs font-semibold px-3 py-1 rounded-full ${statusClass}">${isCompleted ? t('order_status_completed') : t('order_status_accepted')}</span>
+                            </div>
+                            ${o.status === 'accepted' ? `
+                                <div class="bg-orange-50 p-3 rounded-xl mt-3 mb-4 border border-orange-200">
+                                    <p class="font-semibold text-orange-700 mb-1"><i class="fas fa-user-circle mr-1"></i> معلومات العميل (للتواصل):</p>
+                                    <p class="text-sm">الاسم: ${o.clientName}</p>
+                                    <p class="text-sm">الهاتف: <span dir="ltr" class="font-mono">${o.clientPhone}</span></p>
+                                    <p class="text-sm mt-2 font-semibold text-gray-600"><i class="fas fa-map-marker-alt mr-1"></i> ${t('order_details')} ${o.details}</p>
+                                </div>
+                                
+                                <button onclick="completeJob(${o.id})" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-md" data-i18n="complete_job_button">المهمة اكتملت <i class="fas fa-check ml-2"></i></button>
+                            ` : `
+                                <p class="text-sm text-gray-600 mt-2">${t('order_details')} ${o.details}</p>
+                                <p class="text-xs text-green-700 font-semibold mt-2">${isCompleted ? t('order_completed_by_tech') : ''}</p>
+                            `}
+                            <p class="text-xs text-gray-400 mt-2">${o.date}</p>
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        function acceptJob(orderId) {
+            const order = db.orders.find(o => o.id === orderId);
+            const u = db.current;
+
+            if (order && order.status === 'pending') {
+                order.techId = u.id;
+                order.status = 'accepted';
+                save();
+                loadTechJobs();
+                updateAdminDashboard(); // لتحديث لوحة المدير (وظائف مفتوحة)
+                showToast(t('job_accepted'), 'success');
+            }
+        }
+
+        function completeJob(orderId) {
+            const order = db.orders.find(o => o.id === orderId);
+
+            if (order && order.status === 'accepted') {
+                order.status = 'completed'; // تغيير الحالة إلى مكتمل مباشرة للمراجعة المالية
+                save();
+                loadTechJobs();
+                updateTechStats(); // لتحديث الرصيد المتوقع
+                updateAdminDashboard(); // لتنبيه المدير بالطلب
+                showToast(t('job_completed'), 'success');
+            }
+        }
+        
+        function openWithdrawalModal() {
+            const u = db.current;
+            const tech = db.users.find(user => user.id === u.id);
+
+            document.getElementById('withdraw-current-balance').innerText = `${t('tech_total_balance')}: ${tech.balance.toFixed(2)} د.إ`;
+            document.getElementById('withdrawal-modal').classList.remove('d-none');
+        }
+
+        function submitWithdrawalRequest() {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value.trim());
+            const details = document.getElementById('withdraw-details').value.trim();
+            const u = db.current;
+            const tech = db.users.find(user => user.id === u.id);
+
+            if (isNaN(amount) || amount <= 0) {
+                return showToast("الرجاء إدخال مبلغ صحيح.", 'error');
+            }
+            if (amount > tech.balance) {
+                return showToast(t('withdraw_low_balance'), 'error');
+            }
+            if (!details) {
+                return showToast("الرجاء إدخال بيانات الدفع.", 'error');
+            }
+
+            db.withdrawals.push({
+                id: Date.now(),
+                userId: u.id,
+                userName: u.name,
+                role: u.role,
+                amount: amount,
+                details: details,
+                status: 'pending',
+                date: new Date().toLocaleString()
+            });
+            save();
+            
+            // مسح الحقول
+            document.getElementById('withdraw-amount').value = '';
+            document.getElementById('withdraw-details').value = '';
+
+            closeModal('withdrawal-modal');
+            updateTechStats();
+            updateAdminDashboard();
+            showToast(t('withdraw_success'), 'success');
+        }
+
+        // =========================================================================
+        // لوحة التاجر (Merchant) 
+        // =========================================================================
+
+        function loadMerchant() {
+            document.getElementById('panel-merchant').classList.remove('d-none');
+            const u = db.current;
+            let welcomeText = `${t('admin_welcome')}: ${u.name} (${t('role_merchant')})`;
+            document.getElementById('user-welcome').innerText = welcomeText;
+            updateMerchantProductList();
+        }
+
+        async function addMerchantProduct() {
+            const u = db.current;
+            const name = document.getElementById('merch-name').value.trim();
+            const desc = document.getElementById('merch-desc').value.trim(); 
+            const price = parseFloat(document.getElementById('merch-price').value.trim());
+            const comm = parseFloat(document.getElementById('merch-comm').value.trim());
+            const imgURL = document.getElementById('merch-imgurl').value.trim(); 
+            const imageFile = document.getElementById('merch-image-file').files[0];
+            
+            if(!name || isNaN(price) || isNaN(comm) || price <= 0 || comm < 0) {
+                return showToast(t("Please enter valid data (Name, Price, Commission)."), 'error');
+            }
+
+            let finalImageLink = imgURL || defaultImageUrl + Date.now() + '/300/200';
+            
+            // محاكاة تحميل الصورة - في التطبيق الحقيقي يجب تحميل الصورة إلى خادم
+            if (imageFile) {
+                finalImageLink = URL.createObjectURL(imageFile);
+            } 
+            
+            db.products.push({ 
+                id: Date.now(), 
+                name, 
+                description: desc, 
+                price, 
+                comm, 
+                imgURL: finalImageLink, 
+                icon: '🏪', 
+                vendorId: u.id 
+            });
+            save();
+            
+            updateMerchantProductList();
+            loadClientProducts(); // تحديث قائمة المنتجات للعملاء
+            loadTechProducts();   // تحديث قائمة المنتجات للفنيين
+            
+            // مسح الحقول
+            document.getElementById('merch-name').value = '';
+            document.getElementById('merch-desc').value = ''; 
+            document.getElementById('merch-price').value = '';
+            document.getElementById('merch-comm').value = '';
+            document.getElementById('merch-imgurl').value = ''; 
+            document.getElementById('merch-image-file').value = ''; 
+
+            showToast(t("merchant_prod_added"), 'success');
+        }
+
+        function updateMerchantProductList() {
+            const container = document.getElementById('list-merchant-products');
+            const u = db.current;
+            
+            const merchantProds = db.products.filter(p => p.vendorId === u.id);
+            
+            document.getElementById('merch-prod-header').innerHTML = `<i class="fas fa-cubes"></i> ${t('my_products_count')} (${merchantProds.length})`;
+
+            if (merchantProds.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-4">${t('No products added yet.')}</p>`;
+                return;
+            }
+
+            container.innerHTML = merchantProds.map(p => `
+                <div class="bg-white p-4 rounded-xl flex justify-between items-center border border-purple-200 shadow-sm transition hover:shadow-md">
+                    <div class="flex items-center gap-3">
+                         <img src="${p.imgURL}" alt="${p.name}" class="prod-img w-12 h-12 rounded-lg">
+                        <div>
+                            <span class="font-bold text-gray-800">${p.name}</span>
+                            <div class="text-xs text-gray-500 mt-1">${t('admin_prod_price')}: ${p.price} | ${t('admin_prod_comm')}: ${p.comm}</div>
+                        </div>
+                    </div>
+                    <div class="space-x-2 space-x-reverse">
+                        <button onclick="delProd(${p.id})" class="text-red-500 text-sm p-2 rounded-full hover:bg-red-100 transition" data-i18n="delete_button"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // =========================================================================
+        // لوحة المدير (Admin)
+        // =========================================================================
+
+        function loadAdmin() {
+            document.getElementById('panel-admin').classList.remove('d-none');
+            updateAdminDashboard();
+        }
+
+        function updateAdminDashboard() {
+            // الإحصائيات العامة
+            const pendingUsers = db.users.filter(u => !u.isActive).length;
+            const openJobs = db.orders.filter(o => o.type === 'service' && o.status !== 'completed' && o.status !== 'rejected').length;
+            const withdrawalRequests = db.withdrawals.filter(w => w.status === 'pending').length;
+
+            // الإحصائيات المالية
+            const totalCommissionPaid = db.withdrawals.filter(w => w.status === 'approved').reduce((sum, w) => sum + w.amount, 0);
+
+            document.getElementById('admin-user-count').innerText = db.users.length;
+            document.getElementById('admin-pending-users').innerText = pendingUsers;
+            document.getElementById('admin-open-jobs-count').innerText = openJobs;
+            document.getElementById('admin-withdrawal-requests-count').innerText = withdrawalRequests;
+            document.getElementById('admin-total-commission-paid').innerText = `${totalCommissionPaid.toFixed(2)} د.إ`;
+
+            loadAdminProducts();
+            loadAdminUsers();
+            loadAdminWithdrawals();
+            loadAdminBalances();
+        }
+
+        async function addProd() {
+            const name = document.getElementById('admin-prod-name').value.trim();
+            const desc = document.getElementById('admin-prod-desc').value.trim(); 
+            const price = parseFloat(document.getElementById('admin-prod-price').value.trim());
+            const comm = parseFloat(document.getElementById('admin-prod-comm').value.trim());
+            const imgURL = document.getElementById('admin-prod-imgurl').value.trim(); 
+            const imageFile = document.getElementById('admin-image-file').files[0];
+
+            if(!name || isNaN(price) || isNaN(comm) || price <= 0 || comm < 0) {
+                return showToast(t("Please enter valid data (Name, Price, Commission)."), 'error');
+            }
+
+            let finalImageLink = imgURL || defaultImageUrl + Date.now() + '/300/200';
+            
+            if (imageFile) {
+                finalImageLink = URL.createObjectURL(imageFile);
+            } 
+
+            db.products.push({ 
+                id: Date.now(), 
+                name, 
+                description: desc, 
+                price, 
+                comm, 
+                imgURL: finalImageLink, 
+                icon: '📦',
+                vendorId: 0 
+            });
+            save();
+
+            // مسح الحقول
+            document.getElementById('admin-prod-name').value = '';
+            document.getElementById('admin-prod-desc').value = ''; 
+            document.getElementById('admin-prod-price').value = '';
+            document.getElementById('admin-prod-comm').value = '';
+            document.getElementById('admin-prod-imgurl').value = ''; 
+            document.getElementById('admin-image-file').value = ''; 
+
+            loadAdminProducts();
+            loadClientProducts(); 
+            loadTechProducts();   
+
+            showToast("تم إضافة المنتج بنجاح.", 'success');
+        }
+
+        function delProd(productId) {
+            db.products = db.products.filter(p => p.id !== productId);
+            save();
+            loadAdminProducts();
+            loadClientProducts();
+            loadTechProducts();
+            updateMerchantProductList(); 
+            showToast("تم حذف المنتج بنجاح.", 'success');
+        }
+
+        function loadAdminProducts() {
+            const container = document.getElementById('list-admin-products');
+            
+            const systemProds = db.products.filter(p => p.vendorId === 0);
+
+            container.innerHTML = systemProds.map(p => `
+                <div class="bg-gray-50 p-3 rounded-xl flex justify-between items-center border border-red-200 shadow-sm transition hover:shadow-md">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.imgURL}" alt="${p.name}" class="prod-img w-10 h-10 rounded-lg">
+                        <div>
+                            <span class="font-bold text-gray-800">${p.name}</span>
+                            <div class="text-xs text-gray-500 mt-1">${t('admin_prod_price')}: ${p.price} | ${t('admin_prod_comm')}: ${p.comm}</div>
+                        </div>
+                    </div>
+                    <button onclick="delProd(${p.id})" class="text-red-500 text-sm p-2 rounded-full hover:bg-red-100 transition" data-i18n="delete_button"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function loadAdminUsers() {
+            const container = document.getElementById('list-admin-users');
+            const list = db.users.filter(u => u.role !== 'admin').sort((a, b) => a.isActive - b.isActive); 
+
+            container.innerHTML = list.map(u => `
+                <div class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border-l-8 ${u.isActive ? 'border-green-500' : 'border-red-500'}">
+                    <div>
+                        <span class="font-bold">${u.name}</span>
+                        <div class="text-xs text-gray-500">${u.phone} | ${u.role === 'client' ? t('role_client') : u.role === 'tech' ? t('role_tech') : t('role_merchant')}</div>
+                    </div>
+                    ${!u.isActive ? `<button onclick="activateUser(${u.id})" class="bg-green-600 text-white px-3 py-1 rounded-xl hover:bg-green-700 transition text-sm font-semibold" data-i18n="activate_button">تفعيل</button>` : `<i class="fas fa-check-circle text-green-500 text-xl"></i>`}
+                </div>
+            `).join('');
+        }
+
+        function activateUser(userId) {
+            const user = db.users.find(u => u.id === userId);
+            if (user) {
+                user.isActive = true;
+                save();
+                updateAdminDashboard();
+                showToast(`تم تفعيل حساب ${user.name} بنجاح.`, 'success');
+            }
+        }
+        
+        // **وظيفة جديدة**: موافقة المدير على الطلب المكتمل وإضافة العمولة
+        function approveOrderCommission(orderId) {
+            const order = db.orders.find(o => o.id === orderId);
+            const tech = db.users.find(u => u.id === order.techId);
+            
+            if (order && order.status === 'completed' && tech) {
+                // تحديد العمولة: (عمولة خدمة ثابتة) أو (عمولة منتج محددة)
+                const commission = order.type === 'service' ? order.serviceCommission : order.productComm;
+                
+                // إضافة العمولة إلى رصيد الفني
+                tech.balance += commission;
+                
+                // وضع علامة على الطلب كـ 'مُحتسب عمولته' لتجنب الاحتساب المزدوج
+                order.isCommissioned = true; 
+                save();
+                
+                // إعادة تحميل جميع اللوحات ذات الصلة
+                updateAdminDashboard();
+                loadTechJobs();
+                updateTechStats(); // لتحديث رصيد الفني إذا كان هو المستخدم الحالي
+                
+                showToast(t('order_accepted_commission_success', {amount: commission.toFixed(2), techName: tech.name}), 'success');
+            }
+        }
+
+        function loadAdminWithdrawals() {
+            const container = document.getElementById('list-admin-withdrawals');
+            const pending = db.withdrawals.filter(w => w.status === 'pending').sort((a, b) => a.id - b.id);
+
+            container.innerHTML = pending.length === 0 
+                ? `<p class="text-center text-gray-400 py-2">لا توجد طلبات سحب معلقة.</p>`
+                : pending.map(w => `
+                    <div class="bg-yellow-50 p-4 rounded-xl flex justify-between items-center border border-yellow-300 shadow-md">
+                        <div>
+                            <p class="font-bold text-gray-800">${w.userName} (${w.role === 'tech' ? t('role_tech') : t('role_merchant')})</p>
+                            <p class="text-xl text-red-600 font-black mt-1">${w.amount.toFixed(2)} د.إ</p>
+                            <p class="text-xs text-gray-500 mt-2">${w.details}</p>
+                        </div>
+                        <button onclick="approveWithdrawal(${w.id})" class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition text-sm font-semibold" data-i18n="approve_withdrawal">موافقة وسحب</button>
+                    </div>
+                `).join('');
+        }
+        
+        function approveWithdrawal(withdrawalId) {
+            const withdrawal = db.withdrawals.find(w => w.id === withdrawalId);
+            const user = db.users.find(u => u.id === withdrawal.userId);
+            
+            if (withdrawal && user) {
+                if (user.balance >= withdrawal.amount) {
+                    user.balance -= withdrawal.amount;
+                    withdrawal.status = 'approved';
+                    save();
+                    updateAdminDashboard();
+                    if (db.current.id === user.id) updateTechStats(); 
+                    showToast(`تمت الموافقة على سحب ${withdrawal.amount.toFixed(2)} لـ ${user.name}.`, 'success');
+                } else {
+                    showToast(`رصيد ${user.name} غير كافٍ.`, 'error');
+                }
+            }
+        }
+
+        function loadAdminBalances() {
+            const container = document.getElementById('list-admin-balances');
+            const techAndMerchants = db.users.filter(u => u.role === 'tech' || u.role === 'merchant').sort((a, b) => b.balance - a.balance);
+            
+            // **طلبات العمولات المكتملة (بانتظار الموافقة المالية)**
+            const pendingCommissionOrders = db.orders.filter(o => o.status === 'completed' && !o.isCommissioned && o.techId);
+
+            let html = '';
+
+            if (pendingCommissionOrders.length > 0) {
+                html += `<div class="bg-blue-50 p-3 rounded-xl mb-4 border border-blue-200">
+                            <h5 class="font-bold text-blue-700 mb-2">طلبات عمولة للمراجعة (${pendingCommissionOrders.length}):</h5>`;
+                
+                html += pendingCommissionOrders.map(o => {
+                    const tech = db.users.find(u => u.id === o.techId);
+                    const commission = o.type === 'service' ? o.serviceCommission : o.productComm;
+                    return `
+                        <div class="flex justify-between items-center text-sm py-2 border-t border-blue-100">
+                            <span>${tech.name} | ${o.type === 'service' ? 'خدمة ' + t(`service_${o.serviceType.toLowerCase()}`) : 'شراء ' + o.productName}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-green-700">${commission.toFixed(2)} د.إ</span>
+                                <button onclick="approveOrderCommission(${o.id})" class="text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition">دفع عمولة</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                html += `</div>`;
+            } else {
+                 html += `<p class="text-center text-gray-400 py-2">لا توجد عمولات جديدة للمراجعة.</p>`;
+            }
+
+            // **عرض أرصدة الفنيين والتجار**
+            html += `<h5 class="font-bold text-green-700 mb-3 border-t pt-3">أرصدة المستخدمين الحالية:</h5>`;
+            html += techAndMerchants.map(u => `
+                <div class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border-l-4 border-green-500 transition hover:shadow-md">
+                    <div>
+                        <span class="font-bold">${u.name} (${u.role === 'tech' ? t('role_tech') : t('role_merchant')})</span>
+                        <p class="text-xl font-black text-green-700 mt-1">${u.balance.toFixed(2)} د.إ</p>
+                    </div>
+                    </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // =========================================================================
+        // الدعم والمودال (النوافذ المنبثقة)
+        // =========================================================================
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.add('d-none');
+        }
+
+        function openProductModal(productId, role) {
+            const product = db.products.find(p => p.id === productId);
+            const modalContent = document.getElementById('product-modal-content');
+
+            if (!product) return;
+            
+            const vendor = db.users.find(u => u.id === product.vendorId);
+            const vendorName = vendor ? vendor.name : t('النظام');
+
+            modalContent.innerHTML = `
+                <h3 class="text-3xl font-black mb-4 text-blue-700">${product.name}</h3>
+                <img src="${product.imgURL}" alt="${product.name}" class="w-full h-48 object-cover rounded-xl mb-4 shadow-lg">
+                <p class="text-gray-700 mb-4 text-sm">${product.description}</p>
+                
+                <div class="p-3 bg-gray-50 rounded-xl mb-3">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold text-gray-600" data-i18n="product_vendor_label">${t('product_vendor_label')}</span>
+                        <span class="font-bold text-gray-800">${vendorName}</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-blue-50 rounded-xl mb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="font-semibold text-gray-600" data-i18n="price">${t('price')}</span>
+                        <span class="text-2xl font-black text-blue-600">${product.price} د.إ</span>
+                    </div>
+                </div>
+                
+                ${role === 'tech' ? `
+                    <div class="p-3 bg-green-50 rounded-xl mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="font-semibold text-gray-600" data-i18n="tech_balance_title">${t('tech_balance_title')}</span>
+                            <span class="text-xl font-bold text-green-600">${product.comm} د.إ</span>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <button onclick="buyProduct(${product.id})" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-md" data-i18n="client_products_title">طلب شراء المنتج <i class="fas fa-cart-plus ml-2"></i></button>
+            `;
+
+            applyTranslations(); 
+            document.getElementById('product-modal').classList.remove('d-none');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgColor = 'bg-blue-600';
+            if (type === 'success') bgColor = 'bg-green-600';
+            else if (type === 'error') bgColor = 'bg-red-600';
+            else if (type === 'warning') bgColor = 'bg-yellow-600';
+
+            toast.className = `toast ${bgColor} text-white p-4 rounded-xl shadow-2xl mb-3 text-sm font-semibold`;
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        // =========================================================================
+        // التهيئة
+        // =========================================================================
+
+        function init() {
+            const current = localStorage.getItem('sf_current');
+            if (current) {
+                db.current = JSON.parse(current);
+                loadApp();
+            } else {
+                document.getElementById('view-auth').classList.remove('d-none');
+                applyTranslations();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
