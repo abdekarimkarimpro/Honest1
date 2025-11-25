@@ -3,67 +3,64 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PurchaseOrder; // تأكد أن لديك نموذج (Model) باسم PurchaseOrder
+use App\Models\PurchaseOrder; // تأكد من وجود نموذج PurchaseOrder
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseWorkflowController extends Controller
 {
-    // --- 1. وظيفة إرسال الطلب (ينفذها الفني) ---
-
+    /**
+     * [1] وظيفة إرسال الطلب (Submit): ينفذها الفني.
+     * تحديث الحالة وتعيين المدير المُراجع.
+     */
     public function submitPurchaseOrder(Request $request)
     {
-        // تحقق مبدئي من المصادقة
-        if (!Auth::check()) {
-            return response()->json(['error' => 'الرجاء تسجيل الدخول.'], 401);
-        }
-
-        // بيانات تجريبية (يجب استبدالها ببيانات الـ $request الحقيقية)
-        $description = $request->input('description', 'شراء معدات صيانة.');
-        $totalAmount = $request->input('total_amount', 1500.00);
-
-        // **الإصلاح الأساسي:** تحديد المدير (Approver) والحالة (Status)
-        $managerId = 5; // 👈 قم بتغيير هذا إلى الـ ID الحقيقي لمدير المشتريات
-        $submitterId = Auth::id();
+        // تحقق من صحة البيانات (يجب تكييفها حسب بياناتك)
+        $request->validate([
+            'description' => 'required|string',
+            'total_amount' => 'required|numeric|min:1',
+        ]);
+        
+        // **التحديد الحاسم 1: تحديد هوية المدير**
+        // يجب أن يتم جلب الـ ID الخاص بمدير المشتريات من إعدادات النظام أو قاعدة البيانات
+        $managerId = 5; // 👈 مثال: ID المدير. يجب استبدالها بدالة تجلب ID المدير الفعلي.
 
         try {
             $order = PurchaseOrder::create([
-                'submitter_id' => $submitterId,
+                'submitter_id' => Auth::id(),
                 'approver_id' => $managerId,
-                'status' => 'pending_manager_approval', // 👈 الحالة الصحيحة والموحدة
-                'description' => $description,
-                'total_amount' => $totalAmount,
+                'status' => 'pending_manager_approval', // 👈 تعيين حالة الطلب بدقة
+                'description' => $request->input('description'),
+                'total_amount' => $request->input('total_amount'),
             ]);
 
-            return response()->json([
-                'message' => '✅ تم إرسال طلب الشراء بنجاح. بانتظار تأكيد المدير.',
-                'order_id' => $order->id
-            ]);
+            return redirect()->back()->with('success', '✅ تم إرسال طلب الشراء. بانتظار تأكيد المدير.');
 
         } catch (\Exception $e) {
-            return response()->json(['error' => '❌ فشل في إرسال الطلب: ' . $e->getMessage()], 500);
+            return redirect()->back()->with('error', '❌ فشل في إرسال الطلب.');
         }
     }
 
 
-    // --- 2. وظيفة عرض الطلبات المعلقة (ينفذها المدير) ---
-
+    /**
+     * [2] وظيفة عرض لوحة المدير (Dashboard): ينفذها المدير.
+     * هذا هو الكود الذي يصلح مشكلة "عدم ظهور الطلبات".
+     */
     public function approvalDashboard()
     {
-        // تحقق من هوية المدير
         if (!Auth::check()) {
             return redirect('/login');
         }
 
         $currentManagerId = Auth::id();
 
-        // **الإصلاح الأهم:** استعلام قاعدة البيانات (Query) الذي يظهر الطلبات المفقودة
-        $pendingOrders = PurchaseOrder::where('status', 'pending_manager_approval') // يجب أن تطابق حالة الإرسال
-                                      ->where('approver_id', $currentManagerId)    // يجب أن يطابق ID المدير المسجل دخوله
+        // **التحديد الحاسم 2: الاستعلام الصحيح (Query)**
+        $pendingOrders = PurchaseOrder::where('status', 'pending_manager_approval') 
+                                      ->where('approver_id', $currentManagerId)    
+                                      ->with('submitter') // لجلب اسم الفني
                                       ->orderBy('id', 'desc')
                                       ->get();
 
-        // تمرير البيانات إلى الواجهة الأمامية (الـ HTML أدناه)
         return view('manager.approvals_view', [
             'pendingOrders' => $pendingOrders,
             'managerName' => Auth::user()->name ?? 'المدير'
@@ -71,19 +68,21 @@ class PurchaseWorkflowController extends Controller
     }
 
 
-    // --- 3. وظيفة تأكيد الطلب (ينفذها المدير) ---
-
+    /**
+     * [3] وظيفة تأكيد الطلب (Approve): ينفذها المدير.
+     */
     public function approveOrder(Request $request, PurchaseOrder $order)
     {
-        // تحقق من الصلاحيات
+        // تحقق من الصلاحيات والحالة قبل التأكيد
         if ($order->approver_id !== Auth::id() || $order->status !== 'pending_manager_approval') {
             return back()->with('error', 'غير مصرح لك بتأكيد هذا الطلب أو الطلب مؤكد مسبقاً.');
         }
 
-        // تحديث الحالة
         $order->status = 'approved';
         $order->save();
 
+        // (اختياري) إرسال إشعار للفني بأن طلبه تم تأكيده
+        
         return back()->with('success', '✅ تم تأكيد طلب الشراء بنجاح.');
     }
 }
