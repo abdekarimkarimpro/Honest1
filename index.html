@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سات فيكس | SatFix (ميزة الموافقة)</title>
+    <title>سات فيكس | SatFix (سجلات الإدارة)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -170,23 +170,28 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
-                    <h3 class="font-bold mb-2 text-blue-700">➕ إضافة منتج جديد</h3>
+                    <h3 class="font-bold mb-3 text-blue-700">👥 سجل جميع المستخدمين</h3>
+                    <div id="list-all-users" class="space-y-2"></div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
+                    <h3 class="font-bold mb-2 text-blue-700">➕ إدارة المنتجات</h3>
                     <input id="adm-name" placeholder="الاسم" class="border p-2 w-full rounded mb-2">
                     <input id="adm-price" placeholder="السعر للزبون" type="number" class="border p-2 w-full rounded mb-2">
                     <input id="adm-comm" placeholder="عمولة الفني" type="number" class="border p-2 w-full rounded mb-3">
                     
                     <label class="block text-sm font-bold text-gray-700 mb-1">صورة المنتج</label>
                     <input type="file" id="adm-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-2 border p-2 rounded-lg bg-gray-50">
-                    
                     <input id="adm-imgurl" placeholder="أو أدخل رابط صورة (URL) مباشر" class="border p-2 w-full rounded mb-3 text-xs" dir="ltr"> 
                     
                     <button onclick="addProd()" class="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800 transition">إضافة المنتج</button>
+                    
+                    <h4 class="font-bold text-gray-700 mt-4 mb-3 border-t pt-3" id="admin-prod-header">📦 المنتجات الحالية (0)</h4>
+                    <div id="list-admin" class="space-y-2"></div>
                 </div>
-                <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" id="admin-prod-header">📦 إدارة المنتجات (0)</h3>
-                <div id="list-admin" class="space-y-2"></div>
 
-                <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2">🛠️ إدارة الطلبات المكتملة</h3>
-                <div id="list-admin-reqs" class="space-y-2"></div>
+                <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2">📜 سجل جميع طلبات الصيانة</h3>
+                <div id="list-all-requests" class="space-y-2"></div>
             </div>
 
         </div>
@@ -196,6 +201,9 @@
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
             <h3 class="font-bold text-lg mb-3">طلب جديد</h3>
             <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50"><option>ضبط إشارة</option><option>تركيب تلفاز</option><option>صيانة عامة</option></select>
+            
+            <input type="tel" id="srv-phone" placeholder="رقم الهاتف للتواصل" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" dir="ltr">
+
             <input id="srv-addr" placeholder="العنوان بالتفصيل" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
             <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">تأكيد الطلب</button>
             <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition">إلغاء</button>
@@ -224,7 +232,7 @@
 
             const toast = document.createElement('div');
             toast.className = `p-4 rounded-xl shadow-xl text-white font-bold text-sm flex items-center gap-3 ${bgColor} transition transform translate-x-full duration-300`;
-            toast.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
+            toast.innerHTML = `<i class="${icon}></i> <span>${message}</span>`;
             
             container.appendChild(toast);
             
@@ -255,7 +263,6 @@
         const defaultImageUrl = 'https://picsum.photos/80/80?random=';
 
         let db = {
-            // تحديث مفتاح المستخدمين إلى v4
             users: getSafeData('sf_users_v4', []),
             products: getSafeData('sf_prods_v3', [
                 {id:1, name:'رسيفر Echolink HD', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
@@ -296,8 +303,17 @@
             if(db.users.find(u => u.phone === phone)) return showToast("رقم الهاتف مستخدم مسبقاً.", 'error');
 
             showLoader();
-            // ** التعديل هنا: isApproved: false للحسابات الجديدة **
-            const user = { id: Date.now(), name, phone, pass, role, wallet: 0, isApproved: false };
+            const user = { 
+                id: Date.now(), 
+                name, 
+                phone, 
+                pass, 
+                role, 
+                wallet: 0, 
+                isApproved: false,
+                // ** إضافة تاريخ التسجيل (Admin/User Register Log) **
+                regDate: new Date().toLocaleDateString('ar-EG') 
+            }; 
             db.users.push(user);
             save();
             
@@ -314,7 +330,6 @@
             const user = db.users.find(u => u.phone === phone && u.pass === pass);
             
             if(user) {
-                // ** التعديل هنا: التحقق من isApproved **
                 if (!user.isApproved && user.role !== 'admin') {
                     hideLoader();
                     return showToast("🚫 حسابك قيد الانتظار. سيتم تفعيله من قبل الإدارة قريباً.", 'error');
@@ -429,7 +444,7 @@
 
         function updateClientRequestsList() {
             const container = document.getElementById('list-client-req');
-            const clientReqs = db.requests.filter(r => r.phone === db.current.phone);
+            const clientReqs = db.requests.filter(r => r.client_id === db.current.id);
 
             if(clientReqs.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تطلب أي خدمات صيانة بعد.</p>`;
@@ -446,7 +461,7 @@
                     <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass} flex justify-between items-center">
                         <div>
                             <div class="font-bold">${r.type}</div>
-                            <div class="text-xs text-gray-500">${r.addr}</div>
+                            <div class="text-xs text-gray-500">${r.addr} | هاتف: ${r.phone}</div>
                         </div>
                         <span class="text-xs font-bold text-gray-700">${statusText}</span>
                     </div>
@@ -454,18 +469,26 @@
             }).join('');
         }
 
-        function openModal() { document.getElementById('modal').classList.remove('d-none'); }
+        function openModal() { 
+            document.getElementById('srv-phone').value = db.current.phone || '';
+            document.getElementById('modal').classList.remove('d-none'); 
+        }
+
         function closeModal() { document.getElementById('modal').classList.add('d-none'); }
 
         function sendReq() {
             const type = document.getElementById('srv-type').value.trim();
+            const phone = document.getElementById('srv-phone').value.trim();
             const addr = document.getElementById('srv-addr').value.trim();
-            if(!addr) return showToast("الرجاء كتابة العنوان.", 'error');
             
+            if(!phone || !addr) return showToast("الرجاء إدخال رقم الهاتف والعنوان.", 'error');
+            if(isNaN(phone) || phone.length < 5) return showToast("رقم الهاتف غير صحيح.", 'error');
+
             db.requests.push({ 
                 id: Date.now(), 
                 client: db.current.name, 
-                phone: db.current.phone,
+                client_id: db.current.id,
+                phone: phone,
                 type, 
                 addr, 
                 status: 'pending',
@@ -507,7 +530,6 @@
             
             for (let key in views) {
                 document.getElementById(views[key]).classList.add('d-none');
-                // إزالة الألوان من جميع الأزرار قبل التحديد
                 document.getElementById(btns[key]).classList.remove('bg-blue-900', 'text-white');
                 document.getElementById(btns[key]).classList.add('text-gray-600'); 
             }
@@ -570,7 +592,7 @@
                             <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'جديد' : 'مقبول'}</span>
                         </div>
                         <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 ml-1"></i> ${r.addr}</div>
-                        <div class="text-xs text-gray-400 mt-1">الزبون: ${r.client}</div>
+                        <div class="text-xs text-gray-400 mt-1">الزبون: ${r.client} | هاتف: ${r.phone}</div>
                         ${btn}
                     </div>
                 `;
@@ -634,10 +656,12 @@
         function loadAdmin() {
             document.getElementById('panel-admin').classList.remove('d-none');
             
-            updatePendingUsersList(); // تحديث قائمة المستخدمين الجدد
+            updatePendingUsersList(); // تحديث قائمة المستخدمين الجدد (مع الموافقة)
+            updateAllUsersList(); // ** جديد: تحديث قائمة كل المستخدمين **
+            updateAdminRequestsList(); // ** جديد: تحديث قائمة كل الطلبات **
             
             // تحديث عدد المنتجات
-            document.getElementById('admin-prod-header').innerHTML = `📦 إدارة المنتجات (${db.products.length})`;
+            document.getElementById('admin-prod-header').innerHTML = `📦 المنتجات الحالية (${db.products.length})`;
             
             // قائمة المنتجات في الإدارة
             document.getElementById('list-admin').innerHTML = db.products.map(p => `
@@ -654,11 +678,54 @@
                     </div>
                 </div>
             `).join('');
-            
-            updateAdminRequestsList();
         }
         
-        // ** دالة جديدة: عرض طلبات تفعيل الحسابات **
+        // ** دالة جديدة: سجل جميع المستخدمين **
+        function updateAllUsersList() {
+            const container = document.getElementById('list-all-users');
+            // استبعاد حساب المدير التجريبي الافتراضي (id: 0)
+            const allUsers = db.users.filter(u => u.id !== 0).sort((a, b) => b.id - a.id); // ترتيب تنازلي حسب الأحدث
+
+            if(allUsers.length === 0) {
+                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">لا يوجد مستخدمون مسجلون بعد.</p>`;
+                 return;
+            }
+
+            container.innerHTML = allUsers.map(u => {
+                const roleText = u.role === 'admin' ? 'مدير' : (u.role === 'tech' ? 'فني 🔧' : 'زبون 👤');
+                const approvalText = u.isApproved ? '✅ مُفَعَّل' : '❌ معلَّق';
+                const approvalColor = u.isApproved ? 'text-green-600' : 'text-red-600';
+                
+                return `
+                    <div class="bg-white p-3 rounded shadow border-l-4 ${u.isApproved ? 'border-green-400' : 'border-yellow-400'} flex justify-between items-center">
+                        <div>
+                            <span class="font-bold">${u.name}</span>
+                            <div class="text-xs text-gray-500">
+                                ${roleText} | هاتف: ${u.phone}
+                                <span class="${approvalColor} font-bold ml-2">${approvalText}</span>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1">تاريخ التسجيل: ${u.regDate || 'غير متوفر'}</div>
+                        </div>
+                        <div class="space-x-2 space-x-reverse">
+                            <button onclick="deleteUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">حذف</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteUser(id) {
+            if(confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) {
+                db.users = db.users.filter(u => u.id !== id);
+                save();
+                updatePendingUsersList(); 
+                updateAllUsersList(); // تحديث القائمة العامة بعد الحذف
+                showToast("تم حذف المستخدم بنجاح.", 'success');
+            }
+        }
+
+
+        // ** دالة طلبات الموافقة (معادة للتنظيم) **
         function updatePendingUsersList() {
             const container = document.getElementById('list-pending-users');
             const pendingUsers = db.users.filter(u => u.role !== 'admin' && u.isApproved === false);
@@ -682,60 +749,72 @@
             `).join('');
         }
         
-        // ** دالة جديدة: قبول المستخدم **
         function approveUser(id) {
             const userIndex = db.users.findIndex(u => u.id === id);
             if (userIndex !== -1) {
                 db.users[userIndex].isApproved = true;
                 save();
                 updatePendingUsersList();
+                updateAllUsersList(); // تحديث القائمة العامة
                 showToast(`✅ تم تفعيل حساب ${db.users[userIndex].name}. يمكنه الآن تسجيل الدخول.`, 'success');
             }
         }
         
-        // ** دالة جديدة: رفض المستخدم (حذفه) **
         function rejectUser(id) {
             if(confirm('هل أنت متأكد من رفض وحذف هذا المستخدم؟')) {
                 db.users = db.users.filter(u => u.id !== id);
                 save();
                 updatePendingUsersList();
+                updateAllUsersList(); // تحديث القائمة العامة
                 showToast("تم حذف المستخدم بنجاح.", 'success');
             }
         }
 
 
+        // ** دالة جديدة: سجل جميع الطلبات **
         function updateAdminRequestsList() {
-             const container = document.getElementById('list-admin-reqs');
-             const completedReqs = db.requests.filter(r => r.status === 'completed' || r.status === 'accepted').reverse();
+             const container = document.getElementById('list-all-requests');
+             // جلب جميع الطلبات وترتيبها تنازلياً حسب التاريخ
+             const allReqs = db.requests.slice().reverse(); 
 
-             if(completedReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-4">لا توجد طلبات للمراجعة.</p>`;
+             if(allReqs.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-4">لا توجد طلبات في السجل.</p>`;
                 return;
              }
 
-             container.innerHTML = completedReqs.map(r => {
+             container.innerHTML = allReqs.map(r => {
                 const tech = db.users.find(u => u.id === r.technician_id);
-                const statusColor = r.status === 'completed' ? 'text-green-600' : 'text-blue-600';
-                const actionBtn = r.status === 'completed' ? `<button onclick="deleteRequest(${r.id})" class="text-red-500 text-sm hover:text-red-700">حذف</button>` : `<button onclick="deleteRequest(${r.id})" class="text-gray-500 text-sm hover:text-gray-700">إلغاء</button>`;
+                
+                let statusColor, statusText;
+                if(r.status === 'completed') { statusColor = 'border-green-500'; statusText = 'مُكتَمِل'; }
+                else if(r.status === 'accepted') { statusColor = 'border-blue-500'; statusText = 'مَقبول (قيد العمل)'; }
+                else { statusColor = 'border-yellow-500'; statusText = 'قيد الانتظار'; }
+                
+                const techInfo = tech ? `<span class="text-xs text-gray-700">| فني: ${tech.name}</span>` : '';
 
                 return `
-                    <div class="bg-white p-3 rounded shadow-sm border ${r.status === 'completed' ? 'border-green-100' : 'border-blue-100'} flex justify-between items-center">
+                    <div class="bg-white p-3 rounded shadow-sm border-r-4 ${statusColor} flex justify-between items-center">
                         <div>
-                            <span class="font-bold ${statusColor}">${r.type}</span> 
+                            <span class="font-bold">${r.type}</span> 
                             <span class="text-xs text-gray-500 ml-2">(${r.date})</span>
-                            <div class="text-xs text-gray-700">الفني: ${tech ? tech.name : 'غير محدد'}</div>
+                            <div class="text-xs text-gray-600">الزبون: ${r.client} | هاتف: ${r.phone} ${techInfo}</div>
+                            <div class="text-xs text-gray-400 mt-1">العنوان: ${r.addr}</div>
                         </div>
-                        ${actionBtn}
+                        <div class="text-center">
+                            <span class="text-xs font-bold text-gray-700">${statusText}</span>
+                            <button onclick="deleteRequest(${r.id})" class="block mt-1 text-red-500 text-xs hover:text-red-700">حذف</button>
+                        </div>
                     </div>
                 `;
              }).join('');
         }
 
         function deleteRequest(id) {
-            if(confirm('حذف هذا الطلب من السجل؟')) {
+            if(confirm('حذف هذا الطلب من السجل نهائياً؟')) {
                 db.requests = db.requests.filter(r => r.id !== id);
                 save();
                 updateAdminRequestsList();
+                updateClientRequestsList(); // التأكد من تحديث عرض العميل في حالة حذفه
                 showToast("تم حذف الطلب بنجاح.", 'success');
             }
         }
@@ -755,7 +834,6 @@
             let finalImageLink = null;
 
             if (imageFile) {
-                // محاكاة الرفع: استخدام Base64 لعرض الصورة محلياً
                 showLoader();
                 showToast("جاري معالجة الصورة... (محاكاة الرفع)", 'info');
                 
@@ -775,10 +853,9 @@
             } else if (imgURL) {
                 finalImageLink = imgURL;
             } else {
-                 finalImageLink = defaultImageUrl + Date.now(); // رابط افتراضي إذا لم يتم إدخال شيء
+                 finalImageLink = defaultImageUrl + Date.now();
             }
             
-            // إضافة المنتج باستخدام الرابط النهائي
             db.products.push({ 
                 id: Date.now(), 
                 name, 
@@ -790,7 +867,6 @@
             save();
             loadAdmin();
 
-            // مسح الحقول بعد الإضافة
             document.getElementById('adm-name').value = '';
             document.getElementById('adm-price').value = '';
             document.getElementById('adm-comm').value = '';
@@ -814,8 +890,16 @@
         document.addEventListener('DOMContentLoaded', () => {
              // التأكد من وجود حساب المدير التجريبي
             if (!db.users.find(u => u.role === "admin")) {
-                // المدير يضاف دائماً كـ isApproved: true
-                db.users.push({ id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1', isApproved: true }); 
+                db.users.push({ 
+                    id: 0, 
+                    name: "Admin (Demo)", 
+                    role: "admin", 
+                    wallet: 99999, 
+                    phone: '1', 
+                    pass: '1', 
+                    isApproved: true,
+                    regDate: new Date().toLocaleDateString('ar-EG') // تاريخ التسجيل للمدير
+                }); 
                 save();
             }
             loadApp();
