@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>هونست سات | Honest Sat (النسخة المستقرة)</title>
+    <title>Honest Sat | Stable Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -16,7 +16,7 @@
         .fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .active\:scale-95:active { transform: scale(0.95); }
-        /* لتحديد حجم الصور وعرضها */
+        /* Image size and display */
         .prod-img { 
             width: 80px; 
             height: 80px; 
@@ -25,7 +25,7 @@
             background-color: #f7f7f7;
             margin: 0 auto;
         }
-        .prod-icon { /* للحالة الاحتياطية */
+        .prod-icon { /* Fallback state */
             font-size: 3rem;
             line-height: 1;
         }
@@ -34,7 +34,7 @@
 <body class="bg-gray-50 text-gray-800 pb-10 select-none">
 
     <button onclick="hardReset()" class="fixed top-2 left-2 z-[9999] bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded border border-red-200 opacity-50 hover:opacity-100 transition">
-        ♻️ تنظيف الذاكرة
+        ♻️ Clear Storage
     </button>
 
     <div id="toast-container" class="fixed top-4 right-4 z-[9000] space-y-2"></div>
@@ -48,54 +48,54 @@
             
             <div class="text-center mb-8">
                 <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-lg mb-3">📡</div>
-                <h1 class="text-3xl font-black text-blue-900">هونست سات</h1>
+                <h1 class="text-3xl font-black text-blue-900">Honest Sat</h1>
             </div>
 
             <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
                 <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                    <h2 class="font-bold text-xl mb-4 text-center">تسجيل الدخول</h2>
-                    <input type="tel" id="login-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
-                    <input type="password" id="login-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
-                    <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">دخول</button>
+                    <h2 class="font-bold text-xl mb-4 text-center">Login</h2>
+                    <input type="tel" id="login-phone" placeholder="Phone Number" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
+                    <input type="password" id="login-pass" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
+                    <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">Login</button>
                 </div>
 
                 <div class="text-center mt-4">
-                    <p class="text-sm text-gray-500 mb-2">ليس لديك حساب؟</p>
-                    <button onclick="switchView('register')" class="text-blue-700 font-bold bg-blue-50 px-6 py-2 rounded-full text-sm">✨ إنشاء حساب جديد</button>
+                    <p class="text-sm text-gray-500 mb-2">Don't have an account?</p>
+                    <button onclick="switchView('register')" class="text-blue-700 font-bold bg-blue-50 px-6 py-2 rounded-full text-sm">✨ Create New Account</button>
                 </div>
                 
                 <div class="mt-8 text-center border-t pt-4">
-                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ الدخول كـ مدير (هاتف: 1، مرور: 1)</button>
+                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ Login as Admin (Phone: 1, Pass: 1)</button>
                 </div>
             </div>
 
             <div id="view-register" class="w-full max-w-sm space-y-3 d-none fade-in">
                 <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                    <h2 class="font-bold text-xl mb-4 text-center text-green-600">حساب جديد</h2>
+                    <h2 class="font-bold text-xl mb-4 text-center text-green-600">New Account</h2>
                     
-                    <input type="text" id="reg-name" placeholder="الاسم الكامل" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
-                    <input type="tel" id="reg-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-2" dir="ltr">
-                    <input type="password" id="reg-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
+                    <input type="text" id="reg-name" placeholder="Full Name" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
+                    <input type="tel" id="reg-phone" placeholder="Phone Number" class="w-full p-3 bg-gray-50 border rounded-xl mb-2" dir="ltr">
+                    <input type="password" id="reg-pass" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
                     
                     <div class="mb-4">
-                        <label class="text-xs font-bold text-gray-500 block mb-2">أنا أريد التسجيل كـ:</label>
+                        <label class="block text-xs font-bold text-gray-500 mb-2">I want to register as:</label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="cursor-pointer">
                                 <input type="radio" name="role" value="client" checked class="peer hidden">
-                                <div class="border p-2 rounded-lg text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm transition">👤 زبون</div>
+                                <div class="border p-2 rounded-lg text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm transition">👤 Client</div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="role" value="tech" class="peer hidden">
-                                <div class="border p-2 rounded-lg text-center peer-checked:bg-green-600 peer-checked:text-white text-sm transition">🔧 فني</div>
+                                <div class="border p-2 rounded-lg text-center peer-checked:bg-green-600 peer-checked:text-white text-sm transition">🔧 Technician</div>
                             </label>
                         </div>
                     </div>
 
-                    <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">تسجيل</button>
+                    <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">Register</button>
                 </div>
 
                 <div class="text-center mt-4">
-                    <button onclick="switchView('login')" class="text-gray-500 font-bold text-sm hover:text-gray-700 transition">🔙 الرجوع لتسجيل الدخول</button>
+                    <button onclick="switchView('login')" class="text-gray-500 font-bold text-sm hover:text-gray-700 transition">🔙 Back to Login</button>
                 </div>
             </div>
 
@@ -107,10 +107,10 @@
         <nav class="bg-blue-900 text-white p-4 sticky top-0 z-40 shadow-md">
             <div class="flex justify-between items-center max-w-2xl mx-auto">
                 <div>
-                    <h1 class="font-bold">هونست سات</h1>
+                    <h1 class="font-bold">Honest Sat</h1>
                     <span id="user-welcome" class="text-[10px] text-blue-200">...</span>
                 </div>
-                <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition">خروج</button>
+                <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition">Logout</button>
             </div>
         </nav>
 
@@ -118,79 +118,79 @@
             
             <div id="panel-client" class="d-none">
                 <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
-                    <button onclick="clientTab('prod')" id="btn-client-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">🛒 تسوق المنتجات</button>
-                    <button onclick="clientTab('req')" id="btn-client-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">📜 طلباتي السابقة</button>
+                    <button onclick="clientTab('prod')" id="btn-client-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">🛒 Shop Products</button>
+                    <button onclick="clientTab('req')" id="btn-client-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">📜 My Past Requests</button>
                 </div>
 
                 <div id="view-client-prod">
                     <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">خدمة الصيانة</h2>
-                        <p class="text-sm opacity-90 mb-4">هل لديك عطل؟ اطلب فني الآن</p>
-                        <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition">طلب خدمة</button>
+                        <h2 class="text-2xl font-bold mb-2">Maintenance Service</h2>
+                        <p class="text-sm opacity-90 mb-4">Got a fault? Request a technician now.</p>
+                        <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition">Request Service</button>
                     </div>
-                    <h3 class="font-bold text-gray-700 mb-3">⭐ المنتجات المتاحة</h3>
+                    <h3 class="font-bold text-gray-700 mb-3">⭐ Available Products</h3>
                     <div id="list-client" class="grid grid-cols-2 gap-3"></div>
                 </div>
 
                 <div id="view-client-req" class="d-none space-y-3">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">سجل طلبات الصيانة</h3>
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Maintenance Request History</h3>
                     <div id="list-client-req"></div>
                 </div>
             </div>
 
             <div id="panel-tech" class="d-none">
                 <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
-                    <p class="text-gray-400 text-xs">الرصيد المتاح</p>
-                    <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">د.م</small></h2>
-                    <button onclick="showToast('تم إرسال طلب السحب للإدارة.', 'info')" class="absolute bottom-3 left-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd ml-1"></i> سحب الأرباح</button>
+                    <p class="text-gray-400 text-xs">Available Balance</p>
+                    <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">DH</small></h2>
+                    <button onclick="showToast('Withdrawal request sent to management.', 'info')" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> Withdraw Earnings</button>
                 </div>
                 
                 <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
-                    <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">شراء منتجات</button>
-                    <button onclick="techTab('req')" id="btn-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">طلبات العمل</button>
-                    <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">سجل الأرباح</button>
+                    <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">Buy Products</button>
+                    <button onclick="techTab('req')" id="btn-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Work Requests</button>
+                    <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Earnings Log</button>
                 </div>
                 
                 <div id="view-tech-prod" class="space-y-3"></div>
                 <div id="view-tech-req" class="d-none space-y-3"></div>
                 <div id="view-tech-log" class="d-none space-y-3">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">سجل الأرباح والعمولات</h3>
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Earnings and Commission Log</h3>
                     <div id="list-tech-log"></div>
                 </div>
             </div>
 
             <div id="panel-admin" class="d-none">
-                <h2 class="text-xl font-bold mb-4">لوحة الإدارة</h2>
+                <h2 class="text-xl font-bold mb-4">Admin Panel</h2>
                 
                 <div class="bg-red-100 p-4 rounded-xl shadow mb-6 border border-red-200">
-                    <h3 class="font-bold mb-2 text-red-700">🆕 طلبات تفعيل الحسابات</h3>
+                    <h3 class="font-bold mb-2 text-red-700">🆕 Account Activation Requests</h3>
                     <div id="list-pending-users" class="space-y-2">
-                        <p class="text-center text-gray-500 text-sm">لا توجد طلبات معلقة حالياً.</p>
+                        <p class="text-center text-gray-500 text-sm">No pending requests currently.</p>
                     </div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
-                    <h3 class="font-bold mb-3 text-blue-700">👥 سجل جميع المستخدمين</h3>
+                    <h3 class="font-bold mb-3 text-blue-700">👥 All Users Log</h3>
                     <div id="list-all-users" class="space-y-2"></div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
-                    <h3 class="font-bold mb-2 text-blue-700">➕ إدارة المنتجات</h3>
-                    <input id="adm-name" placeholder="الاسم" class="border p-2 w-full rounded mb-2">
-                    <input id="adm-price" placeholder="السعر للزبون" type="number" class="border p-2 w-full rounded mb-2">
-                    <input id="adm-comm" placeholder="عمولة الفني" type="number" class="border p-2 w-full rounded mb-3">
+                    <h3 class="font-bold mb-2 text-blue-700">➕ Manage Products</h3>
+                    <input id="adm-name" placeholder="Name" class="border p-2 w-full rounded mb-2">
+                    <input id="adm-price" placeholder="Price for Client" type="number" class="border p-2 w-full rounded mb-2">
+                    <input id="adm-comm" placeholder="Technician Commission" type="number" class="border p-2 w-full rounded mb-3">
                     
-                    <label class="block text-sm font-bold text-gray-700 mb-1">صورة المنتج</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Product Image</label>
                     <input type="file" id="adm-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-2 border p-2 rounded-lg bg-gray-50">
-                    <input id="adm-imgurl" placeholder="أو أدخل رابط صورة (URL) مباشر" class="border p-2 w-full rounded mb-3 text-xs" dir="ltr"> 
+                    <input id="adm-imgurl" placeholder="Or enter direct image URL" class="border p-2 w-full rounded mb-3 text-xs" dir="ltr"> 
                     
-                    <button onclick="addProd()" class="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800 transition">إضافة المنتج</button>
+                    <button onclick="addProd()" class="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800 transition">Add Product</button>
                     
-                    <h4 class="font-bold text-gray-700 mt-4 mb-3 border-t pt-3" id="admin-prod-header">📦 المنتجات الحالية (0)</h4>
+                    <h4 class="font-bold text-gray-700 mt-4 mb-3 border-t pt-3" id="admin-prod-header">📦 Current Products (0)</h4>
                     <div id="list-admin" class="space-y-2"></div>
                 </div>
 
-                <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2">📜 سجل جميع طلبات الصيانة</h3>
+                <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2">📜 All Maintenance Requests Log</h3>
                 <div id="list-all-requests" class="space-y-2"></div>
             </div>
 
@@ -199,19 +199,23 @@
 
     <div id="modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="font-bold text-lg mb-3">طلب جديد</h3>
-            <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50"><option>ضبط إشارة</option><option>تركيب تلفاز</option><option>صيانة عامة</option></select>
+            <h3 class="font-bold text-lg mb-3">New Request</h3>
+            <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50">
+                <option>Signal Adjustment</option>
+                <option>TV Installation</option>
+                <option>General Maintenance</option>
+            </select>
             
-            <input type="tel" id="srv-phone" placeholder="رقم الهاتف للتواصل" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" dir="ltr">
+            <input type="tel" id="srv-phone" placeholder="Contact Phone Number" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" dir="ltr">
 
-            <input id="srv-addr" placeholder="العنوان بالتفصيل" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
-            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">تأكيد الطلب</button>
-            <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition">إلغاء</button>
+            <input id="srv-addr" placeholder="Detailed Address" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
+            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">Confirm Request</button>
+            <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition">Cancel</button>
         </div>
     </div>
 
     <script>
-        // --- 0. نظام الإشعارات (Toast) (مصمم لضمان التشغيل) ---
+        // --- 0. Toast Notification System (Designed to work) ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             let bgColor, icon;
@@ -246,7 +250,7 @@
             }, 4000);
         }
 
-        // --- 1. إدارة البيانات بأمان (Local Storage) ---
+        // --- 1. Secure Data Management (Local Storage) ---
         function getSafeData(key, defaultVal) {
             try {
                 const data = localStorage.getItem(key);
@@ -260,12 +264,12 @@
         const defaultImageUrl = 'https://picsum.photos/80/80?random=';
 
         let db = {
-            // تحديث رقم الإصدار لضمان عدم تداخل البيانات القديمة
+            // Version updates to prevent old data conflict
             users: getSafeData('sf_users_v5', []),
             products: getSafeData('sf_prods_v4', [
-                {id:1, name:'رسيفر Echolink HD', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
-                {id:2, name:'لاقط LNB عالي الجودة', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
-                {id:3, name:'تجديد اشتراك IPTV', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
+                {id:1, name:'Echolink HD Receiver', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
+                {id:2, name:'High Quality LNB', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
+                {id:3, name:'IPTV Subscription Renewal', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
             ]),
             requests: getSafeData('sf_reqs_v4', []),
             techLogs: getSafeData('sf_tech_logs_v4', []), 
@@ -280,25 +284,25 @@
             localStorage.setItem('sf_curr_v4', JSON.stringify(db.current));
         }
 
-        // --- 2. التحكم في الواجهات ---
+        // --- 2. Interface Control ---
         function switchView(view) {
             document.getElementById('view-login').classList.add('d-none');
             document.getElementById('view-register').classList.add('d-none');
             document.getElementById(`view-${view}`).classList.remove('d-none');
         }
 
-        // --- 3. المصادقة ---
+        // --- 3. Authentication ---
         function tryRegister() {
             const name = document.getElementById('reg-name').value.trim();
             const phone = document.getElementById('reg-phone').value.trim();
             const pass = document.getElementById('reg-pass').value.trim();
             const role = document.querySelector('input[name="role"]:checked').value;
 
-            if(!name || !phone || !pass) return showToast("المرجو ملء جميع البيانات.", 'error');
-            if(isNaN(phone) || phone.length < 5) return showToast("رقم الهاتف غير صحيح.", 'error');
-            if(pass.length < 3) return showToast("كلمة المرور قصيرة جداً.", 'error');
+            if(!name || !phone || !pass) return showToast("Please fill in all details.", 'error');
+            if(isNaN(phone) || phone.length < 5) return showToast("Invalid phone number.", 'error');
+            if(pass.length < 3) return showToast("Password is too short.", 'error');
             
-            if(db.users.find(u => u.phone === phone)) return showToast("رقم الهاتف مستخدم مسبقاً.", 'error');
+            if(db.users.find(u => u.phone === phone)) return showToast("Phone number already in use.", 'error');
 
             showLoader();
             const user = { 
@@ -309,14 +313,14 @@
                 role, 
                 wallet: 0, 
                 isApproved: false,
-                regDate: new Date().toLocaleDateString('ar-EG') 
+                regDate: new Date().toLocaleDateString('en-US') 
             }; 
             db.users.push(user);
             save();
             
             hideLoader();
             switchView('login');
-            showToast("✅ تم إنشاء الحساب. يجب أن يوافق المدير عليه قبل تسجيل الدخول.", 'info');
+            showToast("✅ Account created. It must be approved by an administrator before login.", 'info');
         }
 
         function tryLogin() {
@@ -329,7 +333,7 @@
             if(user) {
                 if (!user.isApproved && user.role !== 'admin') {
                     hideLoader();
-                    return showToast("🚫 حسابك قيد الانتظار. سيتم تفعيله من قبل الإدارة قريباً.", 'error');
+                    return showToast("🚫 Your account is pending. It will be activated by the administration soon.", 'error');
                 }
 
                 const mainUser = db.users.find(u => u.id === user.id); 
@@ -338,7 +342,7 @@
                 setTimeout(loadApp, 500);
             } else {
                 hideLoader();
-                showToast("معلومات خاطئة (الهاتف/كلمة المرور).", 'error');
+                showToast("Incorrect credentials (Phone/Password).", 'error');
             }
         }
 
@@ -352,7 +356,7 @@
                  setTimeout(loadApp, 500);
              } else {
                  hideLoader();
-                 showToast("⚠️ لم يتم العثور على حساب المدير التجريبي. الرجاء تجربة 'تنظيف الذاكرة'.", 'error');
+                 showToast("⚠️ Demo admin account not found. Please try 'Clear Storage'.", 'error');
              }
         }
 
@@ -364,7 +368,7 @@
         }
 
         function hardReset() {
-            if(confirm("تحذير: هذا سيؤدي لمسح جميع بيانات النظام المحلية. هل أنت متأكد؟")) {
+            if(confirm("WARNING: This will clear ALL local system data. Are you sure?")) {
                 localStorage.clear();
                 location.reload();
             }
@@ -374,7 +378,7 @@
         function showLoader() { document.getElementById('app-loader').classList.remove('d-none'); }
         function hideLoader() { document.getElementById('app-loader').classList.add('d-none'); }
 
-        // --- 4. تشغيل التطبيق (Load App) ---
+        // --- 4. Load App ---
         function loadApp() {
             hideLoader();
             if(!db.current) {
@@ -387,7 +391,7 @@
             document.getElementById('main-app').classList.remove('d-none');
             
             const u = db.current;
-            const roleName = u.role === 'client' ? 'زبون' : (u.role === 'tech' ? 'فني' : 'مدير');
+            const roleName = u.role === 'client' ? 'Client' : (u.role === 'tech' ? 'Technician' : 'Admin');
             document.getElementById('user-welcome').innerText = `${u.name} (${roleName})`;
 
             document.getElementById('panel-client').classList.add('d-none');
@@ -398,12 +402,12 @@
             else if(u.role === 'tech') loadTech();
             else if(u.role === 'admin') loadAdmin(); 
             else {
-                 showToast("⚠️ دور المستخدم غير معروف. جارٍ تسجيل الخروج.", 'error');
+                 showToast("⚠️ Unknown user role. Logging out.", 'error');
                  doLogout();
             }
         }
 
-        // --- 5. دوال الزبون ---
+        // --- 5. Client Functions ---
         function loadClient() {
             document.getElementById('panel-client').classList.remove('d-none');
             clientTab('prod');
@@ -412,7 +416,7 @@
                 <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg">
                     ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img mx-auto mb-2">` : `<div class="prod-icon mb-2">${p.icon || '📦'}</div>`}
                     <div class="font-bold text-sm h-10 overflow-hidden">${p.name}</div>
-                    <div class="text-blue-600 font-bold mt-2">${p.price} د.م</div>
+                    <div class="text-blue-600 font-bold mt-2">${p.price} DH</div>
                 </div>
             `).join('');
 
@@ -440,21 +444,21 @@
             const clientReqs = db.requests.filter(r => r.client_id === db.current.id).reverse();
 
             if(clientReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تطلب أي خدمات صيانة بعد.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 py-6">You haven't requested any maintenance services yet.</p>`;
                 return;
             }
 
             container.innerHTML = clientReqs.map(r => {
                 let statusClass, statusText;
-                if(r.status === 'pending') { statusClass = 'border-yellow-500'; statusText = 'قيد الانتظار'; }
-                else if(r.status === 'accepted') { statusClass = 'border-blue-500'; statusText = 'تم القبول (قيد العمل)'; }
-                else if(r.status === 'completed') { statusClass = 'border-green-500'; statusText = 'مكتمل'; }
+                if(r.status === 'pending') { statusClass = 'border-yellow-500'; statusText = 'Pending'; }
+                else if(r.status === 'accepted') { statusClass = 'border-blue-500'; statusText = 'Accepted (In Progress)'; }
+                else if(r.status === 'completed') { statusClass = 'border-green-500'; statusText = 'Completed'; }
                 
                 return `
                     <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass} flex justify-between items-center">
                         <div>
                             <div class="font-bold">${r.type}</div>
-                            <div class="text-xs text-gray-500">${r.addr} | هاتف: ${r.phone}</div>
+                            <div class="text-xs text-gray-500">${r.addr} | Phone: ${r.phone}</div>
                         </div>
                         <span class="text-xs font-bold text-gray-700">${statusText}</span>
                     </div>
@@ -474,8 +478,8 @@
             const phone = document.getElementById('srv-phone').value.trim();
             const addr = document.getElementById('srv-addr').value.trim();
             
-            if(!phone || !addr) return showToast("الرجاء إدخال رقم الهاتف والعنوان.", 'error');
-            if(isNaN(phone) || phone.length < 5) return showToast("رقم الهاتف غير صحيح.", 'error');
+            if(!phone || !addr) return showToast("Please enter phone number and address.", 'error');
+            if(isNaN(phone) || phone.length < 5) return showToast("Invalid phone number.", 'error');
 
             db.requests.push({ 
                 id: Date.now(), 
@@ -486,14 +490,14 @@
                 addr, 
                 status: 'pending',
                 technician_id: null,
-                date: new Date().toLocaleDateString('ar-EG')
+                date: new Date().toLocaleDateString('en-US')
             });
             save();
             closeModal();
-            showToast("✅ تم إرسال الطلب بنجاح! سيتم إخطار الفنيين.", 'success');
+            showToast("✅ Request sent successfully! Technicians will be notified.", 'success');
         }
 
-        // --- 6. دوال الفني ---
+        // --- 6. Technician Functions ---
         function loadTech() {
             document.getElementById('panel-tech').classList.remove('d-none');
             document.getElementById('tech-wallet').innerText = db.current.wallet;
@@ -505,10 +509,10 @@
                         ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img w-12 h-12">` : `<div class="text-3xl">${p.icon || '📦'}</div>`}
                         <div>
                             <div class="font-bold">${p.name}</div>
-                            <div class="text-xs text-gray-500">السعر للزبون: ${p.price} د.م</div>
+                            <div class="text-xs text-gray-500">Price for Client: ${p.price} DH</div>
                         </div>
                     </div>
-                    <button onclick="buy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.95] transition hover:bg-blue-800">شراء (+${p.comm})</button>
+                    <button onclick="buy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.95] transition hover:bg-blue-800">Buy (+${p.comm})</button>
                 </div>
             `).join('');
 
@@ -536,18 +540,18 @@
 
         function buy(id) {
             const p = db.products.find(x => x.id === id);
-            if(confirm(`تأكيد شراء ${p.name}؟\n ستحصل على عمولة: ${p.comm} د.م`)) {
+            if(confirm(`Confirm purchase of ${p.name}?\n You will earn a commission of: ${p.comm} DH`)) {
                 
                 db.current.wallet += parseInt(p.comm);
                 
                 const idx = db.users.findIndex(u => u.id === db.current.id);
                 if(idx !== -1) db.users[idx].wallet = db.current.wallet;
 
-                db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'product', amount: parseInt(p.comm), desc: `عمولة بيع: ${p.name}`, date: new Date().toLocaleDateString('ar-EG') });
+                db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'product', amount: parseInt(p.comm), desc: `Sales commission: ${p.name}`, date: new Date().toLocaleDateString('en-US') });
                 
                 save();
                 document.getElementById('tech-wallet').innerText = db.current.wallet; 
-                showToast(`💰 تمت إضافة ${p.comm} د.م إلى رصيدك!`, 'success');
+                showToast(`💰 ${p.comm} DH added to your balance!`, 'success');
             }
         }
         
@@ -556,7 +560,7 @@
             const pendingAndAccepted = db.requests.filter(r => r.status === 'pending' || (r.status === 'accepted' && r.technician_id === db.current.id)).reverse();
             
             if(pendingAndAccepted.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400 py-10">لا طلبات عمل جديدة أو مقبولة حالياً.</p>';
+                container.innerHTML = '<p class="text-center text-gray-400 py-10">No new or accepted work requests currently.</p>';
                 return;
             }
 
@@ -565,15 +569,15 @@
 
                 if (r.status === 'pending') {
                     statusClass = 'border-yellow-500';
-                    btn = `<button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-2 rounded-xl mt-3 text-sm hover:bg-black transition active:scale-[0.98]">قبول العمل</button>`;
+                    btn = `<button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-2 rounded-xl mt-3 text-sm hover:bg-black transition active:scale-[0.98]">Accept Job</button>`;
                 } else {
                     statusClass = 'border-green-500';
                     btn = `
                         <div class="mt-3 bg-green-50 p-3 rounded-lg text-green-800">
-                            <p class="text-sm font-bold">تواصل مع الزبون:</p>
+                            <p class="text-sm font-bold">Contact Client:</p>
                             <a href="tel:${r.phone}" class="font-mono text-lg underline">${r.phone}</a>
                         </div>
-                        <button onclick="finishRequest(${r.id})" class="w-full bg-red-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-red-700 transition active:scale-[0.98]"><i class="fas fa-check-circle ml-1"></i> تم إكمال العمل</button>
+                        <button onclick="finishRequest(${r.id})" class="w-full bg-red-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-red-700 transition active:scale-[0.98]"><i class="fas fa-check-circle mr-1"></i> Job Completed</button>
                     `;
                 }
 
@@ -581,10 +585,10 @@
                     <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass}">
                         <div class="flex justify-between items-center">
                             <div class="font-bold text-lg">${r.type}</div>
-                            <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'جديد' : 'مقبول'}</span>
+                            <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'New' : 'Accepted'}</span>
                         </div>
-                        <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 ml-1"></i> ${r.addr}</div>
-                        <div class="text-xs text-gray-400 mt-1">الزبون: ${r.client} | هاتف: ${r.phone}</div>
+                        <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${r.addr}</div>
+                        <div class="text-xs text-gray-400 mt-1">Client: ${r.client} | Phone: ${r.phone}</div>
                         ${btn}
                     </div>
                 `;
@@ -599,11 +603,11 @@
             r.technician_id = db.current.id; 
             save();
             updateRequestsList();
-            showToast(`✅ تم قبول الطلب. هاتف الزبون: ${r.phone}`, 'info');
+            showToast(`✅ Request accepted. Client phone: ${r.phone}`, 'info');
         }
         
         function finishRequest(id) {
-            if(!confirm("هل أنت متأكد من إنهاء هذا العمل؟ سيتم إغلاقه وإضافة العمولة.")) return;
+            if(!confirm("Are you sure you want to finish this job? It will be closed and commission will be added.")) return;
 
             const r = db.requests.find(x => x.id === id);
             if(!r) return;
@@ -615,12 +619,12 @@
             const idx = db.users.findIndex(u => u.id === db.current.id);
             if(idx !== -1) db.users[idx].wallet = db.current.wallet;
             
-            db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'job', amount: jobCommission, desc: `عمولة خدمة: ${r.type}`, date: new Date().toLocaleDateString('ar-EG') });
+            db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'job', amount: jobCommission, desc: `Service commission: ${r.type}`, date: new Date().toLocaleDateString('en-US') });
 
             save();
             updateRequestsList(); 
             document.getElementById('tech-wallet').innerText = db.current.wallet;
-            showToast(`🎉 تم إغلاق الطلب! تمت إضافة ${jobCommission} د.م إلى رصيدك.`, 'success');
+            showToast(`🎉 Request closed! ${jobCommission} DH added to your balance.`, 'success');
         }
 
         function updateTechLogs() {
@@ -628,7 +632,7 @@
             const techLogs = db.techLogs.filter(log => log.techId === db.current.id).reverse();
 
             if (techLogs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تحقق أي أرباح بعد.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 py-6">You haven't earned any profits yet.</p>`;
                 return;
             }
             
@@ -638,13 +642,13 @@
                         <div class="font-bold">${log.desc}</div>
                         <div class="text-xs text-gray-500">${log.date}</div>
                     </div>
-                    <span class="font-bold text-green-600">+${log.amount} د.م</span>
+                    <span class="font-bold text-green-600">+${log.amount} DH</span>
                 </div>
             `).join('');
         }
 
 
-        // --- 7. دوال الإدارة ---
+        // --- 7. Admin Functions ---
         function loadAdmin() {
             document.getElementById('panel-admin').classList.remove('d-none');
             
@@ -652,7 +656,7 @@
             updateAllUsersList();
             updateAdminRequestsList();
             
-            document.getElementById('admin-prod-header').innerHTML = `📦 المنتجات الحالية (${db.products.length})`;
+            document.getElementById('admin-prod-header').innerHTML = `📦 Current Products (${db.products.length})`;
             
             document.getElementById('list-admin').innerHTML = db.products.map(p => `
                 <div class="bg-white p-3 rounded flex justify-between items-center border shadow-sm">
@@ -660,7 +664,7 @@
                         ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img w-10 h-10">` : `<div class="text-xl">${p.icon || '📦'}</div>`}
                         <div>
                             <span class="font-bold">${p.name}</span>
-                            <div class="text-xs text-gray-500">السعر: ${p.price} | عمولة: ${p.comm}</div>
+                            <div class="text-xs text-gray-500">Price: ${p.price} | Commission: ${p.comm}</div>
                         </div>
                     </div>
                     <div class="space-x-2 space-x-reverse">
@@ -675,13 +679,13 @@
             const allUsers = db.users.filter(u => u.id !== 0).sort((a, b) => b.id - a.id);
 
             if(allUsers.length === 0) {
-                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">لا يوجد مستخدمون مسجلون بعد.</p>`;
+                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">No registered users yet.</p>`;
                  return;
             }
 
             container.innerHTML = allUsers.map(u => {
-                const roleText = u.role === 'admin' ? 'مدير' : (u.role === 'tech' ? 'فني 🔧' : 'زبون 👤');
-                const approvalText = u.isApproved ? '✅ مُفَعَّل' : '❌ معلَّق';
+                const roleText = u.role === 'admin' ? 'Admin' : (u.role === 'tech' ? 'Technician 🔧' : 'Client 👤');
+                const approvalText = u.isApproved ? '✅ Approved' : '❌ Pending';
                 const approvalColor = u.isApproved ? 'text-green-600' : 'text-red-600';
                 
                 return `
@@ -689,13 +693,13 @@
                         <div>
                             <span class="font-bold">${u.name}</span>
                             <div class="text-xs text-gray-500">
-                                ${roleText} | هاتف: ${u.phone}
+                                ${roleText} | Phone: ${u.phone}
                                 <span class="${approvalColor} font-bold ml-2">${approvalText}</span>
                             </div>
-                            <div class="text-xs text-gray-400 mt-1">تاريخ التسجيل: ${u.regDate || 'غير متوفر'}</div>
+                            <div class="text-xs text-gray-400 mt-1">Registration Date: ${u.regDate || 'N/A'}</div>
                         </div>
                         <div class="space-x-2 space-x-reverse">
-                            <button onclick="deleteUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">حذف</button>
+                            <button onclick="deleteUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">Delete</button>
                         </div>
                     </div>
                 `;
@@ -703,12 +707,12 @@
         }
 
         function deleteUser(id) {
-            if(confirm('هل أنت متأكد من حذف هذا المستخدم نهائياً؟')) {
+            if(confirm('Are you sure you want to permanently delete this user?')) {
                 db.users = db.users.filter(u => u.id !== id);
                 save();
                 updatePendingUsersList(); 
                 updateAllUsersList();
-                showToast("تم حذف المستخدم بنجاح.", 'success');
+                showToast("User deleted successfully.", 'success');
             }
         }
 
@@ -717,7 +721,7 @@
             const pendingUsers = db.users.filter(u => u.role !== 'admin' && u.isApproved === false);
 
             if(pendingUsers.length === 0) {
-                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">لا توجد طلبات معلقة حالياً.</p>`;
+                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">No pending requests currently.</p>`;
                  return;
             }
 
@@ -725,11 +729,11 @@
                 <div class="bg-white p-3 rounded shadow border-l-4 border-red-400 flex justify-between items-center">
                     <div>
                         <span class="font-bold">${u.name}</span>
-                        <div class="text-xs text-gray-500">نوع الحساب: ${u.role === 'tech' ? 'فني 🔧' : 'زبون 👤'} | هاتف: ${u.phone}</div>
+                        <div class="text-xs text-gray-500">Account Type: ${u.role === 'tech' ? 'Technician 🔧' : 'Client 👤'} | Phone: ${u.phone}</div>
                     </div>
                     <div class="space-x-2 space-x-reverse">
-                        <button onclick="approveUser(${u.id})" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition">قبول</button>
-                        <button onclick="rejectUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">رفض</button>
+                        <button onclick="approveUser(${u.id})" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition">Approve</button>
+                        <button onclick="rejectUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">Reject</button>
                     </div>
                 </div>
             `).join('');
@@ -742,17 +746,17 @@
                 save();
                 updatePendingUsersList();
                 updateAllUsersList();
-                showToast(`✅ تم تفعيل حساب ${db.users[userIndex].name}. يمكنه الآن تسجيل الدخول.`, 'success');
+                showToast(`✅ Account for ${db.users[userIndex].name} activated. They can now log in.`, 'success');
             }
         }
         
         function rejectUser(id) {
-            if(confirm('هل أنت متأكد من رفض وحذف هذا المستخدم؟')) {
+            if(confirm('Are you sure you want to reject and delete this user?')) {
                 db.users = db.users.filter(u => u.id !== id);
                 save();
                 updatePendingUsersList();
                 updateAllUsersList();
-                showToast("تم حذف المستخدم بنجاح.", 'success');
+                showToast("User deleted successfully.", 'success');
             }
         }
 
@@ -761,7 +765,7 @@
              const allReqs = db.requests.slice().reverse(); 
 
              if(allReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-4">لا توجد طلبات في السجل.</p>`;
+                container.innerHTML = `<p class="text-center text-gray-400 py-4">No requests in the log.</p>`;
                 return;
              }
 
@@ -769,23 +773,23 @@
                 const tech = db.users.find(u => u.id === r.technician_id);
                 
                 let statusColor, statusText;
-                if(r.status === 'completed') { statusColor = 'border-green-500'; statusText = 'مُكتَمِل'; }
-                else if(r.status === 'accepted') { statusColor = 'border-blue-500'; statusText = 'مَقبول (قيد العمل)'; }
-                else { statusColor = 'border-yellow-500'; statusText = 'قيد الانتظار'; }
+                if(r.status === 'completed') { statusColor = 'border-green-500'; statusText = 'Completed'; }
+                else if(r.status === 'accepted') { statusColor = 'border-blue-500'; statusText = 'Accepted (In Progress)'; }
+                else { statusColor = 'border-yellow-500'; statusText = 'Pending'; }
                 
-                const techInfo = tech ? `<span class="text-xs text-gray-700">| فني: ${tech.name}</span>` : '';
+                const techInfo = tech ? `<span class="text-xs text-gray-700">| Tech: ${tech.name}</span>` : '';
 
                 return `
                     <div class="bg-white p-3 rounded shadow-sm border-r-4 ${statusColor} flex justify-between items-center">
                         <div>
                             <span class="font-bold">${r.type}</span> 
                             <span class="text-xs text-gray-500 ml-2">(${r.date})</span>
-                            <div class="text-xs text-gray-600">الزبون: ${r.client} | هاتف: ${r.phone} ${techInfo}</div>
-                            <div class="text-xs text-gray-400 mt-1">العنوان: ${r.addr}</div>
+                            <div class="text-xs text-gray-600">Client: ${r.client} | Phone: ${r.phone} ${techInfo}</div>
+                            <div class="text-xs text-gray-400 mt-1">Address: ${r.addr}</div>
                         </div>
                         <div class="text-center">
                             <span class="text-xs font-bold text-gray-700">${statusText}</span>
-                            <button onclick="deleteRequest(${r.id})" class="block mt-1 text-red-500 text-xs hover:text-red-700">حذف</button>
+                            <button onclick="deleteRequest(${r.id})" class="block mt-1 text-red-500 text-xs hover:text-red-700">Delete</button>
                         </div>
                     </div>
                 `;
@@ -793,11 +797,11 @@
         }
 
         function deleteRequest(id) {
-            if(confirm('حذف هذا الطلب من السجل نهائياً؟')) {
+            if(confirm('Delete this request permanently from the log?')) {
                 db.requests = db.requests.filter(r => r.id !== id);
                 save();
                 updateAdminRequestsList();
-                showToast("تم حذف الطلب بنجاح.", 'success');
+                showToast("Request deleted successfully.", 'success');
             }
         }
 
@@ -810,14 +814,14 @@
 
             
             if(!name || isNaN(price) || isNaN(comm) || price <= 0 || comm < 0) {
-                return showToast("الرجاء إدخال بيانات صحيحة (الاسم، السعر، العمولة).", 'error');
+                return showToast("Please enter valid data (Name, Price, Commission).", 'error');
             }
 
             let finalImageLink = null;
 
             if (imageFile) {
                 showLoader();
-                showToast("جاري معالجة الصورة... (محاكاة الرفع)", 'info');
+                showToast("Processing image... (Upload simulation)", 'info');
                 
                 await new Promise(resolve => setTimeout(resolve, 500)); 
 
@@ -825,7 +829,7 @@
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
                     reader.onerror = () => {
-                        showToast("فشل في قراءة ملف الصورة.", 'error');
+                        showToast("Failed to read image file.", 'error');
                         resolve(null);
                     };
                     reader.readAsDataURL(imageFile);
@@ -849,4 +853,44 @@
             save();
             loadAdmin();
 
-            document.getElementById('adm-name').value
+            document.getElementById('adm-name').value = '';
+            document.getElementById('adm-price').value = '';
+            document.getElementById('adm-comm').value = '';
+            document.getElementById('adm-imgurl').value = ''; 
+            document.getElementById('adm-image-file').value = ''; 
+
+            showToast("✅ Product added successfully.", 'success');
+        }
+
+        function delProd(id) {
+            if(confirm('Are you sure you want to delete this product?')) {
+                db.products = db.products.filter(p => p.id !== id);
+                save();
+                loadAdmin();
+                if (db.current && db.current.role === 'client') loadClient();
+                showToast("Product deleted successfully.", 'success');
+            }
+        }
+
+        // --- 8. Startup (Ensure Admin exists) ---
+        document.addEventListener('DOMContentLoaded', () => {
+             // Ensure the demo admin account exists (Phone: 1, Pass: 1)
+            if (!db.users.find(u => u.role === "admin")) {
+                db.users.push({ 
+                    id: 0, 
+                    name: "Admin (Demo)", 
+                    role: "admin", 
+                    wallet: 99999, 
+                    phone: '1', 
+                    pass: '1', 
+                    isApproved: true,
+                    regDate: new Date().toLocaleDateString('en-US')
+                }); 
+                save();
+            }
+            loadApp();
+        });
+
+    </script>
+</body>
+</html>
