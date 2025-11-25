@@ -1,896 +1,226 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Honest Sat | Stable Version</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-        .d-none { display: none !important; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .active\:scale-95:active { transform: scale(0.95); }
-        /* Image size and display */
-        .prod-img { 
-            width: 80px; 
-            height: 80px; 
-            object-fit: contain; 
-            border-radius: 8px;
-            background-color: #f7f7f7;
-            margin: 0 auto;
-        }
-        .prod-icon { /* Fallback state */
-            font-size: 3rem;
-            line-height: 1;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-800 pb-10 select-none">
-
-    <button onclick="hardReset()" class="fixed top-2 left-2 z-[9999] bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded border border-red-200 opacity-50 hover:opacity-100 transition">
-        ♻️ Clear Storage
-    </button>
-
-    <div id="toast-container" class="fixed top-4 right-4 z-[9000] space-y-2"></div>
-
-    <div id="app-loader" class="fixed inset-0 bg-white/70 z-[8000] d-none flex items-center justify-center">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-opacity-75"></div>
-    </div>
-
-    <div id="auth-container" class="fixed inset-0 bg-white z-50 overflow-y-auto">
-        <div class="min-h-screen flex flex-col items-center justify-center p-6">
-            
-            <div class="text-center mb-8">
-                <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-lg mb-3">📡</div>
-                <h1 class="text-3xl font-black text-blue-900">Honest Sat</h1>
-            </div>
-
-            <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
-                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                    <h2 class="font-bold text-xl mb-4 text-center">Login</h2>
-                    <input type="tel" id="login-phone" placeholder="Phone Number" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
-                    <input type="password" id="login-pass" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
-                    <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">Login</button>
-                </div>
-
-                <div class="text-center mt-4">
-                    <p class="text-sm text-gray-500 mb-2">Don't have an account?</p>
-                    <button onclick="switchView('register')" class="text-blue-700 font-bold bg-blue-50 px-6 py-2 rounded-full text-sm">✨ Create New Account</button>
-                </div>
-                
-                <div class="mt-8 text-center border-t pt-4">
-                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ Login as Admin (Phone: 1, Pass: 1)</button>
-                </div>
-            </div>
-
-            <div id="view-register" class="w-full max-w-sm space-y-3 d-none fade-in">
-                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                    <h2 class="font-bold text-xl mb-4 text-center text-green-600">New Account</h2>
-                    
-                    <input type="text" id="reg-name" placeholder="Full Name" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
-                    <input type="tel" id="reg-phone" placeholder="Phone Number" class="w-full p-3 bg-gray-50 border rounded-xl mb-2" dir="ltr">
-                    <input type="password" id="reg-pass" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
-                    
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-gray-500 mb-2">I want to register as:</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="role" value="client" checked class="peer hidden">
-                                <div class="border p-2 rounded-lg text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm transition">👤 Client</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="role" value="tech" class="peer hidden">
-                                <div class="border p-2 rounded-lg text-center peer-checked:bg-green-600 peer-checked:text-white text-sm transition">🔧 Technician</div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">Register</button>
-                </div>
-
-                <div class="text-center mt-4">
-                    <button onclick="switchView('login')" class="text-gray-500 font-bold text-sm hover:text-gray-700 transition">🔙 Back to Login</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="main-app" class="d-none">
-        
-        <nav class="bg-blue-900 text-white p-4 sticky top-0 z-40 shadow-md">
-            <div class="flex justify-between items-center max-w-2xl mx-auto">
-                <div>
-                    <h1 class="font-bold">Honest Sat</h1>
-                    <span id="user-welcome" class="text-[10px] text-blue-200">...</span>
-                </div>
-                <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition">Logout</button>
-            </div>
-        </nav>
-
-        <div class="max-w-2xl mx-auto p-4 min-h-screen">
-            
-            <div id="panel-client" class="d-none">
-                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
-                    <button onclick="clientTab('prod')" id="btn-client-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">🛒 Shop Products</button>
-                    <button onclick="clientTab('req')" id="btn-client-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">📜 My Past Requests</button>
-                </div>
-
-                <div id="view-client-prod">
-                    <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">Maintenance Service</h2>
-                        <p class="text-sm opacity-90 mb-4">Got a fault? Request a technician now.</p>
-                        <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition">Request Service</button>
-                    </div>
-                    <h3 class="font-bold text-gray-700 mb-3">⭐ Available Products</h3>
-                    <div id="list-client" class="grid grid-cols-2 gap-3"></div>
-                </div>
-
-                <div id="view-client-req" class="d-none space-y-3">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Maintenance Request History</h3>
-                    <div id="list-client-req"></div>
-                </div>
-            </div>
-
-            <div id="panel-tech" class="d-none">
-                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
-                    <p class="text-gray-400 text-xs">Available Balance</p>
-                    <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">DH</small></h2>
-                    <button onclick="showToast('Withdrawal request sent to management.', 'info')" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> Withdraw Earnings</button>
-                </div>
-                
-                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
-                    <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">Buy Products</button>
-                    <button onclick="techTab('req')" id="btn-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Work Requests</button>
-                    <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">Earnings Log</button>
-                </div>
-                
-                <div id="view-tech-prod" class="space-y-3"></div>
-                <div id="view-tech-req" class="d-none space-y-3"></div>
-                <div id="view-tech-log" class="d-none space-y-3">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">Earnings and Commission Log</h3>
-                    <div id="list-tech-log"></div>
-                </div>
-            </div>
-
-            <div id="panel-admin" class="d-none">
-                <h2 class="text-xl font-bold mb-4">Admin Panel</h2>
-                
-                <div class="bg-red-100 p-4 rounded-xl shadow mb-6 border border-red-200">
-                    <h3 class="font-bold mb-2 text-red-700">🆕 Account Activation Requests</h3>
-                    <div id="list-pending-users" class="space-y-2">
-                        <p class="text-center text-gray-500 text-sm">No pending requests currently.</p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
-                    <h3 class="font-bold mb-3 text-blue-700">👥 All Users Log</h3>
-                    <div id="list-all-users" class="space-y-2"></div>
-                </div>
-
-                <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
-                    <h3 class="font-bold mb-2 text-blue-700">➕ Manage Products</h3>
-                    <input id="adm-name" placeholder="Name" class="border p-2 w-full rounded mb-2">
-                    <input id="adm-price" placeholder="Price for Client" type="number" class="border p-2 w-full rounded mb-2">
-                    <input id="adm-comm" placeholder="Technician Commission" type="number" class="border p-2 w-full rounded mb-3">
-                    
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Product Image</label>
-                    <input type="file" id="adm-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-2 border p-2 rounded-lg bg-gray-50">
-                    <input id="adm-imgurl" placeholder="Or enter direct image URL" class="border p-2 w-full rounded mb-3 text-xs" dir="ltr"> 
-                    
-                    <button onclick="addProd()" class="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800 transition">Add Product</button>
-                    
-                    <h4 class="font-bold text-gray-700 mt-4 mb-3 border-t pt-3" id="admin-prod-header">📦 Current Products (0)</h4>
-                    <div id="list-admin" class="space-y-2"></div>
-                </div>
-
-                <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2">📜 All Maintenance Requests Log</h3>
-                <div id="list-all-requests" class="space-y-2"></div>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="font-bold text-lg mb-3">New Request</h3>
-            <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50">
-                <option>Signal Adjustment</option>
-                <option>TV Installation</option>
-                <option>General Maintenance</option>
-            </select>
-            
-            <input type="tel" id="srv-phone" placeholder="Contact Phone Number" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" dir="ltr">
-
-            <input id="srv-addr" placeholder="Detailed Address" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
-            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">Confirm Request</button>
-            <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition">Cancel</button>
-        </div>
-    </div>
-
-    <script>
-        // --- 0. Toast Notification System (Designed to work) ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            let bgColor, icon;
-
-            if (type === 'success') {
-                bgColor = 'bg-green-500';
-                icon = 'fas fa-check-circle';
-            } else if (type === 'error') {
-                bgColor = 'bg-red-500';
-                icon = 'fas fa-times-circle';
-            } else if (type === 'info') {
-                bgColor = 'bg-blue-500';
-                icon = 'fas fa-info-circle';
-            } else {
-                bgColor = 'bg-yellow-500';
-                icon = 'fas fa-exclamation-triangle';
-            }
-
-            const toast = document.createElement('div');
-            toast.className = `p-4 rounded-xl shadow-xl text-white font-bold text-sm flex items-center gap-3 ${bgColor} transition transform translate-x-full duration-300`;
-            toast.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.remove('translate-x-full');
-            }, 10); 
-
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-                toast.addEventListener('transitionend', () => toast.remove());
-            }, 4000);
-        }
-
-        // --- 1. Secure Data Management (Local Storage) ---
-        function getSafeData(key, defaultVal) {
-            try {
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : defaultVal;
-            } catch (e) {
-                console.error("Error retrieving data from LocalStorage:", e);
-                return defaultVal; 
-            }
-        }
-
-        const defaultImageUrl = 'https://picsum.photos/80/80?random=';
-
-        let db = {
-            // Version updates to prevent old data conflict
-            users: getSafeData('sf_users_v5', []),
-            products: getSafeData('sf_prods_v4', [
-                {id:1, name:'Echolink HD Receiver', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
-                {id:2, name:'High Quality LNB', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
-                {id:3, name:'IPTV Subscription Renewal', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
-            ]),
-            requests: getSafeData('sf_reqs_v4', []),
-            techLogs: getSafeData('sf_tech_logs_v4', []), 
-            current: getSafeData('sf_curr_v4', null)
-        };
-
-        function save() {
-            localStorage.setItem('sf_users_v5', JSON.stringify(db.users));
-            localStorage.setItem('sf_prods_v4', JSON.stringify(db.products));
-            localStorage.setItem('sf_reqs_v4', JSON.stringify(db.requests));
-            localStorage.setItem('sf_tech_logs_v4', JSON.stringify(db.techLogs));
-            localStorage.setItem('sf_curr_v4', JSON.stringify(db.current));
-        }
-
-        // --- 2. Interface Control ---
-        function switchView(view) {
-            document.getElementById('view-login').classList.add('d-none');
-            document.getElementById('view-register').classList.add('d-none');
-            document.getElementById(`view-${view}`).classList.remove('d-none');
-        }
-
-        // --- 3. Authentication ---
-        function tryRegister() {
-            const name = document.getElementById('reg-name').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
-            const role = document.querySelector('input[name="role"]:checked').value;
-
-            if(!name || !phone || !pass) return showToast("Please fill in all details.", 'error');
-            if(isNaN(phone) || phone.length < 5) return showToast("Invalid phone number.", 'error');
-            if(pass.length < 3) return showToast("Password is too short.", 'error');
-            
-            if(db.users.find(u => u.phone === phone)) return showToast("Phone number already in use.", 'error');
-
-            showLoader();
-            const user = { 
-                id: Date.now(), 
-                name, 
-                phone, 
-                pass, 
-                role, 
-                wallet: 0, 
-                isApproved: false,
-                regDate: new Date().toLocaleDateString('en-US') 
-            }; 
-            db.users.push(user);
-            save();
-            
-            hideLoader();
-            switchView('login');
-            showToast("✅ Account created. It must be approved by an administrator before login.", 'info');
-        }
-
-        function tryLogin() {
-            const phone = document.getElementById('login-phone').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            
-            showLoader();
-            const user = db.users.find(u => u.phone === phone && u.pass === pass);
-            
-            if(user) {
-                if (!user.isApproved && user.role !== 'admin') {
-                    hideLoader();
-                    return showToast("🚫 Your account is pending. It will be activated by the administration soon.", 'error');
-                }
-
-                const mainUser = db.users.find(u => u.id === user.id); 
-                db.current = mainUser || user;
-                save();
-                setTimeout(loadApp, 500);
-            } else {
-                hideLoader();
-                showToast("Incorrect credentials (Phone/Password).", 'error');
-            }
-        }
-
-        function demoAdmin() {
-             showLoader();
-             const adminUser = db.users.find(u => u.role === "admin" && u.phone === '1' && u.pass === '1');
-            
-             if (adminUser) {
-                 db.current = adminUser;
-                 save();
-                 setTimeout(loadApp, 500);
-             } else {
-                 hideLoader();
-                 showToast("⚠️ Demo admin account not found. Please try 'Clear Storage'.", 'error');
-             }
-        }
-
-
-        function doLogout() {
-            db.current = null;
-            save();
-            location.reload();
-        }
-
-        function hardReset() {
-            if(confirm("WARNING: This will clear ALL local system data. Are you sure?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // Loader functions
-        function showLoader() { document.getElementById('app-loader').classList.remove('d-none'); }
-        function hideLoader() { document.getElementById('app-loader').classList.add('d-none'); }
-
-        // --- 4. Load App ---
-        function loadApp() {
-            hideLoader();
-            if(!db.current) {
-                document.getElementById('auth-container').classList.remove('d-none');
-                document.getElementById('main-app').classList.add('d-none');
-                return; 
-            }
-
-            document.getElementById('auth-container').classList.add('d-none');
-            document.getElementById('main-app').classList.remove('d-none');
-            
-            const u = db.current;
-            const roleName = u.role === 'client' ? 'Client' : (u.role === 'tech' ? 'Technician' : 'Admin');
-            document.getElementById('user-welcome').innerText = `${u.name} (${roleName})`;
-
-            document.getElementById('panel-client').classList.add('d-none');
-            document.getElementById('panel-tech').classList.add('d-none');
-            document.getElementById('panel-admin').classList.add('d-none');
-
-            if(u.role === 'client') loadClient();
-            else if(u.role === 'tech') loadTech();
-            else if(u.role === 'admin') loadAdmin(); 
-            else {
-                 showToast("⚠️ Unknown user role. Logging out.", 'error');
-                 doLogout();
-            }
-        }
-
-        // --- 5. Client Functions ---
-        function loadClient() {
-            document.getElementById('panel-client').classList.remove('d-none');
-            clientTab('prod');
-            
-            document.getElementById('list-client').innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg">
-                    ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img mx-auto mb-2">` : `<div class="prod-icon mb-2">${p.icon || '📦'}</div>`}
-                    <div class="font-bold text-sm h-10 overflow-hidden">${p.name}</div>
-                    <div class="text-blue-600 font-bold mt-2">${p.price} DH</div>
-                </div>
-            `).join('');
-
-            updateClientRequestsList();
-        }
-
-        function clientTab(t) {
-            const isProd = t === 'prod';
-            document.getElementById('view-client-prod').classList.toggle('d-none', !isProd);
-            document.getElementById('view-client-req').classList.toggle('d-none', isProd);
-            
-            document.getElementById('btn-client-prod').classList.toggle('bg-blue-900', isProd);
-            document.getElementById('btn-client-prod').classList.toggle('text-white', isProd);
-            document.getElementById('btn-client-prod').classList.toggle('text-gray-600', !isProd);
-            
-            document.getElementById('btn-client-req').classList.toggle('bg-blue-900', !isProd);
-            document.getElementById('btn-client-req').classList.toggle('text-white', !isProd);
-            document.getElementById('btn-client-req').classList.toggle('text-gray-600', isProd);
-
-            if (t === 'req') updateClientRequestsList();
-        }
-
-        function updateClientRequestsList() {
-            const container = document.getElementById('list-client-req');
-            const clientReqs = db.requests.filter(r => r.client_id === db.current.id).reverse();
-
-            if(clientReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">You haven't requested any maintenance services yet.</p>`;
-                return;
-            }
-
-            container.innerHTML = clientReqs.map(r => {
-                let statusClass, statusText;
-                if(r.status === 'pending') { statusClass = 'border-yellow-500'; statusText = 'Pending'; }
-                else if(r.status === 'accepted') { statusClass = 'border-blue-500'; statusText = 'Accepted (In Progress)'; }
-                else if(r.status === 'completed') { statusClass = 'border-green-500'; statusText = 'Completed'; }
-                
-                return `
-                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass} flex justify-between items-center">
-                        <div>
-                            <div class="font-bold">${r.type}</div>
-                            <div class="text-xs text-gray-500">${r.addr} | Phone: ${r.phone}</div>
-                        </div>
-                        <span class="text-xs font-bold text-gray-700">${statusText}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openModal() { 
-            document.getElementById('srv-phone').value = db.current.phone || '';
-            document.getElementById('modal').classList.remove('d-none'); 
-        }
-
-        function closeModal() { document.getElementById('modal').classList.add('d-none'); }
-
-        function sendReq() {
-            const type = document.getElementById('srv-type').value.trim();
-            const phone = document.getElementById('srv-phone').value.trim();
-            const addr = document.getElementById('srv-addr').value.trim();
-            
-            if(!phone || !addr) return showToast("Please enter phone number and address.", 'error');
-            if(isNaN(phone) || phone.length < 5) return showToast("Invalid phone number.", 'error');
-
-            db.requests.push({ 
-                id: Date.now(), 
-                client: db.current.name, 
-                client_id: db.current.id,
-                phone: phone,
-                type, 
-                addr, 
-                status: 'pending',
-                technician_id: null,
-                date: new Date().toLocaleDateString('en-US')
-            });
-            save();
-            closeModal();
-            showToast("✅ Request sent successfully! Technicians will be notified.", 'success');
-        }
-
-        // --- 6. Technician Functions ---
-        function loadTech() {
-            document.getElementById('panel-tech').classList.remove('d-none');
-            document.getElementById('tech-wallet').innerText = db.current.wallet;
-            techTab('prod');
-
-            document.getElementById('view-tech-prod').innerHTML = db.products.map(p => `
-                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center transition hover:shadow-md">
-                    <div class="flex items-center gap-3">
-                        ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img w-12 h-12">` : `<div class="text-3xl">${p.icon || '📦'}</div>`}
-                        <div>
-                            <div class="font-bold">${p.name}</div>
-                            <div class="text-xs text-gray-500">Price for Client: ${p.price} DH</div>
-                        </div>
-                    </div>
-                    <button onclick="buy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.95] transition hover:bg-blue-800">Buy (+${p.comm})</button>
-                </div>
-            `).join('');
-
-            updateRequestsList();
-            updateTechLogs();
-        }
-
-        function techTab(t) {
-            const views = { 'prod': 'view-tech-prod', 'req': 'view-tech-req', 'log': 'view-tech-log' };
-            const btns = { 'prod': 'btn-prod', 'req': 'btn-req', 'log': 'btn-log' };
-            
-            for (let key in views) {
-                document.getElementById(views[key]).classList.add('d-none');
-                document.getElementById(btns[key]).classList.remove('bg-blue-900', 'text-white');
-                document.getElementById(btns[key]).classList.add('text-gray-600'); 
-            }
-
-            document.getElementById(views[t]).classList.remove('d-none');
-            document.getElementById(btns[t]).classList.add('bg-blue-900', 'text-white');
-            document.getElementById(btns[t]).classList.remove('text-gray-600');
-
-            if (t === 'req') updateRequestsList(); 
-            if (t === 'log') updateTechLogs(); 
-        }
-
-        function buy(id) {
-            const p = db.products.find(x => x.id === id);
-            if(confirm(`Confirm purchase of ${p.name}?\n You will earn a commission of: ${p.comm} DH`)) {
-                
-                db.current.wallet += parseInt(p.comm);
-                
-                const idx = db.users.findIndex(u => u.id === db.current.id);
-                if(idx !== -1) db.users[idx].wallet = db.current.wallet;
-
-                db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'product', amount: parseInt(p.comm), desc: `Sales commission: ${p.name}`, date: new Date().toLocaleDateString('en-US') });
-                
-                save();
-                document.getElementById('tech-wallet').innerText = db.current.wallet; 
-                showToast(`💰 ${p.comm} DH added to your balance!`, 'success');
-            }
-        }
-        
-        function updateRequestsList() {
-            const container = document.getElementById('view-tech-req');
-            const pendingAndAccepted = db.requests.filter(r => r.status === 'pending' || (r.status === 'accepted' && r.technician_id === db.current.id)).reverse();
-            
-            if(pendingAndAccepted.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400 py-10">No new or accepted work requests currently.</p>';
-                return;
-            }
-
-            container.innerHTML = pendingAndAccepted.map(r => {
-                let statusClass, btn;
-
-                if (r.status === 'pending') {
-                    statusClass = 'border-yellow-500';
-                    btn = `<button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-2 rounded-xl mt-3 text-sm hover:bg-black transition active:scale-[0.98]">Accept Job</button>`;
-                } else {
-                    statusClass = 'border-green-500';
-                    btn = `
-                        <div class="mt-3 bg-green-50 p-3 rounded-lg text-green-800">
-                            <p class="text-sm font-bold">Contact Client:</p>
-                            <a href="tel:${r.phone}" class="font-mono text-lg underline">${r.phone}</a>
-                        </div>
-                        <button onclick="finishRequest(${r.id})" class="w-full bg-red-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-red-700 transition active:scale-[0.98]"><i class="fas fa-check-circle mr-1"></i> Job Completed</button>
-                    `;
-                }
-
-                return `
-                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass}">
-                        <div class="flex justify-between items-center">
-                            <div class="font-bold text-lg">${r.type}</div>
-                            <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'New' : 'Accepted'}</span>
-                        </div>
-                        <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i> ${r.addr}</div>
-                        <div class="text-xs text-gray-400 mt-1">Client: ${r.client} | Phone: ${r.phone}</div>
-                        ${btn}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function accept(id) {
-            const r = db.requests.find(x => x.id === id);
-            if (!r) return;
-
-            r.status = 'accepted';
-            r.technician_id = db.current.id; 
-            save();
-            updateRequestsList();
-            showToast(`✅ Request accepted. Client phone: ${r.phone}`, 'info');
-        }
-        
-        function finishRequest(id) {
-            if(!confirm("Are you sure you want to finish this job? It will be closed and commission will be added.")) return;
-
-            const r = db.requests.find(x => x.id === id);
-            if(!r) return;
-
-            const jobCommission = 50; 
-            r.status = 'completed';
-            
-            db.current.wallet += jobCommission; 
-            const idx = db.users.findIndex(u => u.id === db.current.id);
-            if(idx !== -1) db.users[idx].wallet = db.current.wallet;
-            
-            db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'job', amount: jobCommission, desc: `Service commission: ${r.type}`, date: new Date().toLocaleDateString('en-US') });
-
-            save();
-            updateRequestsList(); 
-            document.getElementById('tech-wallet').innerText = db.current.wallet;
-            showToast(`🎉 Request closed! ${jobCommission} DH added to your balance.`, 'success');
-        }
-
-        function updateTechLogs() {
-            const container = document.getElementById('list-tech-log');
-            const techLogs = db.techLogs.filter(log => log.techId === db.current.id).reverse();
-
-            if (techLogs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">You haven't earned any profits yet.</p>`;
-                return;
-            }
-            
-            container.innerHTML = techLogs.map(log => `
-                <div class="bg-white p-3 rounded-xl shadow border-l-4 ${log.type === 'product' ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
-                    <div>
-                        <div class="font-bold">${log.desc}</div>
-                        <div class="text-xs text-gray-500">${log.date}</div>
-                    </div>
-                    <span class="font-bold text-green-600">+${log.amount} DH</span>
-                </div>
-            `).join('');
-        }
-
-
-        // --- 7. Admin Functions ---
-        function loadAdmin() {
-            document.getElementById('panel-admin').classList.remove('d-none');
-            
-            updatePendingUsersList();
-            updateAllUsersList();
-            updateAdminRequestsList();
-            
-            document.getElementById('admin-prod-header').innerHTML = `📦 Current Products (${db.products.length})`;
-            
-            document.getElementById('list-admin').innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded flex justify-between items-center border shadow-sm">
-                    <div class="flex items-center gap-3">
-                        ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img w-10 h-10">` : `<div class="text-xl">${p.icon || '📦'}</div>`}
-                        <div>
-                            <span class="font-bold">${p.name}</span>
-                            <div class="text-xs text-gray-500">Price: ${p.price} | Commission: ${p.comm}</div>
-                        </div>
-                    </div>
-                    <div class="space-x-2 space-x-reverse">
-                        <button onclick="delProd(${p.id})" class="text-red-500 text-sm hover:text-red-700 transition"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function updateAllUsersList() {
-            const container = document.getElementById('list-all-users');
-            const allUsers = db.users.filter(u => u.id !== 0).sort((a, b) => b.id - a.id);
-
-            if(allUsers.length === 0) {
-                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">No registered users yet.</p>`;
-                 return;
-            }
-
-            container.innerHTML = allUsers.map(u => {
-                const roleText = u.role === 'admin' ? 'Admin' : (u.role === 'tech' ? 'Technician 🔧' : 'Client 👤');
-                const approvalText = u.isApproved ? '✅ Approved' : '❌ Pending';
-                const approvalColor = u.isApproved ? 'text-green-600' : 'text-red-600';
-                
-                return `
-                    <div class="bg-white p-3 rounded shadow border-l-4 ${u.isApproved ? 'border-green-400' : 'border-yellow-400'} flex justify-between items-center">
-                        <div>
-                            <span class="font-bold">${u.name}</span>
-                            <div class="text-xs text-gray-500">
-                                ${roleText} | Phone: ${u.phone}
-                                <span class="${approvalColor} font-bold ml-2">${approvalText}</span>
-                            </div>
-                            <div class="text-xs text-gray-400 mt-1">Registration Date: ${u.regDate || 'N/A'}</div>
-                        </div>
-                        <div class="space-x-2 space-x-reverse">
-                            <button onclick="deleteUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">Delete</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function deleteUser(id) {
-            if(confirm('Are you sure you want to permanently delete this user?')) {
-                db.users = db.users.filter(u => u.id !== id);
-                save();
-                updatePendingUsersList(); 
-                updateAllUsersList();
-                showToast("User deleted successfully.", 'success');
-            }
-        }
-
-        function updatePendingUsersList() {
-            const container = document.getElementById('list-pending-users');
-            const pendingUsers = db.users.filter(u => u.role !== 'admin' && u.isApproved === false);
-
-            if(pendingUsers.length === 0) {
-                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">No pending requests currently.</p>`;
-                 return;
-            }
-
-            container.innerHTML = pendingUsers.map(u => `
-                <div class="bg-white p-3 rounded shadow border-l-4 border-red-400 flex justify-between items-center">
-                    <div>
-                        <span class="font-bold">${u.name}</span>
-                        <div class="text-xs text-gray-500">Account Type: ${u.role === 'tech' ? 'Technician 🔧' : 'Client 👤'} | Phone: ${u.phone}</div>
-                    </div>
-                    <div class="space-x-2 space-x-reverse">
-                        <button onclick="approveUser(${u.id})" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition">Approve</button>
-                        <button onclick="rejectUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">Reject</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function approveUser(id) {
-            const userIndex = db.users.findIndex(u => u.id === id);
-            if (userIndex !== -1) {
-                db.users[userIndex].isApproved = true;
-                save();
-                updatePendingUsersList();
-                updateAllUsersList();
-                showToast(`✅ Account for ${db.users[userIndex].name} activated. They can now log in.`, 'success');
-            }
-        }
-        
-        function rejectUser(id) {
-            if(confirm('Are you sure you want to reject and delete this user?')) {
-                db.users = db.users.filter(u => u.id !== id);
-                save();
-                updatePendingUsersList();
-                updateAllUsersList();
-                showToast("User deleted successfully.", 'success');
-            }
-        }
-
-        function updateAdminRequestsList() {
-             const container = document.getElementById('list-all-requests');
-             const allReqs = db.requests.slice().reverse(); 
-
-             if(allReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-4">No requests in the log.</p>`;
-                return;
-             }
-
-             container.innerHTML = allReqs.map(r => {
-                const tech = db.users.find(u => u.id === r.technician_id);
-                
-                let statusColor, statusText;
-                if(r.status === 'completed') { statusColor = 'border-green-500'; statusText = 'Completed'; }
-                else if(r.status === 'accepted') { statusColor = 'border-blue-500'; statusText = 'Accepted (In Progress)'; }
-                else { statusColor = 'border-yellow-500'; statusText = 'Pending'; }
-                
-                const techInfo = tech ? `<span class="text-xs text-gray-700">| Tech: ${tech.name}</span>` : '';
-
-                return `
-                    <div class="bg-white p-3 rounded shadow-sm border-r-4 ${statusColor} flex justify-between items-center">
-                        <div>
-                            <span class="font-bold">${r.type}</span> 
-                            <span class="text-xs text-gray-500 ml-2">(${r.date})</span>
-                            <div class="text-xs text-gray-600">Client: ${r.client} | Phone: ${r.phone} ${techInfo}</div>
-                            <div class="text-xs text-gray-400 mt-1">Address: ${r.addr}</div>
-                        </div>
-                        <div class="text-center">
-                            <span class="text-xs font-bold text-gray-700">${statusText}</span>
-                            <button onclick="deleteRequest(${r.id})" class="block mt-1 text-red-500 text-xs hover:text-red-700">Delete</button>
-                        </div>
-                    </div>
-                `;
-             }).join('');
-        }
-
-        function deleteRequest(id) {
-            if(confirm('Delete this request permanently from the log?')) {
-                db.requests = db.requests.filter(r => r.id !== id);
-                save();
-                updateAdminRequestsList();
-                showToast("Request deleted successfully.", 'success');
-            }
-        }
-
-        async function addProd() {
-            const name = document.getElementById('adm-name').value.trim();
-            const price = parseInt(document.getElementById('adm-price').value.trim());
-            const comm = parseInt(document.getElementById('adm-comm').value.trim());
-            const imgURL = document.getElementById('adm-imgurl').value.trim(); 
-            const imageFile = document.getElementById('adm-image-file').files[0];
-
-            
-            if(!name || isNaN(price) || isNaN(comm) || price <= 0 || comm < 0) {
-                return showToast("Please enter valid data (Name, Price, Commission).", 'error');
-            }
-
-            let finalImageLink = null;
-
-            if (imageFile) {
-                showLoader();
-                showToast("Processing image... (Upload simulation)", 'info');
-                
-                await new Promise(resolve => setTimeout(resolve, 500)); 
-
-                finalImageLink = await new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.onerror = () => {
-                        showToast("Failed to read image file.", 'error');
-                        resolve(null);
-                    };
-                    reader.readAsDataURL(imageFile);
-                });
-                
-                hideLoader();
-            } else if (imgURL) {
-                finalImageLink = imgURL;
-            } else {
-                 finalImageLink = defaultImageUrl + Date.now();
-            }
-            
-            db.products.push({ 
-                id: Date.now(), 
-                name, 
-                price, 
-                comm, 
-                imgURL: finalImageLink, 
-                icon: '📦' 
-            });
-            save();
-            loadAdmin();
-
-            document.getElementById('adm-name').value = '';
-            document.getElementById('adm-price').value = '';
-            document.getElementById('adm-comm').value = '';
-            document.getElementById('adm-imgurl').value = ''; 
-            document.getElementById('adm-image-file').value = ''; 
-
-            showToast("✅ Product added successfully.", 'success');
-        }
-
-        function delProd(id) {
-            if(confirm('Are you sure you want to delete this product?')) {
-                db.products = db.products.filter(p => p.id !== id);
-                save();
-                loadAdmin();
-                if (db.current && db.current.role === 'client') loadClient();
-                showToast("Product deleted successfully.", 'success');
-            }
-        }
-
-        // --- 8. Startup (Ensure Admin exists) ---
-        document.addEventListener('DOMContentLoaded', () => {
-             // Ensure the demo admin account exists (Phone: 1, Pass: 1)
-            if (!db.users.find(u => u.role === "admin")) {
-                db.users.push({ 
-                    id: 0, 
-                    name: "Admin (Demo)", 
-                    role: "admin", 
-                    wallet: 99999, 
-                    phone: '1', 
-                    pass: '1', 
-                    isApproved: true,
-                    regDate: new Date().toLocaleDateString('en-US')
-                }); 
-                save();
-            }
-            loadApp();
-        });
-
-    </script>
-</body>
-</html>
+// --- 0.5. Language Data & Management ---
+
+const translations = {
+    'ar': {
+        'app_title': 'Honest Sat',
+        'login_title': 'تسجيل الدخول',
+        'phone_placeholder': 'رقم الهاتف',
+        'password_placeholder': 'كلمة المرور',
+        'login_button': 'دخول',
+        'no_account': 'ليس لديك حساب؟',
+        'create_account_button': '✨ إنشاء حساب جديد',
+        'back_to_login': '🔙 العودة لتسجيل الدخول',
+        'name_placeholder': 'الاسم الكامل',
+        'register_title': 'حساب جديد',
+        'register_button': 'تسجيل',
+        'role_client': '👤 عميل',
+        'role_tech': '🔧 فني',
+        'register_as': 'أرغب بالتسجيل كـ:',
+        'logout_button': 'تسجيل خروج',
+        'client_shop_tab': '🛒 تسوق المنتجات',
+        'client_req_tab': '📜 طلباتي السابقة',
+        'maintenance_title': 'خدمة الصيانة',
+        'maintenance_text': 'هل لديك عطل؟ اطلب فنياً الآن.',
+        'request_service_button': 'طلب خدمة',
+        'available_products': '⭐ المنتجات المتاحة',
+        'request_history': 'سجل طلبات الصيانة',
+        'tech_balance': 'الرصيد المتاح',
+        'tech_withdraw': '💸 سحب الأرباح',
+        'tech_buy_prod': 'شراء منتجات',
+        'tech_work_req': 'طلبات العمل',
+        'tech_earnings_log': 'سجل الأرباح',
+        'new_request_title': 'طلب جديد',
+        'service_phone': 'رقم هاتف الاتصال',
+        'service_addr': 'العنوان المفصل',
+        'confirm_request': 'تأكيد الطلب',
+        'cancel_button': 'إلغاء',
+        'status_pending': 'معلَّق',
+        'status_accepted': 'مقبول (قيد التنفيذ)',
+        'status_completed': 'مكتمل',
+        'accept_job': 'قبول المهمة',
+        'job_completed': '✅ المهمة اكتملت',
+        'contact_client': 'تواصل مع العميل:',
+        'admin_panel_title': 'لوحة تحكم المدير',
+        'admin_pending_users': '🆕 طلبات تفعيل الحسابات',
+        'admin_all_users': '👥 سجل جميع المستخدمين',
+        'admin_manage_prods': '➕ إدارة المنتجات',
+        'admin_prod_name': 'الاسم',
+        'admin_prod_price': 'سعر العميل',
+        'admin_prod_comm': 'عمولة الفني',
+        'admin_prod_image_file': 'صورة المنتج',
+        'admin_prod_image_url': 'أو أدخل رابط الصورة المباشر',
+        'admin_add_prod': 'إضافة منتج',
+        'admin_current_prods': '📦 المنتجات الحالية',
+        'admin_all_requests': '📜 سجل جميع طلبات الصيانة',
+        'approve_button': 'قبول',
+        'reject_button': 'رفض',
+        'delete_button': 'حذف',
+        'admin_delete_user': 'حذف',
+        'admin_client_role': 'عميل 👤',
+        'admin_tech_role': 'فني 🔧',
+        'admin_approved': '✅ مقبول',
+        'admin_pending': '❌ معلَّق',
+    },
+    'fr': {
+        'app_title': 'Honest Sat',
+        'login_title': 'Connexion',
+        'phone_placeholder': 'Numéro de Téléphone',
+        'password_placeholder': 'Mot de passe',
+        'login_button': 'Se Connecter',
+        'no_account': 'Pas de compte?',
+        'create_account_button': '✨ Créer un nouveau compte',
+        'back_to_login': '🔙 Retour à la Connexion',
+        'name_placeholder': 'Nom Complet',
+        'register_title': 'Nouveau Compte',
+        'register_button': 'S\'inscrire',
+        'role_client': '👤 Client',
+        'role_tech': '🔧 Technicien',
+        'register_as': 'Je veux m\'inscrire en tant que:',
+        'logout_button': 'Déconnexion',
+        'client_shop_tab': '🛒 Acheter des Produits',
+        'client_req_tab': '📜 Mes Demandes',
+        'maintenance_title': 'Service de Maintenance',
+        'maintenance_text': 'Un problème? Demandez un technicien maintenant.',
+        'request_service_button': 'Demander un Service',
+        'available_products': '⭐ Produits Disponibles',
+        'request_history': 'Historique des demandes de maintenance',
+        'tech_balance': 'Solde Disponible',
+        'tech_withdraw': '💸 Retirer les gains',
+        'tech_buy_prod': 'Acheter Produits',
+        'tech_work_req': 'Demandes de Travail',
+        'tech_earnings_log': 'Journal des Gains',
+        'new_request_title': 'Nouvelle Demande',
+        'service_phone': 'Numéro de Téléphone Contact',
+        'service_addr': 'Adresse Détaillée',
+        'confirm_request': 'Confirmer la Demande',
+        'cancel_button': 'Annuler',
+        'status_pending': 'En Attente',
+        'status_accepted': 'Acceptée (En Cours)',
+        'status_completed': 'Terminée',
+        'accept_job': 'Accepter le Travail',
+        'job_completed': '✅ Travail Terminé',
+        'contact_client': 'Contacter le Client:',
+        'admin_panel_title': 'Panneau d\'Administration',
+        'admin_pending_users': '🆕 Demandes d\'Activation de Compte',
+        'admin_all_users': '👥 Journal de Tous les Utilisateurs',
+        'admin_manage_prods': '➕ Gérer les Produits',
+        'admin_prod_name': 'Nom',
+        'admin_prod_price': 'Prix Client',
+        'admin_prod_comm': 'Commission Technicien',
+        'admin_prod_image_file': 'Image du Produit',
+        'admin_prod_image_url': 'Ou entrez l\'URL de l\'image directe',
+        'admin_add_prod': 'Ajouter Produit',
+        'admin_current_prods': '📦 Produits Actuels',
+        'admin_all_requests': '📜 Journal de Toutes les Demandes',
+        'approve_button': 'Approuver',
+        'reject_button': 'Rejeter',
+        'delete_button': 'Supprimer',
+        'admin_delete_user': 'Supprimer',
+        'admin_client_role': 'Client 👤',
+        'admin_tech_role': 'Technicien 🔧',
+        'admin_approved': '✅ Approuvé',
+        'admin_pending': '❌ En Attente',
+    },
+    'en': {
+        // ... (Keep existing English texts, or define them explicitly if needed)
+        'app_title': 'Honest Sat',
+        'login_title': 'Login',
+        'phone_placeholder': 'Phone Number',
+        'password_placeholder': 'Password',
+        'login_button': 'Login',
+        'no_account': "Don't have an account?",
+        'create_account_button': '✨ Create New Account',
+        'back_to_login': '🔙 Back to Login',
+        'name_placeholder': 'Full Name',
+        'register_title': 'New Account',
+        'register_button': 'Register',
+        'role_client': '👤 Client',
+        'role_tech': '🔧 Technician',
+        'register_as': 'I want to register as:',
+        'logout_button': 'Logout',
+        'client_shop_tab': '🛒 Shop Products',
+        'client_req_tab': '📜 My Past Requests',
+        'maintenance_title': 'Maintenance Service',
+        'maintenance_text': 'Got a fault? Request a technician now.',
+        'request_service_button': 'Request Service',
+        'available_products': '⭐ Available Products',
+        'request_history': 'Maintenance Request History',
+        'tech_balance': 'Available Balance',
+        'tech_withdraw': '💸 Withdraw Earnings',
+        'tech_buy_prod': 'Buy Products',
+        'tech_work_req': 'Work Requests',
+        'tech_earnings_log': 'Earnings Log',
+        'new_request_title': 'New Request',
+        'service_phone': 'Contact Phone Number',
+        'service_addr': 'Detailed Address',
+        'confirm_request': 'Confirm Request',
+        'cancel_button': 'Cancel',
+        'status_pending': 'Pending',
+        'status_accepted': 'Accepted (In Progress)',
+        'status_completed': 'Completed',
+        'accept_job': 'Accept Job',
+        'job_completed': '✅ Job Completed',
+        'contact_client': 'Contact Client:',
+        'admin_panel_title': 'Admin Panel',
+        'admin_pending_users': '🆕 Account Activation Requests',
+        'admin_all_users': '👥 All Users Log',
+        'admin_manage_prods': '➕ Manage Products',
+        'admin_prod_name': 'Name',
+        'admin_prod_price': 'Price for Client',
+        'admin_prod_comm': 'Technician Commission',
+        'admin_prod_image_file': 'Product Image',
+        'admin_prod_image_url': 'Or enter direct image URL',
+        'admin_add_prod': 'Add Product',
+        'admin_current_prods': '📦 Current Products',
+        'admin_all_requests': '📜 All Maintenance Requests Log',
+        'approve_button': 'Approve',
+        'reject_button': 'Reject',
+        'delete_button': 'Delete',
+        'admin_delete_user': 'Delete',
+        'admin_client_role': 'Client 👤',
+        'admin_tech_role': 'Technician 🔧',
+        'admin_approved': '✅ Approved',
+        'admin_pending': '❌ Pending',
+    }
+};
+
+let currentLang = getSafeData('app_lang_v1', 'ar'); // Default to Arabic
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('app_lang_v1', JSON.stringify(lang));
+    updateUI(lang); // Update all visible texts
+    // Ensure the application state (like the current panel) is re-rendered to apply new texts
+    if(db.current) {
+        loadApp();
+    } else {
+        // If not logged in, just update the auth container
+        document.getElementById('view-login').classList.remove('d-none'); // Force rendering of login view
+        document.getElementById('view-register').classList.add('d-none');
+    }
+}
+
+function t(key) {
+    return translations[currentLang][key] || translations['en'][key] || `[${key}]`;
+}
+
+// Function to handle global text updates
+function updateUI(lang) {
+    // 1. Update text direction
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    
+    // 2. Update meta tags (Title)
+    document.title = t('app_title') + ' | Stable Version';
+
+    // 3. Update all elements with data-i18n attributes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.innerText = t(key);
+    });
+
+    // 4. Update all elements with data-i18n-placeholder attributes
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        el.setAttribute('placeholder', t(key));
+    });
+}
