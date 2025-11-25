@@ -153,14 +153,21 @@
                     <button onclick="openWithdrawModal()" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> <span data-i18n="tech_withdraw">Withdraw Earnings</span></button>
                 </div>
                 
-                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
+                <div class="grid grid-cols-4 gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
                     <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition" data-i18n="tech_buy_prod">Buy Products</button>
-                    <button onclick="techTab('req')" id="btn-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_work_req">Work Requests</button>
+                    <button onclick="techTab('work')" id="btn-work" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_work_req">Work Requests</button>
+                    <button onclick="techTab('purchase')" id="btn-purchase" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_purchase_log">Purchases</button>
                     <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_earnings_log">Earnings Log</button>
                 </div>
                 
                 <div id="view-tech-prod" class="space-y-3"></div>
-                <div id="view-tech-req" class="d-none space-y-3"></div>
+                <div id="view-tech-work" class="d-none space-y-3"></div>
+                
+                <div id="view-tech-purchase" class="d-none space-y-3">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" data-i18n="tech_purchase_log_header">Product Purchase History</h3>
+                    <div id="list-tech-purchase"></div>
+                </div>
+                
                 <div id="view-tech-log" class="d-none space-y-3">
                     <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" data-i18n="tech_earnings_log">Earnings and Commission Log</h3>
                     <div id="list-tech-log"></div>
@@ -338,6 +345,8 @@
                 'tech_buy_prod': 'شراء منتجات',
                 'tech_work_req': 'طلبات العمل',
                 'tech_earnings_log': 'سجل الأرباح',
+                'tech_purchase_log': 'سجل المشتريات', // NEW
+                'tech_purchase_log_header': 'تاريخ شراء المنتجات', // NEW
                 'new_request_title': 'طلب جديد',
                 'service_phone': 'رقم هاتف الاتصال',
                 'service_addr': 'العنوان المفصل',
@@ -435,6 +444,17 @@
                 'pay_button': 'دفع',
                 'payment_processed_success': 'تم خصم المبلغ ({amount} DH) من رصيد الفني بنجاح.',
                 'balance_deducted': 'تم خصم الرصيد',
+                'details': 'التفاصيل',
+                'admin_confirm_comm': '✅ تأكيد واستلام العمولة', // NEW
+                'Product Purchase Request': 'طلب شراء منتج', // NEW
+                'Tech Purchase Request': 'طلب شراء (فني)', // NEW
+                'Product': 'المنتج', // NEW
+                'Commission': 'العمولة', // NEW
+                'Status': 'الحالة', // NEW
+                'Pending': 'معلق', // NEW
+                'Confirmed': 'مؤكد', // NEW
+                'purchase_confirmed_success': 'تم تأكيد الشراء. أضيفت العمولة إلى رصيد الفني.', // NEW
+                'no_purchases_yet': 'لم تقدم أي طلبات شراء منتجات بعد.', // NEW
             },
             'fr': {
                 'app_title': 'Honest Sat',
@@ -465,6 +485,8 @@
                 'tech_buy_prod': 'Acheter Produits',
                 'tech_work_req': 'Demandes de Travail',
                 'tech_earnings_log': 'Journal des Gains',
+                'tech_purchase_log': 'Journal des Achats', // NEW
+                'tech_purchase_log_header': 'Historique d\'Achat des Produits', // NEW
                 'new_request_title': 'Nouvelle Demande',
                 'service_phone': 'Numéro de Téléphone Contact',
                 'service_addr': 'Adresse Détaillée',
@@ -562,6 +584,17 @@
                 'pay_button': 'Payer',
                 'payment_processed_success': 'Montant ({amount} DH) déduit du solde du technicien avec succès.',
                 'balance_deducted': 'Solde Déduit',
+                'details': 'Détails',
+                'admin_confirm_comm': '✅ Confirmer & Recevoir Commission', // NEW
+                'Product Purchase Request': 'Demande d\'achat de produit', // NEW
+                'Tech Purchase Request': 'Demande d\'achat (Tech)', // NEW
+                'Product': 'Produit', // NEW
+                'Commission': 'Commission', // NEW
+                'Status': 'Statut', // NEW
+                'Pending': 'En Attente', // NEW
+                'Confirmed': 'Confirmé', // NEW
+                'purchase_confirmed_success': 'Achat confirmé. Commission ajoutée au solde du technicien.', // NEW
+                'no_purchases_yet': 'Vous n\'avez pas encore soumis de demandes d\'achat de produit.', // NEW
             },
             'en': {
                 'app_title': 'Honest Sat',
@@ -592,6 +625,8 @@
                 'tech_buy_prod': 'Buy Products',
                 'tech_work_req': 'Work Requests',
                 'tech_earnings_log': 'Earnings Log',
+                'tech_purchase_log': 'Purchase Log', // NEW
+                'tech_purchase_log_header': 'Product Purchase History', // NEW
                 'new_request_title': 'New Request',
                 'service_phone': 'Contact Phone Number',
                 'service_addr': 'Detailed Address',
@@ -689,6 +724,17 @@
                 'pay_button': 'Pay',
                 'payment_processed_success': 'Amount ({amount} DH) deducted from technician balance successfully.',
                 'balance_deducted': 'Balance Deducted',
+                'details': 'Details',
+                'admin_confirm_comm': '✅ Confirm & Receive Commission', // NEW
+                'Product Purchase Request': 'Product Purchase Request', // NEW
+                'Tech Purchase Request': 'Purchase Request (Tech)', // NEW
+                'Product': 'Product', // NEW
+                'Commission': 'Commission', // NEW
+                'Status': 'Status', // NEW
+                'Pending': 'Pending', // NEW
+                'Confirmed': 'Confirmed', // NEW
+                'purchase_confirmed_success': 'Purchase confirmed. Commission added to technician balance.', // NEW
+                'no_purchases_yet': 'You have not submitted any product purchase requests yet.', // NEW
             }
         };
 
@@ -782,26 +828,26 @@
 
         let db = {
             // Version updates to prevent old data conflict
-            users: getSafeData('sf_users_v7', []), // Updated for Admin Finance
+            users: getSafeData('sf_users_v8', []), // Updated
             products: getSafeData('sf_prods_v5', [
                 {id:1, name:'Echolink HD Receiver', description: 'جهاز استقبال عالي الدقة يدعم جميع القنوات الفضائية وخدمات التشفير.', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
                 {id:2, name:'High Quality LNB', description: 'مفتاح عالي الجودة لتقوية الإشارة وتحسين الاستقبال في الظروف الصعبة.', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
                 {id:3, name:'IPTV Subscription Renewal', description: 'تجديد اشتراك IPTV لمدة عام كامل، يضم آلاف القنوات والمكتبة الرقمية.', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
             ]),
-            requests: getSafeData('sf_reqs_v5', []),
-            techLogs: getSafeData('sf_tech_logs_v5', []), 
+            requests: getSafeData('sf_reqs_v8', []), // Updated
+            techLogs: getSafeData('sf_tech_logs_v8', []), // Updated 
             // NEW: Withdrawal requests storage
             withdrawals: getSafeData('sf_withdrawals_v7', []), 
-            current: getSafeData('sf_curr_v7', null) // Updated
+            current: getSafeData('sf_curr_v8', null) // Updated
         };
 
         function save() {
-            localStorage.setItem('sf_users_v7', JSON.stringify(db.users));
+            localStorage.setItem('sf_users_v8', JSON.stringify(db.users));
             localStorage.setItem('sf_prods_v5', JSON.stringify(db.products));
-            localStorage.setItem('sf_reqs_v5', JSON.stringify(db.requests));
-            localStorage.setItem('sf_tech_logs_v5', JSON.stringify(db.techLogs));
+            localStorage.setItem('sf_reqs_v8', JSON.stringify(db.requests));
+            localStorage.setItem('sf_tech_logs_v8', JSON.stringify(db.techLogs));
             localStorage.setItem('sf_withdrawals_v7', JSON.stringify(db.withdrawals));
-            localStorage.setItem('sf_curr_v7', JSON.stringify(db.current));
+            localStorage.setItem('sf_curr_v8', JSON.stringify(db.current));
         }
 
         // --- 2. Interface Control ---
@@ -943,7 +989,7 @@
             
             // MODIFIED: Added onclick to open product details modal
             document.getElementById('list-client').innerHTML = db.products.map(p => `
-                <div onclick="openProductModal(${p.id})" class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg cursor-pointer">
+                <div onclick="openProductModal(${p.id}, 'client')" class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg cursor-pointer">
                     ${p.imgURL ? `<img src="${p.imgURL}" alt="${p.name}" class="prod-img mx-auto mb-2">` : `<div class="prod-icon mb-2">${p.icon || '📦'}</div>`}
                     <div class="font-bold text-sm h-10 overflow-hidden">${p.name}</div>
                     <div class="text-blue-600 font-bold mt-2">${p.price} DH</div>
@@ -971,7 +1017,8 @@
 
         function updateClientRequestsList() {
             const container = document.getElementById('list-client-req');
-            const clientReqs = db.requests.filter(r => r.client_id === db.current.id).reverse();
+            // Filter out tech purchase requests for client view
+            const clientReqs = db.requests.filter(r => r.client_id === db.current.id && r.type !== t('Tech Purchase Request')).reverse();
 
             if(clientReqs.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-400 py-6">${t('no_client_reqs_yet')}</p>`;
@@ -980,9 +1027,12 @@
 
             container.innerHTML = clientReqs.map(r => {
                 let statusClass, statusText;
+                // Check for product purchase requests submitted by client
+                const isProductPurchase = r.type.startsWith(t('Buy Now')) || r.type.startsWith(t('Add to Cart'));
+                
                 if(r.status === 'pending') { statusClass = 'border-yellow-500'; statusText = t('status_pending'); }
                 else if(r.status === 'accepted') { statusClass = 'border-blue-500'; statusText = t('status_accepted'); }
-                else if(r.status === 'completed') { statusClass = 'border-green-500'; statusText = t('status_completed'); }
+                else if(r.status === 'completed' || isProductPurchase) { statusClass = 'border-green-500'; statusText = t('status_completed'); }
                 
                 // Extract relevant detail for client view (phone is always visible)
                 let detail = r.addr.split('|')[0] || r.addr;
@@ -1029,7 +1079,8 @@
         }
         
         // --- Product Details Modal Functions ---
-        function openProductModal(productId) {
+        // تم تعديل الدالة لتقبل مُعامل (role) لمعرفة دور المستخدم
+        function openProductModal(productId, role = 'client') {
             const product = db.products.find(p => p.id === productId);
             if (!product) {
                 return showToast(t("Product not found."), 'error');
@@ -1037,7 +1088,25 @@
 
             const contentDiv = document.getElementById('product-details-content');
             
-            // UPDATED: Removed Tech Commission, Added Description and Action Buttons
+            // محتوى خاص بالفني: زر شراء واحد يضيف عمولة
+            const techActions = `
+                <button onclick="buyFromModal(${product.id})" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">
+                    ${t('tech_buy_prod')} (${product.price} DH)
+                </button>
+                <p class="text-center text-sm text-green-700 font-bold mt-2">
+                    ${t('You will earn a commission of')}: ${product.comm} DH
+                </p>
+            `;
+
+            // محتوى خاص بالعميل: زري شراء وإضافة للسلة
+            const clientActions = `
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button onclick="addToCart(${product.id})" class="bg-gray-700 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition active:scale-[0.98]" data-i18n="add_to_cart_button">${t('add_to_cart_button')}</button>
+                    <button onclick="buyNow(${product.id})" class="bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition active:scale-[0.98]" data-i18n="buy_now_button">${t('buy_now_button')}</button>
+                </div>
+            `;
+            
+            // محتوى تفاصيل المنتج (مشترك بين العميل والفني)
             contentDiv.innerHTML = `
                 <div class="text-center mb-4">
                     ${product.imgURL ? `<img src="${product.imgURL}" alt="${product.name}" class="prod-img w-24 h-24 mx-auto mb-3 border p-1">` : `<div class="text-6xl mb-3">${product.icon || '📦'}</div>`}
@@ -1056,25 +1125,28 @@
                     </div>` : ''}
                     
                     <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                        <span class="font-semibold text-gray-600" data-i18n="product_price_label">${t('product_price_label')}</span>
-                        <span class="font-bold text-blue-600 text-xl">${product.price} DH</span>
+                        <span class="font-semibold text-gray-600" data-i18n="product_price_label">${t('product_price_label')} (DH)</span>
+                        <span class="font-bold text-blue-600 text-xl">${product.price}</span>
                     </div>
-
+                    
+                    ${role === 'tech' ? `
+                    <div class="flex justify-between items-center p-2 bg-green-100 rounded-lg">
+                        <span class="font-semibold text-green-700" data-i18n="admin_prod_comm">${t('admin_prod_comm')} (DH)</span>
+                        <span class="font-bold text-green-700 text-lg">${product.comm}</span>
                     </div>
+                    ` : ''}
 
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <button onclick="addToCart(${product.id})" class="bg-gray-700 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition active:scale-[0.98]" data-i18n="add_to_cart_button">${t('add_to_cart_button')}</button>
-                    <button onclick="buyNow(${product.id})" class="bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition active:scale-[0.98]" data-i18n="buy_now_button">${t('buy_now_button')}</button>
                 </div>
+
+                ${role === 'tech' ? techActions : clientActions}
             `;
 
-            // Apply translations on dynamically injected elements
             updateUI(currentLang); 
             
             document.getElementById('product-modal').classList.remove('d-none');
         }
         
-        // --- Product Purchase Functions ---
+        // --- Product Purchase Functions (Client) ---
         function recordProductPurchase(productId, type = 'buy') {
             closeModal('product-modal');
             const product = db.products.find(p => p.id === productId);
@@ -1082,7 +1154,7 @@
             
             const actionText = type === 'buy' ? t('Buy Now') : t('Add to Cart');
             
-            // Use the existing requests structure for simplicity in Admin Panel tracking
+            // Client purchases are recorded as pending service request until confirmed
             db.requests.push({
                 id: Date.now(), 
                 client: db.current.name, 
@@ -1090,7 +1162,7 @@
                 phone: db.current.phone, 
                 type: `${actionText} - ${product.name}`, 
                 addr: `${t('Product ID')}: ${productId} | ${t('Price')}: ${product.price} DH`, 
-                status: 'pending', // Treat product purchase as pending service request until confirmed
+                status: 'pending', 
                 technician_id: null,
                 date: new Date().toLocaleDateString('en-US')
             });
@@ -1126,17 +1198,18 @@
                             <div class="text-xs text-gray-500">${t('admin_prod_price')}: ${p.price} DH</div>
                         </div>
                     </div>
-                    <button onclick="buy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.95] transition hover:bg-blue-800">${t('tech_buy_prod')} (+${p.comm})</button>
+                    <button onclick="openProductModal(${p.id}, 'tech')" class="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.95] transition hover:bg-black">${t('details')} (+${p.comm})</button>
                 </div>
             `).join('');
 
             updateRequestsList();
             updateTechLogs();
+            updateTechPurchaseLog(); // NEW: Call to update purchase log
         }
 
         function techTab(t) {
-            const views = { 'prod': 'view-tech-prod', 'req': 'view-tech-req', 'log': 'view-tech-log' };
-            const btns = { 'prod': 'btn-prod', 'req': 'btn-req', 'log': 'btn-log' };
+            const views = { 'prod': 'view-tech-prod', 'work': 'view-tech-work', 'purchase': 'view-tech-purchase', 'log': 'view-tech-log' };
+            const btns = { 'prod': 'btn-prod', 'work': 'btn-work', 'purchase': 'btn-purchase', 'log': 'btn-log' };
             
             for (let key in views) {
                 document.getElementById(views[key]).classList.add('d-none');
@@ -1148,11 +1221,93 @@
             document.getElementById(btns[t]).classList.add('bg-blue-900', 'text-white');
             document.getElementById(btns[t]).classList.remove('text-gray-600');
 
-            if (t === 'req') updateRequestsList(); 
+            if (t === 'work') updateRequestsList(); 
             if (t === 'log') updateTechLogs(); 
+            if (t === 'purchase') updateTechPurchaseLog(); // NEW: Update log on tab switch
         }
         
-        // NEW: Open Withdrawal Modal
+        // NEW: Buy function called from the modal (Technician)
+        function buyFromModal(id) {
+            closeModal('product-modal'); 
+            
+            const p = db.products.find(x => x.id === id);
+            if (!p) return showToast(t("Product not found."), 'error');
+
+            if(confirm(`${t('Confirm purchase of')} ${p.name}?`)) {
+                // IMPORTANT CHANGE: Instead of adding commission immediately, record a request for Admin approval
+                db.requests.push({
+                    id: Date.now(), 
+                    client: db.current.name, // The tech acts as the client here
+                    client_id: db.current.id,
+                    phone: db.current.phone, 
+                    type: t('Tech Purchase Request'), // Unique identifier for Admin filtering
+                    addr: `${t('Product')}: ${p.name} | ${t('Product ID')}: ${p.id} | ${t('Price')}: ${p.price} DH | ${t('Commission')}: ${p.comm} DH`, 
+                    status: 'tech_purchase_pending', // Custom status for tech purchase
+                    technician_id: db.current.id, // Record the buying technician
+                    product_id: p.id, // Store product ID for easy lookup
+                    commission_amount: p.comm, // Store commission amount
+                    date: new Date().toLocaleDateString('en-US')
+                });
+                
+                save();
+                updateTechPurchaseLog(); // Update the log for the tech
+                
+                showToast(`⏳ ${t('Product Purchase Request')} ${t('Product')}: ${p.name} - ${t('status_pending')}`, 'info');
+                
+                // Also update admin panel if admin is viewing
+                if (db.current && db.current.role === 'admin') updateAdminRequestsList();
+            }
+        }
+        
+        // The old buy function is no longer called directly from the UI, but kept for reference if needed.
+        /*
+        function buy(id) {
+            // ... old logic removed as it's now handled by the Admin process ...
+        }
+        */
+
+        // NEW: Function to display the technician's purchase history
+        function updateTechPurchaseLog() {
+            const container = document.getElementById('list-tech-purchase');
+            // Filter requests that are Tech Purchase Requests and belong to the current tech
+            const purchases = db.requests.filter(r => r.type === t('Tech Purchase Request') && r.technician_id === db.current.id).reverse();
+
+            if (purchases.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-400 py-6">${t('no_purchases_yet')}</p>`;
+                return;
+            }
+
+            container.innerHTML = purchases.map(r => {
+                let statusClass, statusText;
+                
+                if (r.status === 'tech_purchase_pending') { 
+                    statusClass = 'border-yellow-500'; 
+                    statusText = t('Pending'); 
+                } else if (r.status === 'tech_purchase_confirmed') { 
+                    statusClass = 'border-green-500'; 
+                    statusText = t('Confirmed'); 
+                } else {
+                    statusClass = 'border-gray-300'; 
+                    statusText = t('status_completed'); // or another suitable status
+                }
+                
+                const productInfo = r.addr.split('|')[0].replace(`${t('Product')}: `, '').trim();
+                const commissionInfo = r.commission_amount;
+
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow border-l-4 ${statusClass} flex justify-between items-center">
+                        <div>
+                            <div class="font-bold">${productInfo}</div>
+                            <div class="text-xs text-gray-500">${t('Commission')}: <span class="text-green-600 font-bold">${commissionInfo} DH</span></div>
+                            <div class="text-xs text-gray-400">${r.date}</div>
+                        </div>
+                        <span class="font-bold text-sm ${r.status === 'tech_purchase_confirmed' ? 'text-green-700' : 'text-yellow-700'}">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
         function openWithdrawModal() {
             document.getElementById('withdraw-current-balance').innerText = `${db.current.wallet} DH`;
             document.getElementById('withdraw-modal').classList.remove('d-none'); 
@@ -1190,26 +1345,15 @@
         }
 
 
-        function buy(id) {
-            const p = db.products.find(x => x.id === id);
-            if(confirm(`${t('Confirm purchase of')} ${p.name}?\n ${t('You will earn a commission of')}: ${p.comm} DH`)) {
-                
-                db.current.wallet += parseInt(p.comm);
-                
-                const idx = db.users.findIndex(u => u.id === db.current.id);
-                if(idx !== -1) db.users[idx].wallet = db.current.wallet;
-
-                db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'product', amount: parseInt(p.comm), desc: `${t('tech_earning_product')} ${p.name}`, date: new Date().toLocaleDateString('en-US') });
-                
-                save();
-                document.getElementById('tech-wallet').innerText = db.current.wallet; 
-                showToast(`💰 ${p.comm} DH ${t('added to your balance')}!`, 'success');
-            }
-        }
-        
         function updateRequestsList() {
-            const container = document.getElementById('view-tech-req');
-            const pendingAndAccepted = db.requests.filter(r => (r.status === 'pending' && r.type.indexOf(t('Buy Now')) === -1 && r.type.indexOf(t('Add to Cart')) === -1) || (r.status === 'accepted' && r.technician_id === db.current.id)).reverse();
+            const container = document.getElementById('view-tech-work');
+            // Filter out Product Purchase requests (both client and tech) from the tech work list
+            const pendingAndAccepted = db.requests.filter(r => 
+                (r.status === 'pending' || r.status === 'accepted') && 
+                r.type !== t('Tech Purchase Request') &&
+                !r.type.startsWith(t('Buy Now')) && !r.type.startsWith(t('Add to Cart')) &&
+                (r.status === 'pending' || r.technician_id === db.current.id)
+            ).reverse();
             
             if(pendingAndAccepted.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-400 py-10">${t('No new or accepted work requests currently.')}</p>`;
@@ -1288,15 +1432,20 @@
                 return;
             }
             
-            container.innerHTML = techLogs.map(log => `
-                <div class="bg-white p-3 rounded-xl shadow border-l-4 ${log.type === 'product' ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
-                    <div>
-                        <div class="font-bold">${log.desc}</div>
-                        <div class="text-xs text-gray-500">${log.date}</div>
+            container.innerHTML = techLogs.map(log => {
+                 let amountColor = log.amount >= 0 ? 'text-green-600' : 'text-red-600';
+                 let sign = log.amount >= 0 ? '+' : '';
+
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow border-l-4 ${log.type === 'job' ? 'border-green-500' : (log.type === 'product' ? 'border-blue-500' : 'border-red-500')} flex justify-between items-center">
+                        <div>
+                            <div class="font-bold">${log.desc}</div>
+                            <div class="text-xs text-gray-500">${log.date}</div>
+                        </div>
+                        <span class="font-bold ${amountColor}">${sign}${log.amount} DH</span>
                     </div>
-                    <span class="font-bold text-green-600">+${log.amount} DH</span>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
 
@@ -1447,7 +1596,7 @@
             }
         }
         
-        // MODIFIED: Added distinct visual styling for Purchase requests (blue border and cart icon)
+        // MODIFIED: Added logic to handle tech_purchase_pending status
         function updateAdminRequestsList() {
              const container = document.getElementById('list-all-requests');
              const allReqs = db.requests.slice().reverse(); 
@@ -1460,15 +1609,29 @@
              container.innerHTML = allReqs.map(r => {
                 const tech = db.users.find(u => u.id === r.technician_id);
                 
-                let statusColor, statusText, isPurchase = false;
+                let statusColor, statusText, isPurchase = false, isAdminAction = null, icon = '🛠️';
 
-                // Check if the request is a Purchase (Buy Now or Add to Cart)
-                if(r.type.indexOf(t('Buy Now')) !== -1 || r.type.indexOf(t('Add to Cart')) !== -1) {
+                // 1. Check for Technician Purchase Request
+                if(r.status === 'tech_purchase_pending' && r.type === t('Tech Purchase Request')) {
+                    statusColor = 'border-purple-600'; // Unique color for tech commission/purchase approval
+                    statusText = t('Product Purchase Request'); 
+                    isPurchase = true;
+                    icon = '🛒';
+                    isAdminAction = `
+                        <button onclick="confirmTechPurchase(${r.id})" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition mt-1" data-i18n="admin_confirm_comm">
+                            ${t('admin_confirm_comm')}
+                        </button>
+                    `;
+                } 
+                // 2. Check for Client Purchase Request (Default status 'pending' is sufficient here)
+                else if(r.type.indexOf(t('Buy Now')) !== -1 || r.type.indexOf(t('Add to Cart')) !== -1) {
                      isPurchase = true;
-                     // Purchases are usually pending initial contact/confirmation
-                     statusColor = 'border-blue-700'; // Dark Blue for Purchase
-                     statusText = t('status_pending'); // Status is typically pending
-                } else if(r.status === 'completed') { 
+                     statusColor = 'border-blue-700'; // Dark Blue for Client Purchase
+                     statusText = t('Product Purchase Request');
+                     icon = '🛒';
+                } 
+                // 3. Service Requests
+                else if(r.status === 'completed') { 
                     statusColor = 'border-green-500'; statusText = t('status_completed'); 
                 } else if(r.status === 'accepted') { 
                     statusColor = 'border-blue-500'; statusText = t('status_accepted'); 
@@ -1479,8 +1642,7 @@
                 const techInfo = tech ? `<span class="text-xs text-gray-700">| ${t('Tech')}: ${tech.name}</span>` : '';
                 
                 // Determine the address/details to display
-                const details = isPurchase ? r.addr : `${t('Address')}: ${r.addr}`;
-                const icon = isPurchase ? '🛒' : '🛠️';
+                const details = r.addr;
 
                 return `
                     <div class="bg-white p-3 rounded-xl shadow-md border-r-4 ${statusColor} flex justify-between items-start transition hover:shadow-lg">
@@ -1494,12 +1656,54 @@
                             <div class="text-xs text-gray-400 font-mono whitespace-pre-wrap">${details}</div>
                         </div>
                         <div class="text-center ml-4 flex-shrink-0">
-                            <span class="text-xs font-bold text-gray-700 block mb-1">${statusText}</span>
+                            <span class="text-xs font-bold text-gray-700 block mb-1">${isPurchase ? (r.status === 'tech_purchase_confirmed' ? t('Confirmed') : t('Pending')) : statusText}</span>
+                            ${isAdminAction || ''}
                             <button onclick="deleteRequest(${r.id})" class="text-red-500 text-xs hover:text-red-700">${t('delete_button')}</button>
                         </div>
                     </div>
                 `;
              }).join('');
+        }
+        
+        // NEW: Admin action to confirm tech product purchase and add commission
+        function confirmTechPurchase(id) {
+            const reqIndex = db.requests.findIndex(r => r.id === id);
+            if (reqIndex === -1) return;
+
+            const req = db.requests[reqIndex];
+            if (req.status !== 'tech_purchase_pending') return showToast(t("This request is already processed."), 'info');
+            
+            const techIndex = db.users.findIndex(u => u.id === req.technician_id);
+            if (techIndex === -1) return showToast(t("Technician not found."), 'error');
+            
+            const commission = req.commission_amount;
+            
+            if (confirm(`${t('Confirm purchase of')} ${req.addr.split('|')[0]} ${t('for')} ${req.client}? ${t('Commission')}: ${commission} DH.`)) {
+                
+                // 1. Add commission to technician's wallet
+                db.users[techIndex].wallet += commission;
+                
+                // 2. Update request status
+                db.requests[reqIndex].status = 'tech_purchase_confirmed';
+                
+                // 3. Log the earning
+                db.techLogs.push({ 
+                    id: Date.now(), 
+                    techId: req.technician_id, 
+                    type: 'product', 
+                    amount: commission, 
+                    desc: `${t('tech_earning_product')} ${req.addr.split('|')[0].replace(`${t('Product')}: `, '').trim()}`, 
+                    date: new Date().toLocaleDateString('en-US') 
+                });
+
+                save();
+                
+                // Update UI elements
+                if(db.current.role === 'admin') updateAdminRequestsList();
+                if(db.current.role === 'tech') loadTech(); // If the admin is also the tech logged in for testing
+
+                showToast(`🎉 ${t('purchase_confirmed_success')}`, 'success');
+            }
         }
 
 
@@ -1667,6 +1871,7 @@
             // Update UI
             updateWithdrawalRequestsList();
             updateTechBalancesList();
+            if(db.current.role === 'tech') loadTech(); // Update tech wallet if they are logged in
             showToast(t('payment_processed_success').replace('{amount}', amount), 'success');
         }
 
@@ -1718,6 +1923,7 @@
             // Update UI and close
             closeModal('admin-payment-modal');
             updateTechBalancesList();
+            if(db.current.role === 'tech') loadTech(); // Update tech wallet if they are logged in
             showToast(t('payment_processed_success').replace('{amount}', amount), 'success');
         }
 
