@@ -184,7 +184,10 @@
 
                 <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
                     <h3 class="font-bold mb-2 text-blue-700" data-i18n="admin_manage_prods">➕ Manage Products</h3>
+                    
                     <input id="adm-name" data-i18n-placeholder="admin_prod_name" placeholder="Name" class="border p-2 w-full rounded mb-2">
+                    <textarea id="adm-desc" data-i18n-placeholder="admin_prod_desc" placeholder="وصف المنتج التفصيلي" rows="3" class="border p-2 w-full rounded mb-2"></textarea>
+                    
                     <input id="adm-price" data-i18n-placeholder="admin_prod_price" placeholder="Price for Client" type="number" class="border p-2 w-full rounded mb-2">
                     <input id="adm-comm" data-i18n-placeholder="admin_prod_comm" placeholder="Technician Commission" type="number" class="border p-2 w-full rounded mb-3">
                     
@@ -282,6 +285,7 @@
                 'admin_all_users': '👥 سجل جميع المستخدمين',
                 'admin_manage_prods': '➕ إدارة المنتجات',
                 'admin_prod_name': 'الاسم',
+                'admin_prod_desc': 'وصف المنتج التفصيلي', // NEW
                 'admin_prod_price': 'سعر العميل',
                 'admin_prod_comm': 'عمولة الفني',
                 'admin_prod_image_file': 'صورة المنتج',
@@ -314,8 +318,10 @@
                 'no_requests_log': 'لا توجد طلبات في السجل.',
                 'product_details_title': 'تفاصيل المنتج',
                 'product_name_label': 'الاسم:',
-                'product_price_label': 'سعر العميل:',
-                'product_comm_label': 'عمولة الفني:',
+                'product_price_label': 'السعر:', // UPDATED
+                'product_description_label': 'الوصف:', // NEW
+                'add_to_cart_button': '🛒 أضف للسلة', // NEW
+                'buy_now_button': 'اشترِ الآن', // NEW
                 'close_details_button': 'إغلاق',
                 'Confirm purchase of': 'تأكيد شراء',
                 'You will earn a commission of': 'ستكسب عمولة قدرها',
@@ -326,6 +332,11 @@
                 'User deleted successfully.': 'تم حذف المستخدم بنجاح.',
                 'Are you sure you want to permanently delete this user?': 'هل أنت متأكد من حذف هذا المستخدم نهائياً؟',
                 'Product not found.': 'المنتج غير موجود.',
+                'Buy Now': 'شراء فوري', // NEW (for log)
+                'Add to Cart': 'أضف للسلة', // NEW (for log)
+                'Product ID': 'معرف المنتج', // NEW (for log)
+                'Price': 'السعر', // NEW (for log)
+                'purchase_success': 'تم تسجيل طلبك! سيتم التواصل معك لتأكيد الشراء قريباً.', // NEW
             },
             'fr': {
                 'app_title': 'Honest Sat',
@@ -372,6 +383,7 @@
                 'admin_all_users': '👥 Journal de Tous les Utilisateurs',
                 'admin_manage_prods': '➕ Gérer les Produits',
                 'admin_prod_name': 'Nom',
+                'admin_prod_desc': 'Description détaillée du produit', // NEW
                 'admin_prod_price': 'Prix Client',
                 'admin_prod_comm': 'Commission Technicien',
                 'admin_prod_image_file': 'Image du Produit',
@@ -404,8 +416,10 @@
                 'no_requests_log': 'Aucune demande dans le journal.',
                 'product_details_title': 'Détails du Produit',
                 'product_name_label': 'Nom:',
-                'product_price_label': 'Prix Client:',
-                'product_comm_label': 'Commission Technicien:',
+                'product_price_label': 'Prix:', // UPDATED
+                'product_description_label': 'Description:', // NEW
+                'add_to_cart_button': '🛒 Ajouter au panier', // NEW
+                'buy_now_button': 'Acheter Maintenant', // NEW
                 'close_details_button': 'Fermer',
                 'Confirm purchase of': 'Confirmer l\'achat de',
                 'You will earn a commission of': 'Vous gagnerez une commission de',
@@ -416,6 +430,11 @@
                 'User deleted successfully.': 'Utilisateur supprimé avec succès.',
                 'Are you sure you want to permanently delete this user?': 'Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?',
                 'Product not found.': 'Produit non trouvé.',
+                'Buy Now': 'Achat Immédiat', // NEW (for log)
+                'Add to Cart': 'Ajouter au Panier', // NEW (for log)
+                'Product ID': 'ID Produit', // NEW (for log)
+                'Price': 'Prix', // NEW (for log)
+                'purchase_success': 'Votre demande est enregistrée! Nous vous contacterons bientôt pour confirmer l\'achat.', // NEW
             },
             'en': {
                 'app_title': 'Honest Sat',
@@ -462,6 +481,7 @@
                 'admin_all_users': '👥 All Users Log',
                 'admin_manage_prods': '➕ Manage Products',
                 'admin_prod_name': 'Name',
+                'admin_prod_desc': 'Detailed Product Description', // NEW
                 'admin_prod_price': 'Price for Client',
                 'admin_prod_comm': 'Technician Commission',
                 'admin_prod_image_file': 'Product Image',
@@ -494,8 +514,10 @@
                 'no_requests_log': 'No requests in the log.',
                 'product_details_title': 'Product Details',
                 'product_name_label': 'Name:',
-                'product_price_label': 'Client Price:',
-                'product_comm_label': 'Tech Commission:',
+                'product_price_label': 'Price:', // UPDATED
+                'product_description_label': 'Description:', // NEW
+                'add_to_cart_button': '🛒 Add to Cart', // NEW
+                'buy_now_button': 'Buy Now', // NEW
                 'close_details_button': 'Close',
                 'Confirm purchase of': 'Confirm purchase of',
                 'You will earn a commission of': 'You will earn a commission of',
@@ -506,6 +528,11 @@
                 'User deleted successfully.': 'User deleted successfully.',
                 'Are you sure you want to permanently delete this user?': 'Are you sure you want to permanently delete this user?',
                 'Product not found.': 'Product not found.',
+                'Buy Now': 'Buy Now', // NEW (for log)
+                'Add to Cart': 'Add to Cart', // NEW (for log)
+                'Product ID': 'Product ID', // NEW (for log)
+                'Price': 'Price', // NEW (for log)
+                'purchase_success': 'Your request has been recorded! You will be contacted soon to confirm the purchase.', // NEW
             }
         };
 
@@ -599,23 +626,24 @@
 
         let db = {
             // Version updates to prevent old data conflict
-            users: getSafeData('sf_users_v5', []),
-            products: getSafeData('sf_prods_v4', [
-                {id:1, name:'Echolink HD Receiver', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
-                {id:2, name:'High Quality LNB', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
-                {id:3, name:'IPTV Subscription Renewal', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
+            users: getSafeData('sf_users_v6', []),
+            // UPDATED PRODUCTS STRUCTURE
+            products: getSafeData('sf_prods_v5', [
+                {id:1, name:'Echolink HD Receiver', description: 'جهاز استقبال عالي الدقة يدعم جميع القنوات الفضائية وخدمات التشفير.', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
+                {id:2, name:'High Quality LNB', description: 'مفتاح عالي الجودة لتقوية الإشارة وتحسين الاستقبال في الظروف الصعبة.', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
+                {id:3, name:'IPTV Subscription Renewal', description: 'تجديد اشتراك IPTV لمدة عام كامل، يضم آلاف القنوات والمكتبة الرقمية.', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
             ]),
-            requests: getSafeData('sf_reqs_v4', []),
-            techLogs: getSafeData('sf_tech_logs_v4', []), 
-            current: getSafeData('sf_curr_v4', null)
+            requests: getSafeData('sf_reqs_v5', []),
+            techLogs: getSafeData('sf_tech_logs_v5', []), 
+            current: getSafeData('sf_curr_v5', null)
         };
 
         function save() {
-            localStorage.setItem('sf_users_v5', JSON.stringify(db.users));
-            localStorage.setItem('sf_prods_v4', JSON.stringify(db.products));
-            localStorage.setItem('sf_reqs_v4', JSON.stringify(db.requests));
-            localStorage.setItem('sf_tech_logs_v4', JSON.stringify(db.techLogs));
-            localStorage.setItem('sf_curr_v4', JSON.stringify(db.current));
+            localStorage.setItem('sf_users_v6', JSON.stringify(db.users));
+            localStorage.setItem('sf_prods_v5', JSON.stringify(db.products));
+            localStorage.setItem('sf_reqs_v5', JSON.stringify(db.requests));
+            localStorage.setItem('sf_tech_logs_v5', JSON.stringify(db.techLogs));
+            localStorage.setItem('sf_curr_v5', JSON.stringify(db.current));
         }
 
         // --- 2. Interface Control ---
@@ -797,7 +825,7 @@
                     <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass} flex justify-between items-center">
                         <div>
                             <div class="font-bold">${r.type}</div>
-                            <div class="text-xs text-gray-500">${r.addr} | ${t('service_phone')}: ${r.phone}</div>
+                            <div class="text-xs text-gray-500">${r.addr.split('|')[0] || r.addr} | ${t('service_phone')}: ${r.phone}</div>
                         </div>
                         <span class="text-xs font-bold text-gray-700">${statusText}</span>
                     </div>
@@ -836,7 +864,7 @@
             showToast(t("Request sent successfully! Technicians will be notified."), 'success');
         }
         
-        // --- NEW: Product Details Modal Functions ---
+        // --- NEW/UPDATED: Product Details Modal Functions ---
         function openProductModal(productId) {
             const product = db.products.find(p => p.id === productId);
             if (!product) {
@@ -845,27 +873,34 @@
 
             const contentDiv = document.getElementById('product-details-content');
             
-            // Use HTML template for details
+            // UPDATED: Removed Tech Commission, Added Description and Action Buttons
             contentDiv.innerHTML = `
                 <div class="text-center mb-4">
                     ${product.imgURL ? `<img src="${product.imgURL}" alt="${product.name}" class="prod-img w-24 h-24 mx-auto mb-3 border p-1">` : `<div class="text-6xl mb-3">${product.icon || '📦'}</div>`}
                 </div>
                 
-                <div class="space-y-2 text-sm">
+                <div class="space-y-2 text-sm mb-4">
                     <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
                         <span class="font-semibold text-gray-600" data-i18n="product_name_label">${t('product_name_label')}</span>
                         <span class="font-bold text-gray-800">${product.name}</span>
                     </div>
+
+                    ${product.description ? `
+                    <div class="p-2 bg-gray-50 rounded-lg">
+                        <p class="font-semibold text-gray-600 mb-1" data-i18n="product_description_label">${t('product_description_label')}</p>
+                        <p class="text-gray-700 whitespace-pre-wrap">${product.description}</p>
+                    </div>` : ''}
                     
                     <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
                         <span class="font-semibold text-gray-600" data-i18n="product_price_label">${t('product_price_label')}</span>
-                        <span class="font-bold text-blue-600">${product.price} DH</span>
+                        <span class="font-bold text-blue-600 text-xl">${product.price} DH</span>
                     </div>
-                    
-                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                        <span class="font-semibold text-gray-600" data-i18n="product_comm_label">${t('product_comm_label')}</span>
-                        <span class="font-bold text-green-600">${product.comm} DH</span>
+
                     </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button onclick="addToCart(${product.id})" class="bg-gray-700 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition active:scale-[0.98]" data-i18n="add_to_cart_button">${t('add_to_cart_button')}</button>
+                    <button onclick="buyNow(${product.id})" class="bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition active:scale-[0.98]" data-i18n="buy_now_button">${t('buy_now_button')}</button>
                 </div>
             `;
 
@@ -877,6 +912,43 @@
 
         function closeProductModal() {
             document.getElementById('product-modal').classList.add('d-none');
+        }
+        
+        // --- NEW: Product Purchase Functions ---
+        function recordProductPurchase(productId, type = 'buy') {
+            closeProductModal();
+            const product = db.products.find(p => p.id === productId);
+            if (!product) return showToast(t("Product not found."), 'error');
+            
+            const actionText = type === 'buy' ? t('Buy Now') : t('Add to Cart');
+            
+            // Use the existing requests structure for simplicity in Admin Panel tracking
+            db.requests.push({
+                id: Date.now(), 
+                client: db.current.name, 
+                client_id: db.current.id,
+                phone: db.current.phone, 
+                type: `${actionText} - ${product.name}`, 
+                addr: `${t('Product ID')}: ${productId} | ${t('Price')}: ${product.price} DH`, 
+                status: 'pending', // Treat product purchase as pending service request until confirmed
+                technician_id: null,
+                date: new Date().toLocaleDateString('en-US')
+            });
+            save();
+            
+            showToast(t("purchase_success"), 'success');
+            // Update client requests list immediately
+            updateClientRequestsList(); 
+            // Also update admin panel if admin is viewing
+            if (db.current && db.current.role === 'admin') updateAdminRequestsList();
+        }
+
+        function buyNow(productId) {
+            recordProductPurchase(productId, 'buy');
+        }
+
+        function addToCart(productId) {
+            recordProductPurchase(productId, 'cart'); 
         }
 
         // --- 6. Technician Functions ---
@@ -939,7 +1011,7 @@
         
         function updateRequestsList() {
             const container = document.getElementById('view-tech-req');
-            const pendingAndAccepted = db.requests.filter(r => r.status === 'pending' || (r.status === 'accepted' && r.technician_id === db.current.id)).reverse();
+            const pendingAndAccepted = db.requests.filter(r => (r.status === 'pending' && r.type.indexOf(t('Buy Now')) === -1 && r.type.indexOf(t('Add to Cart')) === -1) || (r.status === 'accepted' && r.technician_id === db.current.id)).reverse();
             
             if(pendingAndAccepted.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-400 py-10">${t('No new or accepted work requests currently.')}</p>`;
@@ -1167,7 +1239,7 @@
                             <span class="font-bold">${r.type}</span> 
                             <span class="text-xs text-gray-500 ml-2">(${r.date})</span>
                             <div class="text-xs text-gray-600">${t('Client')}: ${r.client} | ${t('phone_placeholder')}: ${r.phone} ${techInfo}</div>
-                            <div class="text-xs text-gray-400 mt-1">${t('Address')}: ${r.addr}</div>
+                            <div class="text-xs text-gray-400 mt-1">${r.type.indexOf(t('Buy Now')) !== -1 || r.type.indexOf(t('Add to Cart')) !== -1 ? r.addr : `${t('Address')}: ${r.addr}`}</div>
                         </div>
                         <div class="text-center">
                             <span class="text-xs font-bold text-gray-700">${statusText}</span>
@@ -1189,6 +1261,7 @@
 
         async function addProd() {
             const name = document.getElementById('adm-name').value.trim();
+            const desc = document.getElementById('adm-desc').value.trim(); // NEW
             const price = parseInt(document.getElementById('adm-price').value.trim());
             const comm = parseInt(document.getElementById('adm-comm').value.trim());
             const imgURL = document.getElementById('adm-imgurl').value.trim(); 
@@ -1227,6 +1300,7 @@
             db.products.push({ 
                 id: Date.now(), 
                 name, 
+                description: desc, // NEW
                 price, 
                 comm, 
                 imgURL: finalImageLink, 
@@ -1236,6 +1310,7 @@
             loadAdmin();
 
             document.getElementById('adm-name').value = '';
+            document.getElementById('adm-desc').value = ''; // NEW: Clear description
             document.getElementById('adm-price').value = '';
             document.getElementById('adm-comm').value = '';
             document.getElementById('adm-imgurl').value = ''; 
