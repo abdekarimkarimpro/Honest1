@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سات فيكس | SatFix (النسخة النهائية)</title>
+    <title>سات فيكس | SatFix (ميزة الموافقة)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -65,7 +65,7 @@
                 </div>
                 
                 <div class="mt-8 text-center border-t pt-4">
-                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ الدخول كـ مدير (للمسؤولين فقط)</button>
+                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ الدخول كـ مدير (هاتف: 1، مرور: 1)</button>
                 </div>
             </div>
 
@@ -161,6 +161,14 @@
 
             <div id="panel-admin" class="d-none">
                 <h2 class="text-xl font-bold mb-4">لوحة الإدارة</h2>
+                
+                <div class="bg-red-100 p-4 rounded-xl shadow mb-6 border border-red-200">
+                    <h3 class="font-bold mb-2 text-red-700">🆕 طلبات تفعيل الحسابات</h3>
+                    <div id="list-pending-users" class="space-y-2">
+                        <p class="text-center text-gray-500 text-sm">لا توجد طلبات معلقة حالياً.</p>
+                    </div>
+                </div>
+
                 <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
                     <h3 class="font-bold mb-2 text-blue-700">➕ إضافة منتج جديد</h3>
                     <input id="adm-name" placeholder="الاسم" class="border p-2 w-full rounded mb-2">
@@ -247,8 +255,8 @@
         const defaultImageUrl = 'https://picsum.photos/80/80?random=';
 
         let db = {
-            // تحديث مفاتيح التخزين لاستيعاب جميع التعديلات
-            users: getSafeData('sf_users_v3', []),
+            // تحديث مفتاح المستخدمين إلى v4
+            users: getSafeData('sf_users_v4', []),
             products: getSafeData('sf_prods_v3', [
                 {id:1, name:'رسيفر Echolink HD', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
                 {id:2, name:'لاقط LNB عالي الجودة', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
@@ -260,7 +268,7 @@
         };
 
         function save() {
-            localStorage.setItem('sf_users_v3', JSON.stringify(db.users));
+            localStorage.setItem('sf_users_v4', JSON.stringify(db.users));
             localStorage.setItem('sf_prods_v3', JSON.stringify(db.products));
             localStorage.setItem('sf_reqs_v3', JSON.stringify(db.requests));
             localStorage.setItem('sf_tech_logs_v3', JSON.stringify(db.techLogs));
@@ -288,11 +296,14 @@
             if(db.users.find(u => u.phone === phone)) return showToast("رقم الهاتف مستخدم مسبقاً.", 'error');
 
             showLoader();
-            const user = { id: Date.now(), name, phone, pass, role, wallet: 0 };
+            // ** التعديل هنا: isApproved: false للحسابات الجديدة **
+            const user = { id: Date.now(), name, phone, pass, role, wallet: 0, isApproved: false };
             db.users.push(user);
-            db.current = user;
             save();
-            setTimeout(loadApp, 500);
+            
+            hideLoader();
+            switchView('login');
+            showToast("✅ تم إنشاء الحساب. يجب أن يوافق المدير عليه قبل تسجيل الدخول.", 'info');
         }
 
         function tryLogin() {
@@ -303,6 +314,12 @@
             const user = db.users.find(u => u.phone === phone && u.pass === pass);
             
             if(user) {
+                // ** التعديل هنا: التحقق من isApproved **
+                if (!user.isApproved && user.role !== 'admin') {
+                    hideLoader();
+                    return showToast("🚫 حسابك قيد الانتظار. سيتم تفعيله من قبل الإدارة قريباً.", 'error');
+                }
+
                 const mainUser = db.users.find(u => u.id === user.id); 
                 db.current = mainUser || user;
                 save();
@@ -352,7 +369,6 @@
         function loadApp() {
             hideLoader();
             if(!db.current) {
-                // إذا لم يكن هناك مستخدم مسجل، نبقى في شاشة الدخول
                 document.getElementById('auth-container').classList.remove('d-none');
                 document.getElementById('main-app').classList.add('d-none');
                 return; 
@@ -618,6 +634,8 @@
         function loadAdmin() {
             document.getElementById('panel-admin').classList.remove('d-none');
             
+            updatePendingUsersList(); // تحديث قائمة المستخدمين الجدد
+            
             // تحديث عدد المنتجات
             document.getElementById('admin-prod-header').innerHTML = `📦 إدارة المنتجات (${db.products.length})`;
             
@@ -639,6 +657,52 @@
             
             updateAdminRequestsList();
         }
+        
+        // ** دالة جديدة: عرض طلبات تفعيل الحسابات **
+        function updatePendingUsersList() {
+            const container = document.getElementById('list-pending-users');
+            const pendingUsers = db.users.filter(u => u.role !== 'admin' && u.isApproved === false);
+
+            if(pendingUsers.length === 0) {
+                 container.innerHTML = `<p class="text-center text-gray-500 text-sm py-2">لا توجد طلبات معلقة حالياً.</p>`;
+                 return;
+            }
+
+            container.innerHTML = pendingUsers.map(u => `
+                <div class="bg-white p-3 rounded shadow border-l-4 border-red-400 flex justify-between items-center">
+                    <div>
+                        <span class="font-bold">${u.name}</span>
+                        <div class="text-xs text-gray-500">نوع الحساب: ${u.role === 'tech' ? 'فني 🔧' : 'زبون 👤'} | هاتف: ${u.phone}</div>
+                    </div>
+                    <div class="space-x-2 space-x-reverse">
+                        <button onclick="approveUser(${u.id})" class="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition">قبول</button>
+                        <button onclick="rejectUser(${u.id})" class="text-red-500 text-xs hover:text-red-700 transition">رفض</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ** دالة جديدة: قبول المستخدم **
+        function approveUser(id) {
+            const userIndex = db.users.findIndex(u => u.id === id);
+            if (userIndex !== -1) {
+                db.users[userIndex].isApproved = true;
+                save();
+                updatePendingUsersList();
+                showToast(`✅ تم تفعيل حساب ${db.users[userIndex].name}. يمكنه الآن تسجيل الدخول.`, 'success');
+            }
+        }
+        
+        // ** دالة جديدة: رفض المستخدم (حذفه) **
+        function rejectUser(id) {
+            if(confirm('هل أنت متأكد من رفض وحذف هذا المستخدم؟')) {
+                db.users = db.users.filter(u => u.id !== id);
+                save();
+                updatePendingUsersList();
+                showToast("تم حذف المستخدم بنجاح.", 'success');
+            }
+        }
+
 
         function updateAdminRequestsList() {
              const container = document.getElementById('list-admin-reqs');
@@ -750,7 +814,8 @@
         document.addEventListener('DOMContentLoaded', () => {
              // التأكد من وجود حساب المدير التجريبي
             if (!db.users.find(u => u.role === "admin")) {
-                db.users.push({ id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1' }); 
+                // المدير يضاف دائماً كـ isApproved: true
+                db.users.push({ id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1', isApproved: true }); 
                 save();
             }
             loadApp();
