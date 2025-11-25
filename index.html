@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سات فيكس | SatFix (النسخة المستقرة)</title>
+    <title>هونست سات | Honest Sat (النسخة المستقرة)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -48,7 +48,7 @@
             
             <div class="text-center mb-8">
                 <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-lg mb-3">📡</div>
-                <h1 class="text-3xl font-black text-blue-900">سات فيكس</h1>
+                <h1 class="text-3xl font-black text-blue-900">هونست سات</h1>
             </div>
 
             <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
@@ -107,7 +107,7 @@
         <nav class="bg-blue-900 text-white p-4 sticky top-0 z-40 shadow-md">
             <div class="flex justify-between items-center max-w-2xl mx-auto">
                 <div>
-                    <h1 class="font-bold">سات فيكس</h1>
+                    <h1 class="font-bold">هونست سات</h1>
                     <span id="user-welcome" class="text-[10px] text-blue-200">...</span>
                 </div>
                 <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition">خروج</button>
@@ -849,44 +849,4 @@
             save();
             loadAdmin();
 
-            document.getElementById('adm-name').value = '';
-            document.getElementById('adm-price').value = '';
-            document.getElementById('adm-comm').value = '';
-            document.getElementById('adm-imgurl').value = ''; 
-            document.getElementById('adm-image-file').value = ''; 
-
-            showToast("✅ تمت إضافة المنتج بنجاح.", 'success');
-        }
-
-        function delProd(id) {
-            if(confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-                db.products = db.products.filter(p => p.id !== id);
-                save();
-                loadAdmin();
-                if (db.current && db.current.role === 'client') loadClient();
-                showToast("تم حذف المنتج بنجاح.", 'success');
-            }
-        }
-
-        // --- 8. بدء التشغيل (التأكد من وجود المدير) ---
-        document.addEventListener('DOMContentLoaded', () => {
-             // التأكد من وجود حساب المدير التجريبي (هاتف: 1، مرور: 1)
-            if (!db.users.find(u => u.role === "admin")) {
-                db.users.push({ 
-                    id: 0, 
-                    name: "Admin (Demo)", 
-                    role: "admin", 
-                    wallet: 99999, 
-                    phone: '1', 
-                    pass: '1', 
-                    isApproved: true,
-                    regDate: new Date().toLocaleDateString('ar-EG')
-                }); 
-                save();
-            }
-            loadApp();
-        });
-
-    </script>
-</body>
-</html>
+            document.getElementById('adm-name').value
