@@ -1,93 +1,7 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سات فيكس | SatFix (Pro - Secure)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-        .d-none { display: none !important; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .active\:scale-95:active { transform: scale(0.95); }
-    </style>
-</head>
+... (الرمز من الأعلى) ...
 <body class="bg-gray-50 text-gray-800 pb-10 select-none">
 
-    <button onclick="hardReset()" class="fixed top-2 left-2 z-[9999] bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded border border-red-200 opacity-50 hover:opacity-100 transition">
-        ♻️ تنظيف الذاكرة
-    </button>
-
-    <div id="toast-container" class="fixed top-4 right-4 z-[9000] space-y-2"></div>
-
-    <div id="app-loader" class="fixed inset-0 bg-white/70 z-[8000] d-none flex items-center justify-center">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-opacity-75"></div>
-    </div>
-
-    <div id="auth-container" class="fixed inset-0 bg-white z-50 overflow-y-auto">
-        <div class="min-h-screen flex flex-col items-center justify-center p-6">
-            
-            <div class="text-center mb-8">
-                <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-lg mb-3">📡</div>
-                <h1 class="text-3xl font-black text-blue-900">سات فيكس</h1>
-            </div>
-
-            <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
-                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                    <h2 class="font-bold text-xl mb-4 text-center">تسجيل الدخول</h2>
-                    <input type="tel" id="login-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
-                    <input type="password" id="login-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
-                    <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">دخول</button>
-                </div>
-
-                <div class="text-center mt-4">
-                    <p class="text-sm text-gray-500 mb-2">ليس لديك حساب؟</p>
-                    <button onclick="switchView('register')" class="text-blue-700 font-bold bg-blue-50 px-6 py-2 rounded-full text-sm">✨ إنشاء حساب جديد</button>
-                </div>
-                
-                <div class="mt-8 text-center border-t pt-4">
-                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ الدخول كـ مدير (للمسؤولين فقط)</button>
-                </div>
-            </div>
-
-            <div id="view-register" class="w-full max-w-sm space-y-3 d-none fade-in">
-                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                    <h2 class="font-bold text-xl mb-4 text-center text-green-600">حساب جديد</h2>
-                    
-                    <input type="text" id="reg-name" placeholder="الاسم الكامل" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
-                    <input type="tel" id="reg-phone" placeholder="رقم الهاتف" class="w-full p-3 bg-gray-50 border rounded-xl mb-2" dir="ltr">
-                    <input type="password" id="reg-pass" placeholder="كلمة المرور" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
-                    
-                    <div class="mb-4">
-                        <label class="text-xs font-bold text-gray-500 block mb-2">أنا أريد التسجيل كـ:</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="role" value="client" checked class="peer hidden">
-                                <div class="border p-2 rounded-lg text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm transition">👤 زبون</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="role" value="tech" class="peer hidden">
-                                <div class="border p-2 rounded-lg text-center peer-checked:bg-green-600 peer-checked:text-white text-sm transition">🔧 فني</div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition">تسجيل</button>
-                </div>
-
-                <div class="text-center mt-4">
-                    <button onclick="switchView('login')" class="text-gray-500 font-bold text-sm hover:text-gray-700 transition">🔙 الرجوع لتسجيل الدخول</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
+    ... (باقي أجزاء الكود: زر الإصلاح، التوست، اللودر، شاشات المصادقة) ...
 
     <div id="main-app" class="d-none">
         
@@ -103,48 +17,7 @@
 
         <div class="max-w-2xl mx-auto p-4 min-h-screen">
             
-            <div id="panel-client" class="d-none">
-                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
-                    <button onclick="clientTab('prod')" id="btn-client-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">🛒 تسوق المنتجات</button>
-                    <button onclick="clientTab('req')" id="btn-client-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">📜 طلباتي السابقة</button>
-                </div>
-
-                <div id="view-client-prod">
-                    <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
-                        <h2 class="text-2xl font-bold mb-2">خدمة الصيانة</h2>
-                        <p class="text-sm opacity-90 mb-4">هل لديك عطل؟ اطلب فني الآن</p>
-                        <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition">طلب خدمة</button>
-                    </div>
-                    <h3 class="font-bold text-gray-700 mb-3">⭐ المنتجات المتاحة</h3>
-                    <div id="list-client" class="grid grid-cols-2 gap-3"></div>
-                </div>
-
-                <div id="view-client-req" class="d-none space-y-3">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">سجل طلبات الصيانة</h3>
-                    <div id="list-client-req"></div>
-                </div>
-            </div>
-
-            <div id="panel-tech" class="d-none">
-                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
-                    <p class="text-gray-400 text-xs">الرصيد المتاح</p>
-                    <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">د.م</small></h2>
-                    <button onclick="showToast('تم إرسال طلب السحب للإدارة.', 'info')" class="absolute bottom-3 left-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd ml-1"></i> سحب الأرباح</button>
-                </div>
-                
-                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
-                    <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition">شراء منتجات</button>
-                    <button onclick="techTab('req')" id="btn-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">طلبات العمل</button>
-                    <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition">سجل الأرباح</button>
-                </div>
-                
-                <div id="view-tech-prod" class="space-y-3"></div>
-                <div id="view-tech-req" class="d-none space-y-3"></div>
-                <div id="view-tech-log" class="d-none space-y-3">
-                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2">سجل الأرباح والعمولات</h3>
-                    <div id="list-tech-log"></div>
-                </div>
-            </div>
+            ... (لوحة الزبون ولوحة الفني) ...
 
             <div id="panel-admin" class="d-none">
                 <h2 class="text-xl font-bold mb-4">لوحة الإدارة</h2>
@@ -153,7 +26,12 @@
                     <input id="adm-name" placeholder="الاسم" class="border p-2 w-full rounded mb-2">
                     <input id="adm-price" placeholder="السعر للزبون" type="number" class="border p-2 w-full rounded mb-2">
                     <input id="adm-comm" placeholder="عمولة الفني" type="number" class="border p-2 w-full rounded mb-3">
-                    <button onclick="addProd()" class="bg-black text-white w-full py-2 rounded font-bold hover:bg-gray-800 transition">إضافة المنتج</button>
+                    
+                    <label class="block text-sm font-bold text-gray-700 mb-1">صورة المنتج (URL)</label>
+                    <input type="file" id="adm-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-4 border p-2 rounded-lg bg-gray-50">
+                    <input id="adm-imgurl" placeholder="أو أدخل رابط صورة (URL) مباشر" class="border p-2 w-full rounded mb-3 text-xs" dir="ltr"> 
+                    
+                    <button onclick="addProd()" class="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800 transition">إضافة المنتج</button>
                 </div>
                 <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" id="admin-prod-header">📦 إدارة المنتجات (0)</h3>
                 <div id="list-admin" class="space-y-2"></div>
@@ -165,71 +43,21 @@
         </div>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-            <h3 class="font-bold text-lg mb-3">طلب جديد</h3>
-            <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50"><option>ضبط إشارة</option><option>تركيب تلفاز</option><option>صيانة عامة</option></select>
-            <input id="srv-addr" placeholder="العنوان بالتفصيل" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
-            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]">تأكيد الطلب</button>
-            <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition">إلغاء</button>
-        </div>
-    </div>
+    ... (باقي أجزاء الكود: المودال، والجافاسكريبت) ...
 
     <script>
-        // --- 0. نظام الإشعارات (Toast) ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            let bgColor, icon;
+        ... (دوال showToast, getSafeData, save) ...
 
-            if (type === 'success') {
-                bgColor = 'bg-green-500';
-                icon = 'fas fa-check-circle';
-            } else if (type === 'error') {
-                bgColor = 'bg-red-500';
-                icon = 'fas fa-times-circle';
-            } else if (type === 'info') {
-                bgColor = 'bg-blue-500';
-                icon = 'fas fa-info-circle';
-            } else {
-                bgColor = 'bg-yellow-500';
-                icon = 'fas fa-exclamation-triangle';
-            }
-
-            const toast = document.createElement('div');
-            toast.className = `p-4 rounded-xl shadow-xl text-white font-bold text-sm flex items-center gap-3 ${bgColor} transition transform translate-x-full duration-300`;
-            toast.innerHTML = `<i class="${icon}"></i> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            
-            // دخول التوست (Fade in)
-            setTimeout(() => {
-                toast.classList.remove('translate-x-full');
-            }, 10); 
-
-            // إزالة التوست بعد 4 ثواني
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-                toast.addEventListener('transitionend', () => toast.remove());
-            }, 4000);
-        }
-
-        // --- 1. إدارة البيانات بأمان (Try-Catch) ---
-        function getSafeData(key, defaultVal) {
-            try {
-                const data = localStorage.getItem(key);
-                return data ? JSON.parse(data) : defaultVal;
-            } catch (e) {
-                console.error("Error retrieving data from LocalStorage:", e);
-                return defaultVal; 
-            }
-        }
+        // رابط افتراضي للاختبار
+        const defaultImageUrl = 'https://picsum.photos/80/80?random=';
 
         let db = {
             users: getSafeData('sf_users_v2', []),
-            products: getSafeData('sf_prods_v2', [
-                {id:1, name:'رسيفر Echolink HD', price:200, comm:40, img:'📦'},
-                {id:2, name:'لاقط LNB عالي الجودة', price:50, comm:10, img:'📡'},
-                {id:3, name:'تجديد اشتراك IPTV', price:350, comm:70, img:'📺'}
+            products: getSafeData('sf_prods_v3', [
+                // تم تحديث الهيكل ليشمل imgURL
+                {id:1, name:'رسيفر Echolink HD', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
+                {id:2, name:'لاقط LNB عالي الجودة', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
+                {id:3, name:'تجديد اشتراك IPTV', price:350, comm:70, imgURL: defaultImageUrl + '3', icon:'📺'}
             ]),
             requests: getSafeData('sf_reqs_v2', []),
             techLogs: getSafeData('sf_tech_logs_v2', []), 
@@ -238,447 +66,82 @@
 
         function save() {
             localStorage.setItem('sf_users_v2', JSON.stringify(db.users));
-            localStorage.setItem('sf_prods_v2', JSON.stringify(db.products));
+            // تغيير مفتاح التخزين للمنتجات لتجنب مشاكل التحديث
+            localStorage.setItem('sf_prods_v3', JSON.stringify(db.products)); 
             localStorage.setItem('sf_reqs_v2', JSON.stringify(db.requests));
             localStorage.setItem('sf_tech_logs_v2', JSON.stringify(db.techLogs));
             localStorage.setItem('sf_curr_v2', JSON.stringify(db.current));
         }
 
-        // --- 2. التحكم في الواجهات ---
-        function switchView(view) {
-            document.getElementById('view-login').classList.add('d-none');
-            document.getElementById('view-register').classList.add('d-none');
-            document.getElementById(`view-${view}`).classList.remove('d-none');
-        }
-
-        // --- 3. المصادقة ---
-        function tryRegister() {
-            const name = document.getElementById('reg-name').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
-            const role = document.querySelector('input[name="role"]:checked').value;
-
-            if(!name || !phone || !pass) return showToast("المرجو ملء جميع البيانات.", 'error');
-            if(isNaN(phone) || phone.length < 5) return showToast("رقم الهاتف غير صحيح.", 'error');
-            if(pass.length < 3) return showToast("كلمة المرور قصيرة جداً.", 'error');
-            
-            if(db.users.find(u => u.phone === phone)) return showToast("رقم الهاتف مستخدم مسبقاً.", 'error');
-
-            showLoader();
-            const user = { id: Date.now(), name, phone, pass, role, wallet: 0 };
-            db.users.push(user);
-            db.current = user;
-            save();
-            setTimeout(loadApp, 500);
-        }
-
-        function tryLogin() {
-            const phone = document.getElementById('login-phone').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            
-            showLoader();
-            const user = db.users.find(u => u.phone === phone && u.pass === pass);
-            
-            if(user) {
-                // التأكد من أن المستخدم الحالي هو نفس المستخدم الموجود في القائمة الرئيسية
-                const mainUser = db.users.find(u => u.id === user.id); 
-                db.current = mainUser || user;
-                save();
-                setTimeout(loadApp, 500);
-            } else {
-                hideLoader();
-                showToast("معلومات خاطئة (الهاتف/كلمة المرور).", 'error');
-            }
-        }
-
-        function demoAdmin() {
-             const phone = document.getElementById('login-phone').value.trim();
-             const pass = document.getElementById('login-pass').value.trim();
-            
-             showLoader();
-             // **الأمان هنا:** يتم البحث عن مستخدم لديه دور "admin"
-             const adminUser = db.users.find(u => u.role === "admin" && u.phone === phone && u.pass === pass);
-            
-             if (adminUser) {
-                 db.current = adminUser;
-                 save();
-                 setTimeout(loadApp, 500);
-             } else {
-                 hideLoader();
-                 showToast("⚠️ غير مصرح لك بالدخول. (مدير، تحقق من الهاتف وكلمة المرور).", 'error');
-             }
-        }
-
-
-        function doLogout() {
-            db.current = null;
-            save();
-            location.reload();
-        }
-
-        function hardReset() {
-            if(confirm("تحذير: هذا سيؤدي لمسح جميع بيانات النظام المحلية. هل أنت متأكد؟")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // Loader functions
-        function showLoader() { document.getElementById('app-loader').classList.remove('d-none'); }
-        function hideLoader() { document.getElementById('app-loader').classList.add('d-none'); }
-
-        // --- 4. تشغيل التطبيق ---
-        function loadApp() {
-            hideLoader();
-            if(!db.current) return; 
-
-            document.getElementById('auth-container').classList.add('d-none');
-            document.getElementById('main-app').classList.remove('d-none');
-            
-            const u = db.current;
-            const roleName = u.role === 'client' ? 'زبون' : (u.role === 'tech' ? 'فني' : 'مدير');
-            document.getElementById('user-welcome').innerText = `${u.name} (${roleName})`;
-
-            document.getElementById('panel-client').classList.add('d-none');
-            document.getElementById('panel-tech').classList.add('d-none');
-            document.getElementById('panel-admin').classList.add('d-none');
-
-            if(u.role === 'client') loadClient();
-            else if(u.role === 'tech') loadTech();
-            else if(u.role === 'admin') loadAdmin(); 
-            // **هنا الحماية:** لن يتم تحميل أي لوحة تحكم إذا لم يكن الدور صحيحاً
-            else {
-                 showToast("⚠️ دور المستخدم غير معروف. جارٍ تسجيل الخروج.", 'error');
-                 doLogout();
-            }
-        }
-
-        // --- 5. دوال الزبون ---
-        function loadClient() {
-            document.getElementById('panel-client').classList.remove('d-none');
-            clientTab('prod'); // افتراضياً المنتجات
-            
-            // قائمة المنتجات
-            document.getElementById('list-client').innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center active:scale-[0.98] transition hover:shadow-lg">
-                    <div class="text-3xl mb-2">${p.img}</div>
-                    <div class="font-bold text-sm h-10 overflow-hidden">${p.name}</div>
-                    <div class="text-blue-600 font-bold mt-2">${p.price} د.م</div>
-                </div>
-            `).join('');
-
-            // قائمة طلباتي السابقة
-            updateClientRequestsList();
-        }
-
-        function clientTab(t) {
-            const isProd = t === 'prod';
-            document.getElementById('view-client-prod').classList.toggle('d-none', !isProd);
-            document.getElementById('view-client-req').classList.toggle('d-none', isProd);
-            
-            document.getElementById('btn-client-prod').classList.toggle('bg-blue-900', isProd);
-            document.getElementById('btn-client-prod').classList.toggle('text-white', isProd);
-            document.getElementById('btn-client-prod').classList.toggle('text-gray-600', !isProd);
-            
-            document.getElementById('btn-client-req').classList.toggle('bg-blue-900', !isProd);
-            document.getElementById('btn-client-req').classList.toggle('text-white', !isProd);
-            document.getElementById('btn-client-req').classList.toggle('text-gray-600', isProd);
-
-            if (t === 'req') updateClientRequestsList();
-        }
-
-        function updateClientRequestsList() {
-            const container = document.getElementById('list-client-req');
-            const clientReqs = db.requests.filter(r => r.phone === db.current.phone);
-
-            if(clientReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تطلب أي خدمات صيانة بعد.</p>`;
-                return;
-            }
-
-            container.innerHTML = clientReqs.map(r => {
-                let statusClass, statusText;
-                if(r.status === 'pending') { statusClass = 'border-yellow-500'; statusText = 'قيد الانتظار'; }
-                else if(r.status === 'accepted') { statusClass = 'border-blue-500'; statusText = 'تم القبول (قيد العمل)'; }
-                else if(r.status === 'completed') { statusClass = 'border-green-500'; statusText = 'مكتمل'; }
-                
-                return `
-                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass} flex justify-between items-center">
-                        <div>
-                            <div class="font-bold">${r.type}</div>
-                            <div class="text-xs text-gray-500">${r.addr}</div>
-                        </div>
-                        <span class="text-xs font-bold text-gray-700">${statusText}</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openModal() { document.getElementById('modal').classList.remove('d-none'); }
-        function closeModal() { document.getElementById('modal').classList.add('d-none'); }
-
-        function sendReq() {
-            const type = document.getElementById('srv-type').value.trim();
-            const addr = document.getElementById('srv-addr').value.trim();
-            if(!addr) return showToast("الرجاء كتابة العنوان.", 'error');
-            
-            db.requests.push({ 
-                id: Date.now(), 
-                client: db.current.name, 
-                phone: db.current.phone,
-                type, 
-                addr, 
-                status: 'pending',
-                technician_id: null,
-                date: new Date().toLocaleDateString('ar-EG')
-            });
-            save();
-            closeModal();
-            showToast("✅ تم إرسال الطلب بنجاح! سيتم إخطار الفنيين.", 'success');
-        }
-
-        // --- 6. دوال الفني ---
-        function loadTech() {
-            document.getElementById('panel-tech').classList.remove('d-none');
-            document.getElementById('tech-wallet').innerText = db.current.wallet;
-            techTab('prod'); // افتراضياً المنتجات
-
-            // المنتجات
-            document.getElementById('view-tech-prod').innerHTML = db.products.map(p => `
-                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center transition hover:shadow-md">
-                    <div class="flex items-center gap-3">
-                        <div class="text-3xl">${p.img}</div>
-                        <div>
-                            <div class="font-bold">${p.name}</div>
-                            <div class="text-xs text-gray-500">السعر للزبون: ${p.price} د.م</div>
-                        </div>
-                    </div>
-                    <button onclick="buy(${p.id})" class="bg-blue-900 text-white px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.95] transition hover:bg-blue-800">شراء (+${p.comm})</button>
-                </div>
-            `).join('');
-
-            updateRequestsList();
-            updateTechLogs();
-        }
-
-        function techTab(t) {
-            const views = { 'prod': 'view-tech-prod', 'req': 'view-tech-req', 'log': 'view-tech-log' };
-            const btns = { 'prod': 'btn-prod', 'req': 'btn-req', 'log': 'btn-log' };
-            
-            for (let key in views) {
-                document.getElementById(views[key]).classList.add('d-none');
-                document.getElementById(btns[key]).classList.remove('bg-blue-900', 'text-white');
-                document.getElementById(btns[key]).classList.add('bg-gray-200', 'text-gray-600');
-            }
-
-            document.getElementById(views[t]).classList.remove('d-none');
-            document.getElementById(btns[t]).classList.add('bg-blue-900', 'text-white');
-            document.getElementById(btns[t]).classList.remove('bg-gray-200', 'text-gray-600');
-
-            if (t === 'req') updateRequestsList(); // تحديث الطلبات فقط
-            if (t === 'log') updateTechLogs(); // تحديث السجل فقط
-        }
-
-        function buy(id) {
-            const p = db.products.find(x => x.id === id);
-            if(confirm(`تأكيد شراء ${p.name}؟\n ستحصل على عمولة: ${p.comm} د.م`)) {
-                
-                db.current.wallet += parseInt(p.comm);
-                
-                const idx = db.users.findIndex(u => u.id === db.current.id);
-                if(idx !== -1) db.users[idx].wallet = db.current.wallet;
-
-                db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'product', amount: parseInt(p.comm), desc: `عمولة بيع: ${p.name}`, date: new Date().toLocaleDateString('ar-EG') });
-                
-                save();
-                document.getElementById('tech-wallet').innerText = db.current.wallet; // تحديث فوري للرصيد
-                showToast(`💰 تمت إضافة ${p.comm} د.م إلى رصيدك!`, 'success');
-            }
-        }
-        
-        function updateRequestsList() {
-            const container = document.getElementById('view-tech-req');
-            const pendingAndAccepted = db.requests.filter(r => r.status === 'pending' || (r.status === 'accepted' && r.technician_id === db.current.id));
-            
-            if(pendingAndAccepted.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400 py-10">لا طلبات عمل جديدة أو مقبولة حالياً.</p>';
-                return;
-            }
-
-            container.innerHTML = pendingAndAccepted.map(r => {
-                let statusClass, btn;
-
-                if (r.status === 'pending') {
-                    statusClass = 'border-yellow-500';
-                    btn = `<button onclick="accept(${r.id})" class="w-full bg-gray-800 text-white py-2 rounded-xl mt-3 text-sm hover:bg-black transition active:scale-[0.98]">قبول العمل</button>`;
-                } else {
-                    statusClass = 'border-green-500';
-                    btn = `
-                        <div class="mt-3 bg-green-50 p-3 rounded-lg text-green-800">
-                            <p class="text-sm font-bold">تواصل مع الزبون:</p>
-                            <a href="tel:${r.phone}" class="font-mono text-lg underline">${r.phone}</a>
-                        </div>
-                        <button onclick="finishRequest(${r.id})" class="w-full bg-red-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-red-700 transition active:scale-[0.98]"><i class="fas fa-check-circle ml-1"></i> تم إكمال العمل</button>
-                    `;
-                }
-
-                return `
-                    <div class="bg-white p-4 rounded-xl shadow border-r-4 ${statusClass}">
-                        <div class="flex justify-between items-center">
-                            <div class="font-bold text-lg">${r.type}</div>
-                            <span class="text-xs ${r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} px-2 py-1 rounded-full">${r.status === 'pending' ? 'جديد' : 'مقبول'}</span>
-                        </div>
-                        <div class="text-sm text-gray-600 mt-1"><i class="fas fa-map-marker-alt text-red-500 ml-1"></i> ${r.addr}</div>
-                        <div class="text-xs text-gray-400 mt-1">الزبون: ${r.client}</div>
-                        ${btn}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function accept(id) {
-            const r = db.requests.find(x => x.id === id);
-            if (!r) return;
-
-            r.status = 'accepted';
-            r.technician_id = db.current.id; 
-            save();
-            updateRequestsList();
-            showToast(`✅ تم قبول الطلب. هاتف الزبون: ${r.phone}`, 'info');
-        }
-        
-        function finishRequest(id) {
-            if(!confirm("هل أنت متأكد من إنهاء هذا العمل؟ سيتم إغلاقه وإضافة العمولة.")) return;
-
-            const r = db.requests.find(x => x.id === id);
-            if(!r) return;
-
-            const jobCommission = 50; 
-            r.status = 'completed';
-            
-            db.current.wallet += jobCommission; 
-            const idx = db.users.findIndex(u => u.id === db.current.id);
-            if(idx !== -1) db.users[idx].wallet = db.current.wallet;
-            
-            db.techLogs.push({ id: Date.now(), techId: db.current.id, type: 'job', amount: jobCommission, desc: `عمولة خدمة: ${r.type}`, date: new Date().toLocaleDateString('ar-EG') });
-
-            save();
-            updateRequestsList(); 
-            document.getElementById('tech-wallet').innerText = db.current.wallet;
-            showToast(`🎉 تم إغلاق الطلب! تمت إضافة ${jobCommission} د.م إلى رصيدك.`, 'success');
-        }
-
-        function updateTechLogs() {
-            const container = document.getElementById('list-tech-log');
-            const techLogs = db.techLogs.filter(log => log.techId === db.current.id).reverse();
-
-            if (techLogs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">لم تحقق أي أرباح بعد.</p>`;
-                return;
-            }
-            
-            container.innerHTML = techLogs.map(log => `
-                <div class="bg-white p-3 rounded-xl shadow border-l-4 ${log.type === 'product' ? 'border-blue-500' : 'border-green-500'} flex justify-between items-center">
-                    <div>
-                        <div class="font-bold">${log.desc}</div>
-                        <div class="text-xs text-gray-500">${log.date}</div>
-                    </div>
-                    <span class="font-bold text-green-600">+${log.amount} د.م</span>
-                </div>
-            `).join('');
-        }
-
+        ... (باقي دوال المصادقة والتحكم في الواجهات) ...
 
         // --- 7. دوال الإدارة ---
-        function loadAdmin() {
-            document.getElementById('panel-admin').classList.remove('d-none');
-            
-            // تحديث عدد المنتجات
-            document.getElementById('admin-prod-header').innerHTML = `📦 إدارة المنتجات (${db.products.length})`;
-            
-            document.getElementById('list-admin').innerHTML = db.products.map(p => `
-                <div class="bg-white p-3 rounded flex justify-between items-center border shadow-sm">
-                    <div>
-                        <span class="font-bold">${p.name}</span>
-                        <div class="text-xs text-gray-500">السعر: ${p.price} | عمولة: ${p.comm}</div>
-                    </div>
-                    <div class="space-x-2 space-x-reverse">
-                        <button onclick="delProd(${p.id})" class="text-red-500 text-sm hover:text-red-700 transition"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>
-            `).join('');
-            
-            updateAdminRequestsList();
-        }
 
-        function updateAdminRequestsList() {
-             const container = document.getElementById('list-admin-reqs');
-             const completedReqs = db.requests.filter(r => r.status === 'completed' || r.status === 'accepted').reverse();
+        ... (دوال loadAdmin, updateAdminRequestsList, deleteRequest, delProd) ...
 
-             if(completedReqs.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-4">لا توجد طلبات للمراجعة.</p>`;
-                return;
-             }
 
-             container.innerHTML = completedReqs.map(r => {
-                const tech = db.users.find(u => u.id === r.technician_id);
-                const statusColor = r.status === 'completed' ? 'text-green-600' : 'text-blue-600';
-                const actionBtn = r.status === 'completed' ? `<button onclick="deleteRequest(${r.id})" class="text-red-500 text-sm hover:text-red-700">حذف</button>` : `<button onclick="deleteRequest(${r.id})" class="text-gray-500 text-sm hover:text-gray-700">إلغاء</button>`;
-
-                return `
-                    <div class="bg-white p-3 rounded shadow-sm border ${r.status === 'completed' ? 'border-green-100' : 'border-blue-100'} flex justify-between items-center">
-                        <div>
-                            <span class="font-bold ${statusColor}">${r.type}</span> 
-                            <span class="text-xs text-gray-500 ml-2">(${r.date})</span>
-                            <div class="text-xs text-gray-700">الفني: ${tech ? tech.name : 'غير محدد'}</div>
-                        </div>
-                        ${actionBtn}
-                    </div>
-                `;
-             }).join('');
-        }
-
-        function deleteRequest(id) {
-            if(confirm('حذف هذا الطلب من السجل؟')) {
-                db.requests = db.requests.filter(r => r.id !== id);
-                save();
-                updateAdminRequestsList();
-                showToast("تم حذف الطلب بنجاح.", 'success');
-            }
-        }
-
-        function addProd() {
+        // *** التعديل الرئيسي في دالة إضافة المنتج: addProd() ***
+        async function addProd() {
             const name = document.getElementById('adm-name').value.trim();
             const price = parseInt(document.getElementById('adm-price').value.trim());
             const comm = parseInt(document.getElementById('adm-comm').value.trim());
+            const imgURL = document.getElementById('adm-imgurl').value.trim(); 
+            const imageFile = document.getElementById('adm-image-file').files[0];
+
             
             if(!name || isNaN(price) || isNaN(comm) || price <= 0 || comm < 0) {
                 return showToast("الرجاء إدخال بيانات صحيحة (الاسم، السعر، العمولة).", 'error');
             }
+
+            let finalImageLink = imgURL;
+
+            if (imageFile) {
+                // *** هذه هي منطقة محاكاة التحميل إلى خادم حقيقي ***
+                showLoader();
+                showToast("جاري رفع الصورة إلى الخادم... (محاكاة)", 'info');
+                
+                await new Promise(resolve => setTimeout(resolve, 1500)); // محاكاة وقت الرفع (1.5 ثانية)
+
+                // إذا كان خادم حقيقي، هنا سيرجع الخادم الرابط النهائي.
+                // حالياً، نستخدم FileReader لعرض الصورة من الذاكرة المحلية كبديل مؤقت.
+                finalImageLink = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(imageFile); // هذا يعطي رابط Base64 (يعمل محلياً فقط)
+                });
+                
+                hideLoader();
+            }
+
+            if (!finalImageLink) {
+                 finalImageLink = defaultImageUrl + Date.now(); // رابط افتراضي في حالة عدم وجود صورة مُدخلة
+            }
             
-            db.products.push({ id: Date.now(), name, price, comm, img: '📦' });
+            // إضافة المنتج باستخدام الرابط النهائي
+            db.products.push({ 
+                id: Date.now(), 
+                name, 
+                price, 
+                comm, 
+                imgURL: finalImageLink, 
+                icon: '📦' 
+            });
             save();
             loadAdmin();
+
+            // مسح الحقول بعد الإضافة
             document.getElementById('adm-name').value = '';
             document.getElementById('adm-price').value = '';
             document.getElementById('adm-comm').value = '';
-            showToast("✅ تمت إضافة المنتج بنجاح.", 'success');
-        }
+            document.getElementById('adm-imgurl').value = ''; 
+            document.getElementById('adm-image-file').value = ''; 
 
-        function delProd(id) {
-            if(confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
-                db.products = db.products.filter(p => p.id !== id);
-                save();
-                loadAdmin();
-                // تحديث واجهة الزبون (لإزالة المنتج)
-                if (db.current && db.current.role === 'client') loadClient();
-                showToast("تم حذف المنتج بنجاح.", 'success');
-            }
+            showToast("✅ تمت إضافة المنتج بنجاح.", 'success');
         }
 
         // بدء التشغيل
         document.addEventListener('DOMContentLoaded', () => {
-             // تحديد قيم Demo Admin لسهولة الاختبار (هاتف: 1، كلمة سر: 1)
+             // التأكد من وجود حساب المدير التجريبي
             if (!db.users.find(u => u.id === 0 && u.role === "admin")) {
                 db.users.push({ id: 0, name: "Admin (Demo)", role: "admin", wallet: 99999, phone: '1', pass: '1' }); 
                 save();
