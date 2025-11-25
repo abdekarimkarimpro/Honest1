@@ -767,7 +767,8 @@
                 serviceType: serviceType,
                 serviceCommission: SERVICE_COMMISSION, // عمولة ثابتة للخدمة
                 status: 'pending',
-                date: new Date().toLocaleString()
+                date: new Date().toLocaleString(),
+                isCommissioned: false // تحديث: إضافة حالة احتساب العمولة
             });
             save();
 
@@ -851,7 +852,8 @@
                 vendorId: product.vendorId, 
                 details: `طلب شراء المنتج: ${product.name}`,
                 status: 'pending',
-                date: new Date().toLocaleString()
+                date: new Date().toLocaleString(),
+                isCommissioned: false // تحديث: إضافة حالة احتساب العمولة
             });
             save();
             closeModal('product-modal');
@@ -876,14 +878,15 @@
             const u = db.current;
             const tech = db.users.find(user => user.id === u.id);
 
-            // إحصائيات الأوامر المكتملة
-            const completedJobs = db.orders.filter(o => o.techId === u.id && o.status === 'completed');
+            // إحصائيات الأوامر المكتملة (مكتملة ومحتسبة العمولة)
+            const completedJobs = db.orders.filter(o => o.techId === u.id && o.status === 'completed' && o.isCommissioned);
             
-            // عمولة متوقعة (التي لم يتم مراجعتها بعد)
-            const expectedCommission = completedJobs.reduce((sum, order) => {
-                const commission = order.type === 'service' ? order.serviceCommission : order.productComm;
-                return sum + commission;
-            }, 0);
+            // **التحديث:** عمولة متوقعة (التي تم إكمالها لكن لم يتم احتساب عمولتها بعد)
+            const expectedCommission = db.orders.filter(o => o.techId === u.id && o.status === 'completed' && !o.isCommissioned)
+                                               .reduce((sum, order) => {
+                                                   const commission = order.type === 'service' ? order.serviceCommission : order.productComm;
+                                                   return sum + commission;
+                                               }, 0);
 
             // تحديث رصيد الفني (يجب أن يتم تحديثه في DB عند الموافقة)
             if (tech) {
@@ -941,8 +944,9 @@
                 ? `<p class="text-center text-gray-500 py-4 p-4 bg-gray-50 rounded-xl">لم تقم بقبول أي مهمة بعد. <i class="far fa-grin"></i></p>`
                 : myJobs.map(o => {
                     const isCompleted = o.status === 'completed';
+                    const isCommissioned = o.isCommissioned; // حالة جديدة
                     const statusClass = isCompleted ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
-                    const borderClass = isCompleted ? 'border-green-500' : 'border-orange-500';
+                    const borderClass = isCompleted ? (isCommissioned ? 'border-green-700' : 'border-blue-500') : 'border-orange-500';
 
                     return `
                         <div class="bg-white p-4 rounded-xl shadow border-r-8 ${borderClass}">
@@ -961,7 +965,9 @@
                                 <button onclick="completeJob(${o.id})" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-md" data-i18n="complete_job_button">المهمة اكتملت <i class="fas fa-check ml-2"></i></button>
                             ` : `
                                 <p class="text-sm text-gray-600 mt-2">${t('order_details')} ${o.details}</p>
-                                <p class="text-xs text-green-700 font-semibold mt-2">${isCompleted ? t('order_completed_by_tech') : ''}</p>
+                                <p class="text-xs ${isCommissioned ? 'text-green-700' : 'text-blue-700'} font-semibold mt-2">
+                                    ${isCompleted ? (isCommissioned ? 'تم احتساب العمولة.' : t('order_completed_by_tech')) : ''}
+                                </p>
                             `}
                             <p class="text-xs text-gray-400 mt-2">${o.date}</p>
                         </div>
@@ -1259,12 +1265,12 @@
             }
         }
         
-        // **وظيفة جديدة**: موافقة المدير على الطلب المكتمل وإضافة العمولة
+        // **التحديث:** وظيفة موافقة المدير على الطلب المكتمل وإضافة العمولة
         function approveOrderCommission(orderId) {
             const order = db.orders.find(o => o.id === orderId);
             const tech = db.users.find(u => u.id === order.techId);
             
-            if (order && order.status === 'completed' && tech) {
+            if (order && order.status === 'completed' && tech && !order.isCommissioned) {
                 // تحديد العمولة: (عمولة خدمة ثابتة) أو (عمولة منتج محددة)
                 const commission = order.type === 'service' ? order.serviceCommission : order.productComm;
                 
@@ -1281,6 +1287,8 @@
                 updateTechStats(); // لتحديث رصيد الفني إذا كان هو المستخدم الحالي
                 
                 showToast(t('order_accepted_commission_success', {amount: commission.toFixed(2), techName: tech.name}), 'success');
+            } else {
+                 showToast("الطلب غير مكتمل أو تم احتساب عمولته مسبقاً.", 'error');
             }
         }
 
@@ -1312,7 +1320,7 @@
                     withdrawal.status = 'approved';
                     save();
                     updateAdminDashboard();
-                    if (db.current.id === user.id) updateTechStats(); 
+                    if (db.current && db.current.id === user.id) updateTechStats(); // تحديث لوحة الفني إذا كان هو المستخدم الحالي
                     showToast(`تمت الموافقة على سحب ${withdrawal.amount.toFixed(2)} لـ ${user.name}.`, 'success');
                 } else {
                     showToast(`رصيد ${user.name} غير كافٍ.`, 'error');
@@ -1324,7 +1332,7 @@
             const container = document.getElementById('list-admin-balances');
             const techAndMerchants = db.users.filter(u => u.role === 'tech' || u.role === 'merchant').sort((a, b) => b.balance - a.balance);
             
-            // **طلبات العمولات المكتملة (بانتظار الموافقة المالية)**
+            // **التحديث:** طلبات العمولات المكتملة (بانتظار الموافقة المالية)
             const pendingCommissionOrders = db.orders.filter(o => o.status === 'completed' && !o.isCommissioned && o.techId);
 
             let html = '';
