@@ -2,816 +2,628 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate="Tech Services App">Tech Services App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="app_title_full">Honest Sat | Stable Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* 🎨 التنسيقات المبسطة والمعدلة */
         body { 
-            font-family: 'Arial', sans-serif; 
-            background-color: #f0f0f0; /* خلفية أفتح */
-            color: #333; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; /* تغيير ليتناسب مع الشاشات الطويلة */
-            min-height: 100vh;
+            font-family: 'Tajawal', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
         }
-        .app-container { 
-            max-width: 400px; 
-            width: 95%;
-            margin: 20px 0; /* مسافة بسيطة من الأعلى والأسفل */
-            background-color: white; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-            overflow: hidden; 
+        .d-none { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .active\:scale-95:active { transform: scale(0.95); }
+        .prod-img { 
+            width: 80px; 
+            height: 80px; 
+            object-fit: contain; 
+            border-radius: 8px;
+            background-color: #f7f7f7;
+            margin: 0 auto;
         }
-        .header { 
-            background-color: #3f51b5; /* لون أزرق هادئ */
-            color: white; 
-            padding: 15px; 
-            text-align: center; 
-            border-radius: 8px 8px 0 0;
+        .prod-icon { 
+            font-size: 3rem;
+            line-height: 1;
         }
-        .title { 
-            margin: 0 0 15px; 
-            font-size: 1.4em; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px;
-        }
-        .view { 
-            padding: 15px; 
-            display: none; 
-        }
-        .active { 
-            display: block; 
-        }
-        
-        /* تنسيق الحقول */
-        input[type="text"], input[type="password"], input[type="number"], textarea, select { 
-            width: 100%; 
-            padding: 10px; 
-            margin: 8px 0; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
-            box-sizing: border-box; 
-        }
-        
-        /* تنسيق الأزرار */
-        .btn-primary, .btn-secondary, .btn-danger { 
-            background-color: #007bff; 
-            color: white; 
-            padding: 10px 15px; 
-            margin: 8px 0; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            width: 100%; 
-            font-size: 1em; 
-            transition: background-color 0.3s; 
-        }
-        .btn-secondary { 
-            background-color: #6c757d; 
-        }
-        .btn-danger { 
-            background-color: #dc3545; 
-        }
-        .btn-primary:hover { 
-            background-color: #0056b3; 
-        }
-        
-        /* تنسيق عناصر القائمة */
-        .list-item { 
-            background: #f9f9f9; 
-            border: 1px solid #eee; 
-            border-radius: 5px; 
-            padding: 12px; 
-            margin-bottom: 8px; 
-            display: flex; 
-            flex-direction: column; /* جعل العناصر تتراصف عمودياً */
-            gap: 5px;
-        }
-        .list-item strong { 
-            color: #3f51b5; 
-            font-size: 1.1em;
-        }
-        .item-actions {
-            margin-top: 10px;
-            display: flex;
-            justify-content: flex-end; /* وضع الأزرار على اليسار/اليمين حسب الاتجاه */
-            gap: 8px;
-        }
-        .item-actions button { 
-            width: auto; 
-            padding: 7px 12px; 
-            font-size: 0.85em;
-            margin: 0;
-        }
-
-        /* تنسيق رسائل التوست والتحميل */
-        .toast { /* ... (نفس تنسيق التوست السابق) */ }
-        .loader { /* ... (نفس تنسيق التحميل السابق) */ }
-        
-        /* تنسيق خاص باختيار الدور */
-        .role-selection { display: flex; justify-content: space-around; margin: 15px 0; }
-        .role-option { text-align: center; padding: 10px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
-        .role-option.selected { border-color: #3f51b5; background-color: #f0f3ff; }
-        .role-option input { display: none; }
-        .empty-state { text-align: center; color: #6c757d; padding: 15px; border: 1px dashed #ccc; border-radius: 5px; font-size: 0.9em; }
-
-        /* تنسيق قائمة الموافقات للمدير (مبسط) */
-        #pending-approvals-list .list-item {
-            flex-direction: row; /* إرجاع الصف الأفقي في قائمة المدير فقط */
-            justify-content: space-between;
-            align-items: center;
-        }
-        #pending-approvals-list .item-info {
-            display: flex;
-            flex-direction: column;
-        }
-        #pending-approvals-list .item-actions {
-            margin-top: 0;
-        }
-        
-        /* التنسيق الأصلي للتوست والتحميل (محتفظ به لتشغيل الدوال) */
-        .toast { visibility: hidden; min-width: 250px; background-color: #333; color: white; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; transform: translateX(-50%); bottom: 30px; opacity: 0; transition: opacity 0.3s; }
-        .toast.show { visibility: visible; opacity: 1; }
-        .toast.success { background-color: #28a745; }
-        .toast.error { background-color: #dc3545; }
-        .toast.info { background-color: #17a2b8; }
-        .loader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.8); z-index: 1001; display: none; justify-content: center; align-items: center; }
-        .loader.show { display: flex; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3f51b5; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
-    <div class="app-container">
-        <div class="header">
-            <h1 data-translate="Tech Services Platform">منصة الخدمات التقنية</h1>
-            <div id="welcome-user"></div>
-            <button id="logout-btn" class="btn-secondary" style="display:none; margin-top: 10px;" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> <span data-translate="Logout">تسجيل الخروج</span>
-            </button>
-        </div>
+<body class="bg-gray-50 text-gray-800 pb-10 select-none">
 
-        <div class="view" style="display: block; text-align: center; padding: 10px 15px;">
-            <button onclick="setLanguage('ar')" id="lang-ar" class="btn-secondary" style="width: 45%; margin: 0; padding: 5px;">العربية</button>
-            <button onclick="setLanguage('en')" id="lang-en" class="btn-secondary" style="width: 45%; margin: 0; padding: 5px;">English</button>
-        </div>
-
-        <div id="login-view" class="view active">
-            <h3 class="title"><i class="fas fa-sign-in-alt"></i> <span data-translate="Login">تسجيل الدخول</span></h3>
-            <input type="number" id="login-phone" placeholder="9665xxxxxxxx" data-translate-placeholder="Phone Number">
-            <input type="password" id="login-pass" placeholder="Password" data-translate-placeholder="Password">
-            <button class="btn-primary" onclick="tryLogin()"><i class="fas fa-arrow-right"></i> <span data-translate="Login">تسجيل الدخول</span></button>
-            <button class="btn-secondary" onclick="switchView('register-view')"><i class="fas fa-user-plus"></i> <span data-translate="Register">تسجيل</span></button>
-        </div>
-
-        <div id="register-view" class="view">
-            <h3 class="title"><i class="fas fa-user-plus"></i> <span data-translate="Register Account">تسجيل حساب</span></h3>
-            <input type="text" id="reg-name" placeholder="Full Name" data-translate-placeholder="Full Name">
-            <input type="number" id="reg-phone" placeholder="9665xxxxxxxx" data-translate-placeholder="Phone Number">
-            <input type="password" id="reg-pass" placeholder="Password (Min 8 characters, Upper/Lower/Number)" data-translate-placeholder="Password (Min 8 characters, Upper/Lower/Number)">
-
-            <label data-translate="Select Role:">اختر الدور:</label>
-            <div class="role-selection" id="role-selection">
-                <label for="role-client" class="role-option selected" data-role="client">
-                    <input type="radio" name="role" id="role-client" value="client" checked>
-                    <i class="fas fa-user"></i> <span data-translate="Client">عميل</span>
-                </label>
-                <label for="role-tech" class="role-option" data-role="tech">
-                    <input type="radio" name="role" id="role-tech" value="tech">
-                    <i class="fas fa-tools"></i> <span data-translate="Technician">فني</span>
-                </label>
-                <label for="role-admin" class="role-option" data-role="admin" style="display: none;">
-                    <input type="radio" name="role" id="role-admin" value="admin">
-                    <i class="fas fa-shield-alt"></i> <span data-translate="Admin">مدير</span>
-                </label>
-            </div>
-
-            <button class="btn-primary" onclick="tryRegister()"><i class="fas fa-user-plus"></i> <span data-translate="Register">تسجيل</span></button>
-            <button class="btn-secondary" onclick="switchView('login-view')"><i class="fas fa-arrow-left"></i> <span data-translate="Back to Login">العودة لتسجيل الدخول</span></button>
-        </div>
-
-        <div id="client-view" class="view">
-            <h3 class="title"><i class="fas fa-home"></i> <span data-translate="Client Home">صفحة العميل الرئيسية</span></h3>
-            <button class="btn-primary" onclick="switchViewToRequest()"><i class="fas fa-plus-circle"></i> <span data-translate="New Request">طلب جديد</span></button>
-            <h4><span data-translate="My Requests">طلباتي</span></h4>
-            <div id="client-requests-list"></div>
-        </div>
-        
-        <div id="tech-view" class="view">
-            <h3 class="title"><i class="fas fa-wrench"></i> <span data-translate="Technician Dashboard">لوحة تحكم الفني</span></h3>
-            <h4><span data-translate="Wallet Balance">الرصيد</span>: <span id="tech-wallet">0</span> <span data-translate="SAR">ر.س</span></h4>
-            
-            <h4><span data-translate="Available Requests">الطلبات المتاحة</span></h4>
-            <div id="available-requests-list"></div>
-            
-            <h4><span data-translate="My Active Requests">طلباتي النشطة</span></h4>
-            <div id="tech-active-requests-list"></div>
-        </div>
-
-        <div id="admin-view" class="view">
-            <h3 class="title"><i class="fas fa-chart-line"></i> <span data-translate="Admin Dashboard">لوحة تحكم المدير</span></h3>
-            
-            <h4><i class="fas fa-user-check"></i> <span data-translate="Approval Management">إدارة الموافقات</span></h4>
-            <div id="pending-approvals-list" class="list-container">
-            </div>
-            
-            <h4 style="margin-top: 20px;"><i class="fas fa-list-alt"></i> <span data-translate="Request Oversight">متابعة الطلبات</span></h4>
-            <p data-translate="Manage all requests here...">إدارة جميع الطلبات من هنا...</p>
-        </div>
-
-        <div id="request-view" class="view">
-            <h3 class="title"><i class="fas fa-plus-circle"></i> <span data-translate="Submit New Request">إرسال طلب جديد</span></h3>
-            <select id="request-product-id"></select>
-            <input type="text" id="request-details" placeholder="Detailed description of the problem..." data-translate-placeholder="Detailed description of the problem...">
-            <input type="number" id="request-price" placeholder="Proposed Price (SAR)" data-translate-placeholder="Proposed Price (SAR)">
-            <button class="btn-primary" onclick="submitRequest()"><i class="fas fa-paper-plane"></i> <span data-translate="Submit Request">إرسال الطلب</span></button>
-            <button class="btn-secondary" onclick="loadApp()"><i class="fas fa-arrow-left"></i> <span data-translate="Back">رجوع</span></button>
-        </div>
-
+    <div class="fixed top-2 right-2 z-[9999]">
+        <select onchange="setLang(this.value)" id="lang-selector" 
+                class="bg-white text-gray-800 text-[10px] px-2 py-1 rounded border border-gray-300 transition">
+            <option value="ar">العربية</option>
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+        </select>
     </div>
 
-    <div id="toast" class="toast"></div>
-    <div id="loader" class="loader"><div class="spinner"></div></div>
+    <button onclick="hardReset()" class="fixed top-2 left-2 z-[9999] bg-red-100 text-red-600 text-[10px] px-2 py-1 rounded border border-red-200 opacity-50 hover:opacity-100 transition">
+        ♻️ Clear Storage
+    </button>
 
-<script>
-    // =================================================================
-    // =========== 1. تهيئة Firebase والإعدادات العامة =================
-    // =================================================================
+    <div id="toast-container" class="fixed top-12 right-4 z-[9000] space-y-2"></div>
 
-    // **!!! تذكير: يجب استبدال هذه الإعدادات بإعدادات مشروعك الحقيقي !!!**
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
+    <div id="app-loader" class="fixed inset-0 bg-white/70 z-[8000] d-none flex items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-opacity-75"></div>
+    </div>
 
-    // تهيئة Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db_cloud = firebase.firestore();
-
-    // البيانات المحلية (Cache) - سنستخدمها لتخزين البيانات المؤقتة فقط بدلاً من localStorage
-    let db = {
-        current: null, // المستخدم الحالي
-        users: [], // قائمة المستخدمين (لغرض العرض المحلي المؤقت)
-        products: [ // قائمة المنتجات
-            { id: 1, name: 'Laptop Repair', name_ar: 'إصلاح حاسوب محمول' },
-            { id: 2, name: 'Phone Screen Replacement', name_ar: 'تغيير شاشة هاتف' },
-            { id: 3, name: 'Software Installation', name_ar: 'تنصيب برمجيات' },
-            { id: 4, name: 'Network Setup', name_ar: 'إعداد شبكات' }
-        ],
-        requests: [], // الطلبات
-        techLogs: [], // سجلات الفنيين
-        withdrawals: [], // طلبات سحب الرصيد
-        lang: 'ar'
-    };
-    
-    // لغة الترجمة
-    const translations = {
-        'en': {
-            "Tech Services App": "Tech Services App",
-            "Tech Services Platform": "Tech Services Platform",
-            "Login": "Login",
-            "Phone Number": "Phone Number",
-            "Password": "Password",
-            "Register": "Register",
-            "Back to Login": "Back to Login",
-            "Register Account": "Register Account",
-            "Full Name": "Full Name",
-            "Select Role:": "Select Role:",
-            "Client": "Client",
-            "Technician": "Technician",
-            "Admin": "Admin",
-            "Client Home": "Client Home",
-            "New Request": "New Request",
-            "My Requests": "My Requests",
-            "Technician Dashboard": "Technician Dashboard",
-            "Available Requests": "Available Requests",
-            "My Active Requests": "My Active Requests",
-            "Wallet Balance": "Wallet Balance",
-            "SAR": "SAR",
-            "Admin Dashboard": "Admin Dashboard",
-            "Pending Techs": "Pending Techs",
-            "Total Clients": "Total Clients",
-            "Total Requests": "Total Requests",
-            "Approval Management": "Approval Management",
-            "Request Oversight": "Request Oversight",
-            "Manage all requests here...": "Manage all requests here...",
-            "Submit New Request": "Submit New Request",
-            "Detailed description of the problem...": "Detailed description of the problem...",
-            "Proposed Price (SAR)": "Proposed Price (SAR)",
-            "Submit Request": "Submit Request",
-            "Back": "Back",
-            "Logout": "Logout",
-            "Please fill in all details.": "Please fill in all details.",
-            "Phone number must be exactly 10 digits.": "Phone number must be exactly 10 digits.",
-            "Password must be at least 8 characters, including uppercase, lowercase, and a number.": "Password must be at least 8 characters, including uppercase, lowercase, and a number.",
-            "User with this phone number already exists.": "User with this phone number already exists.",
-            "Account created. It must be approved by an administrator before login.": "Account created. It must be approved by an administrator before login.",
-            "Account created. Please log in.": "Account created. Please log in.",
-            "Please fill in all fields.": "Please fill in all fields.",
-            "Incorrect Phone or Password.": "Incorrect Phone or Password.",
-            "Your technician account is pending admin approval.": "Your technician account is pending admin approval.",
-            "Welcome back,": "Welcome back,",
-            "No technicians pending approval.": "No technicians pending approval.",
-            "Approve": "Approve",
-            "Reject": "Reject",
-            "Reg:": "Reg:",
-            "Welcome": "Welcome",
-            "Select a Service": "Select a Service",
-            "Logout successful!": "Logout successful!",
-            "Please fill in all request details correctly.": "Please fill in all request details correctly.",
-            "Request submitted successfully!": "Request submitted successfully!",
-            "A new request has been submitted and is awaiting a technician.": "A new request has been submitted and is awaiting a technician.",
-            "Technician approved!": "Technician approved!",
-            "User rejected and removed.": "User rejected and removed.",
-            "No requests found.": "No requests found.",
-            "Status": "Status",
-            "Price": "Price",
-            "No available requests.": "No available requests.",
-            "Accept": "Accept",
-            "No active requests.": "No active requests.",
-            "Finish": "Finish"
-        },
-        'ar': {
-            "Tech Services App": "تطبيق الخدمات التقنية",
-            "Tech Services Platform": "منصة الخدمات التقنية",
-            "Login": "تسجيل الدخول",
-            "Phone Number": "رقم الهاتف",
-            "Password": "كلمة المرور",
-            "Register": "تسجيل",
-            "Back to Login": "العودة لتسجيل الدخول",
-            "Register Account": "تسجيل حساب",
-            "Full Name": "الاسم الكامل",
-            "Select Role:": "اختر الدور:",
-            "Client": "عميل",
-            "Technician": "فني",
-            "Admin": "مدير",
-            "Client Home": "صفحة العميل الرئيسية",
-            "New Request": "طلب جديد",
-            "My Requests": "طلباتي",
-            "Technician Dashboard": "لوحة تحكم الفني",
-            "Available Requests": "الطلبات المتاحة",
-            "My Active Requests": "طلباتي النشطة",
-            "Wallet Balance": "الرصيد",
-            "SAR": "ر.س",
-            "Admin Dashboard": "لوحة تحكم المدير",
-            "Pending Techs": "الفنيون بانتظار الموافقة",
-            "Total Clients": "إجمالي العملاء",
-            "Total Requests": "إجمالي الطلبات",
-            "Approval Management": "إدارة الموافقات",
-            "Request Oversight": "متابعة الطلبات",
-            "Manage all requests here...": "إدارة جميع الطلبات من هنا...",
-            "Submit New Request": "إرسال طلب جديد",
-            "Detailed description of the problem...": "وصف مفصل للمشكلة...",
-            "Proposed Price (SAR)": "السعر المقترح (ر.س)",
-            "Submit Request": "إرسال الطلب",
-            "Back": "رجوع",
-            "Logout": "تسجيل الخروج",
-            "Please fill in all details.": "الرجاء ملء جميع التفاصيل.",
-            "Phone number must be exactly 10 digits.": "يجب أن يتكون رقم الهاتف من 10 أرقام بالضبط.",
-            "Password must be at least 8 characters, including uppercase, lowercase, and a number.": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل، بما في ذلك حرف كبير وصغير ورقم.",
-            "User with this phone number already exists.": "يوجد مستخدم مسجل برقم الهاتف هذا مسبقاً.",
-            "Account created. It must be approved by an administrator before login.": "تم إنشاء الحساب. يجب أن يوافق عليه المدير قبل تسجيل الدخول.",
-            "Account created. Please log in.": "تم إنشاء الحساب. الرجاء تسجيل الدخول.",
-            "Please fill in all fields.": "الرجاء ملء جميع الحقول.",
-            "Incorrect Phone or Password.": "رقم الهاتف أو كلمة المرور غير صحيحة.",
-            "Your technician account is pending admin approval.": "حساب الفني الخاص بك بانتظار موافقة المدير.",
-            "Welcome back,": "أهلاً بك مجدداً،",
-            "No technicians pending approval.": "لا يوجد فنيون بانتظار الموافقة.",
-            "Approve": "موافقة",
-            "Reject": "رفض",
-            "Reg:": "تاريخ التسجيل:",
-            "Welcome": "أهلاً",
-            "Select a Service": "اختر خدمة",
-            "Logout successful!": "تم تسجيل الخروج بنجاح!",
-            "Please fill in all request details correctly.": "الرجاء ملء تفاصيل الطلب بالكامل وبشكل صحيح.",
-            "Request submitted successfully!": "تم إرسال الطلب بنجاح!",
-            "A new request has been submitted and is awaiting a technician.": "تم إرسال طلب جديد وهو بانتظار فني.",
-            "Technician approved!": "تمت الموافقة على الفني!",
-            "User rejected and removed.": "تم رفض المستخدم وإزالته.",
-            "No requests found.": "لم يتم العثور على طلبات.",
-            "Status": "الحالة",
-            "Price": "السعر",
-            "No available requests.": "لا توجد طلبات متاحة.",
-            "Accept": "قبول",
-            "No active requests.": "لا توجد طلبات نشطة.",
-            "Finish": "إنهاء"
-        }
-    };
-    
-    function t(key) {
-        return translations[db.lang][key] || key;
-    }
-    
-    // =================================================================
-    // =========== 2. دوال مساعدة عامة (UI/Utils) ======================
-    // =================================================================
-
-    function switchView(viewId) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
-        // إظهار/إخفاء زر تسجيل الخروج
-        if (viewId !== 'login-view' && viewId !== 'register-view') {
-            document.getElementById('logout-btn').style.display = 'block';
-        } else {
-            document.getElementById('logout-btn').style.display = 'none';
-        }
-    }
-
-    function showToast(message, type = 'info') {
-        const toastElm = document.getElementById('toast');
-        toastElm.innerText = message;
-        toastElm.className = 'toast show ' + type;
-        setTimeout(() => {
-            toastElm.className = toastElm.className.replace("show", "");
-        }, 3000);
-    }
-
-    function showLoader() {
-        document.getElementById('loader').classList.add('show');
-    }
-
-    function hideLoader() {
-        document.getElementById('loader').classList.remove('show');
-    }
-
-    // 🔔 دالة الإشعارات الموحدة
-    function notifyUser(message, type = 'info') {
-        showToast(message, type);
-    }
-    
-    function setLanguage(lang) {
-        db.lang = lang;
-        document.querySelectorAll('.lang-select button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`lang-${lang}`).classList.add('active');
-        document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
-        applyTranslations();
-        if (db.current) {
-            loadApp();
-        }
-    }
-    
-    function applyTranslations() {
-        document.querySelectorAll('[data-translate]').forEach(el => {
-            const key = el.getAttribute('data-translate');
-            el.innerText = t(key);
-        });
-        document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
-            const key = el.getAttribute('data-translate-placeholder');
-            el.placeholder = t(key);
-        });
-        if (db.current) updateProductOptions();
-    }
-
-    // دالة محاكاة التحميل الأولي للبيانات
-    function getSafeData() {
-        const data = localStorage.getItem('tech_services_db');
-        if (data) {
-            db = JSON.parse(data);
-        }
-        // تحميل الكاش (المستخدم الحالي واللغة)
-        const cache = localStorage.getItem('tech_services_cache');
-        if (cache) {
-            const cacheData = JSON.parse(cache);
-            db.current = cacheData.current;
-            db.lang = cacheData.lang;
-        }
-    }
-
-    // دالة محاكاة الحفظ
-    function save() {
-        // حفظ المستخدم الحالي واللغة في الكاش
-        const currentData = {
-            current: db.current,
-            lang: db.lang
-        };
-        localStorage.setItem('tech_services_cache', JSON.stringify(currentData));
-        // لحفظ جميع البيانات (للتجربة المحلية فقط):
-        localStorage.setItem('tech_services_db', JSON.stringify(db));
-    }
-
-    // =================================================================
-    // =========== 3. دوال المصادقة (Authentication) ===================
-    // =================================================================
-
-    function tryRegister() {
-        const name = document.getElementById('reg-name').value.trim();
-        const phone = document.getElementById('reg-phone').value.trim();
-        const pass = document.getElementById('reg-pass').value.trim();
-        const role = document.querySelector('input[name="role"]:checked').value;
-
-        // 1. التحقق من ملء جميع الحقول
-        if (!name || !phone || !pass) {
-            return showToast(t("Please fill in all details."), 'error');
-        }
-
-        // 2. التحقق من تنسيق رقم الهاتف (10 أرقام فقط)
-        const phoneRegex = /^\d{10}$/;
-        if (!phoneRegex.test(phone)) {
-            return showToast(t("Phone number must be exactly 10 digits."), 'error');
-        }
-
-        // 3. التحقق من قوة كلمة المرور (8 أحرف على الأقل، تشمل كبيراً وصغيراً ورقم)
-        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-        if (!passwordRegex.test(pass)) {
-            return showToast(t("Password must be at least 8 characters, including uppercase, lowercase, and a number."), 'error');
-        }
-
-        // محاكاة تسجيل المستخدم محلياً (للتجربة)
-        const existing = db.users.find(u => u.phone === phone);
-        if (existing) {
-            return showToast(t("User with this phone number already exists."), 'error');
-        }
-
-        const newUser = {
-            id: Date.now(),
-            name,
-            phone,
-            pass, 
-            role,
-            wallet: 0,
-            isApproved: (role === 'admin' || role === 'client'),
-            regDate: new Date().toLocaleDateString(db.lang === 'ar' ? 'ar-SA' : 'en-US')
-        };
-
-        db.users.push(newUser);
-        save(); 
-
-        switchView('login-view');
-        const msg = (role === 'tech') 
-            ? t("Account created. It must be approved by an administrator before login.") 
-            : t("Account created. Please log in.");
-        showToast(msg, 'success');
-    }
-
-    function tryLogin() {
-        const phone = document.getElementById('login-phone').value.trim();
-        const pass = document.getElementById('login-pass').value.trim();
-
-        if (!phone || !pass) {
-            return showToast(t("Please fill in all fields."), 'error');
-        }
-
-        // محاكاة تسجيل الدخول محلياً (للتجربة)
-        const user = db.users.find(u => u.phone === phone && u.pass === pass);
-
-        if (user) {
-            if (!user.isApproved && user.role === 'tech') {
-                return showToast(t("Your technician account is pending admin approval."), 'error');
-            }
-
-            db.current = user;
-            save(); // حفظ المستخدم الحالي في الكاش
-            loadApp();
-            notifyUser(t("Welcome back,") + ' ' + user.name + '!', 'info');
-
-        } else {
-            showToast(t("Incorrect Phone or Password."), 'error');
-        }
-    }
-
-    function logout() {
-        db.current = null;
-        save();
-        switchView('login-view');
-        showToast(t("Logout successful!"), 'info');
-    }
-
-    // =================================================================
-    // =========== 4. دوال إدارة التطبيق (Data/UI Loading) =============
-    // =================================================================
-
-    function loadApp() {
-        if (!db.current) {
-            return switchView('login-view');
-        }
-
-        document.getElementById('welcome-user').innerText = t("Welcome") + ' ' + db.current.name;
-
-        switch (db.current.role) {
-            case 'client':
-                loadClient();
-                break;
-            case 'tech':
-                loadTech();
-                break;
-            case 'admin':
-                loadAdmin();
-                break;
-            default:
-                logout();
-        }
-    }
-    
-    // 💡 دالة تحميل شاشة العميل (Client)
-    function loadClient() {
-        switchView('client-view');
-        const clientRequests = db.requests.filter(req => req.clientId === db.current.id);
-        const listElm = document.getElementById('client-requests-list');
-        listElm.innerHTML = clientRequests.length === 0 
-            ? `<p class="empty-state">${t("No requests found.")}</p>`
-            : clientRequests.map(req => `
-                <div class="list-item">
-                    <div><strong>${req.productName}</strong></div>
-                    <small>${t("Status")}: ${t(req.status)} | ${t("Price")}: ${req.price} SAR</small>
-                    <small>${req.details}</small>
-                </div>
-            `).join('');
-    }
-
-    // 💡 دالة تحميل شاشة الفني (Technician)
-    function loadTech() {
-        switchView('tech-view');
-        document.getElementById('tech-wallet').innerText = db.current.wallet;
-        
-        const availableRequests = db.requests.filter(req => req.status === 'Pending');
-        const activeRequests = db.requests.filter(req => req.techId === db.current.id && (req.status === 'Accepted' || req.status === 'InProgress'));
-
-        document.getElementById('available-requests-list').innerHTML = availableRequests.length === 0 
-            ? `<p class="empty-state">${t("No available requests.")}</p>`
-            : availableRequests.map(req => `
-                <div class="list-item">
-                    <div><strong>${req.productName}</strong> - ${req.details}</div>
-                    <div class="item-actions">
-                        <button class="btn-primary" onclick="acceptRequest(${req.id})">${t("Accept")}</button>
-                    </div>
-                </div>
-            `).join('');
+    <div id="auth-container" class="fixed inset-0 bg-white z-50 overflow-y-auto">
+        <div class="min-h-screen flex flex-col items-center justify-center p-6">
             
-        document.getElementById('tech-active-requests-list').innerHTML = activeRequests.length === 0
-            ? `<p class="empty-state">${t("No active requests.")}</p>`
-            : activeRequests.map(req => `
-                <div class="list-item">
-                    <div><strong>${req.productName}</strong> - ${req.details}</div>
-                    <div class="item-actions">
-                        <button class="btn-secondary" onclick="finishRequest(${req.id})">${t("Finish")}</button>
+            <div class="text-center mb-8">
+                <div class="bg-blue-900 text-white w-20 h-20 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-lg mb-3">📡</div>
+                <h1 class="text-3xl font-black text-blue-900" data-i18n="app_title">Honest Sat</h1>
+            </div>
+
+            <div id="view-login" class="w-full max-w-sm space-y-4 fade-in">
+                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+                    <h2 class="font-bold text-xl mb-4 text-center" data-i18n="login_title">Login</h2>
+                    <input type="tel" id="login-phone" data-i18n-placeholder="phone_placeholder" placeholder="Phone Number" class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-500" dir="ltr">
+                    <input type="password" id="login-pass" data-i18n-placeholder="password_placeholder" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-xl mb-4 outline-none focus:border-blue-500">
+                    <button onclick="tryLogin()" class="w-full bg-blue-900 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition" data-i18n="login_button">Login</button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-500 mb-2" data-i18n="no_account">Don't have an account?</p>
+                    <button onclick="switchView('register')" class="text-blue-700 font-bold bg-blue-50 px-6 py-2 rounded-full text-sm" data-i18n="create_account_button">✨ Create New Account</button>
+                </div>
+                
+                <div class="mt-8 text-center border-t pt-4">
+                    <button onclick="demoAdmin()" class="text-xs text-red-600 hover:text-red-700 transition font-bold">⚠️ Login as Admin (Phone: 1, Pass: 1)</button>
+                </div>
+            </div>
+
+            <div id="view-register" class="w-full max-w-sm space-y-3 d-none fade-in">
+                <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+                    <h2 class="font-bold text-xl mb-4 text-center text-green-600" data-i18n="register_title">New Account</h2>
+                    
+                    <input type="text" id="reg-name" data-i18n-placeholder="name_placeholder" placeholder="Full Name" class="w-full p-3 bg-gray-50 border rounded-xl mb-2">
+                    <input type="tel" id="reg-phone" data-i18n-placeholder="phone_placeholder" placeholder="Phone Number" class="w-full p-3 bg-gray-50 border rounded-xl mb-2" dir="ltr">
+                    <input type="password" id="reg-pass" data-i18n-placeholder="password_placeholder" placeholder="Password" class="w-full p-3 bg-gray-50 border rounded-xl mb-3">
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-gray-500 mb-2" data-i18n="register_as">I want to register as:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="role" value="client" checked class="peer hidden">
+                                <div class="border p-2 rounded-lg text-center peer-checked:bg-blue-600 peer-checked:text-white text-sm transition" data-i18n="role_client">👤 Client</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="role" value="tech" class="peer hidden">
+                                <div class="border p-2 rounded-lg text-center peer-checked:bg-green-600 peer-checked:text-white text-sm transition" data-i18n="role_tech">🔧 Technician</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button onclick="tryRegister()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition" data-i18n="register_button">Register</button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button onclick="switchView('login')" class="text-gray-500 font-bold text-sm hover:text-gray-700 transition" data-i18n="back_to_login">🔙 Back to Login</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="main-app" class="d-none">
+        
+        <nav class="bg-blue-900 text-white p-4 sticky top-0 z-40 shadow-md">
+            <div class="flex justify-between items-center max-w-2xl mx-auto relative">
+                
+                <div class="absolute inset-x-0 top-0 h-full flex items-center justify-center pointer-events-none">
+                    <h1 class="font-black text-lg pointer-events-auto" data-i18n="app_title">Honest Sat</h1>
+                </div>
+
+                <div class="flex-1 flex justify-end">
+                    <button onclick="doLogout()" class="bg-red-500 text-white text-xs px-3 py-1 rounded hover:bg-red-600 transition pointer-events-auto" data-i18n="logout_button">Logout</button>
+                </div>
+
+            </div>
+        </nav>
+
+        <div class="max-w-2xl mx-auto p-4 min-h-screen">
+            
+            <div id="welcome-bar" class="bg-white p-3 rounded-xl shadow-md border-b-2 border-blue-200 mb-4">
+                <span id="user-welcome" class="text-lg font-bold text-blue-800 block">...</span>
+            </div>
+            
+            <div id="panel-client" class="d-none">
+                <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
+                    <button onclick="clientTab('prod')" id="btn-client-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition" data-i18n="client_shop_tab">🛒 Shop Products</button>
+                    <button onclick="clientTab('req')" id="btn-client-req" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="client_req_tab">📜 My Past Requests</button>
+                </div>
+
+                <div id="view-client-prod">
+                    <div class="bg-purple-600 text-white p-6 rounded-2xl mb-6 text-center shadow-lg">
+                        <h2 class="text-2xl font-bold mb-2" data-i18n="maintenance_title">Maintenance Service</h2>
+                        <p class="text-sm opacity-90 mb-4" data-i18n="maintenance_text">Got a fault? Request a technician now.</p>
+                        <button onclick="openModal()" class="bg-white text-purple-700 px-6 py-2 rounded-full font-bold shadow hover:shadow-xl active:scale-95 transition" data-i18n="request_service_button">Request Service</button>
+                    </div>
+                    <h3 class="font-bold text-gray-700 mb-3" data-i18n="available_products">⭐ Available Products</h3>
+                    <div id="list-client" class="grid grid-cols-2 gap-3"></div>
+                </div>
+
+                <div id="view-client-req" class="d-none space-y-3">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" data-i18n="request_history">Maintenance Request History</h3>
+                    <div id="list-client-req"></div>
+                </div>
+            </div>
+
+            <div id="panel-tech" class="d-none">
+                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
+                    <p class="text-gray-400 text-xs" data-i18n="tech_balance">Available Balance</p>
+                    <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">DH</small></h2>
+                    <button onclick="openWithdrawModal()" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> <span data-i18n="tech_withdraw">Withdraw Earnings</span></button>
+                </div>
+                
+                <div class="grid grid-cols-4 gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
+                    <button onclick="techTab('prod')" id="btn-prod" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition" data-i18n="tech_buy_prod">Buy Products</button>
+                    <button onclick="techTab('work')" id="btn-work" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_work_req">Work Requests</button>
+                    <button onclick="techTab('purchase')" id="btn-purchase" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_purchase_log">Purchases</button>
+                    <button onclick="techTab('log')" id="btn-log" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="tech_earnings_log">Earnings Log</button>
+                </div>
+                
+                <div id="view-tech-prod" class="space-y-3"></div>
+                <div id="view-tech-work" class="d-none space-y-3"></div>
+                
+                <div id="view-tech-purchase" class="d-none space-y-3">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" data-i18n="tech_purchase_log_header">Product Purchase History</h3>
+                    <div id="list-tech-purchase"></div>
+                </div>
+                
+                <div id="view-tech-log" class="d-none space-y-3">
+                    <h3 class="font-bold text-gray-700 mb-3 border-b pb-2" data-i18n="tech_earnings_log">Earnings and Commission Log</h3>
+                    <div id="list-tech-log"></div>
+                </div>
+            </div>
+
+            <div id="panel-admin" class="d-none">
+                <h2 class="text-2xl font-black mb-4 text-blue-900" data-i18n="admin_panel_title">Admin Panel</h2>
+                
+                <div class="grid grid-cols-4 gap-2 mb-6 bg-white p-1 rounded-xl shadow-md border">
+                    <button onclick="adminTab('req')" id="btn-admin-req" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition" data-i18n="admin_requests_tab">📜 الطلبات</button>
+                    <button onclick="adminTab('prod')" id="btn-admin-prod" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="admin_products_tab">📦 المنتجات</button>
+                    <button onclick="adminTab('users')" id="btn-admin-users" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="admin_users_tab">👥 المستخدمون</button>
+                    <button onclick="adminTab('finance')" id="btn-admin-finance" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="admin_finance_tab">💰 المالية</button>
+                </div>
+
+                <div id="view-admin-req">
+                    <div class="bg-white p-4 rounded-xl shadow mb-6 border border-yellow-200">
+                        <h3 class="font-bold mb-2 text-red-700 border-b pb-2" data-i18n="admin_pending_users">🆕 طلبات تفعيل الحسابات</h3>
+                        <div id="list-pending-users" class="space-y-2"></div>
+                    </div>
+                    
+                    <h3 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2" data-i18n="admin_all_requests">📜 سجل جميع الطلبات والمشتريات</h3>
+                    <div id="list-all-requests" class="space-y-3"></div>
+                </div>
+
+                <div id="view-admin-prod" class="d-none">
+                    <div class="bg-white p-4 rounded-2xl shadow mb-6 border border-gray-100">
+                        <h3 class="font-bold mb-3 text-blue-700 border-b pb-3" data-i18n="admin_manage_prods">➕ إضافة منتج جديد</h3>
+                        
+                        <input id="adm-name" data-i18n-placeholder="admin_prod_name" placeholder="الاسم" class="border p-2 w-full rounded mb-2 bg-gray-50">
+                        <textarea id="adm-desc" data-i18n-placeholder="admin_prod_desc" placeholder="وصف المنتج التفصيلي" rows="3" class="border p-2 w-full rounded mb-2 bg-gray-50"></textarea>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                             <input id="adm-price" data-i18n-placeholder="admin_prod_price" placeholder="سعر العميل" type="number" class="border p-2 w-full rounded bg-gray-50">
+                             <input id="adm-comm" data-i18n-placeholder="admin_prod_comm" placeholder="عمولة الفني" type="number" class="border p-2 w-full rounded bg-gray-50">
+                        </div>
+                        
+                        <label class="block text-sm font-bold text-gray-700 mb-1" data-i18n="admin_prod_image_file">صورة المنتج</label>
+                        <input type="file" id="adm-image-file" accept="image/*" class="w-full text-sm text-gray-500 mb-2 border p-2 rounded-lg bg-gray-50">
+                        <input id="adm-imgurl" data-i18n-placeholder="admin_prod_image_url" placeholder="أو أدخل رابط الصورة المباشر" class="border p-2 w-full rounded mb-3 text-xs bg-gray-50" dir="ltr"> 
+                        
+                        <button onclick="addProd()" class="w-full bg-blue-900 text-white py-2 rounded font-bold hover:bg-blue-800 transition" data-i18n="admin_add_prod">إضافة المنتج</button>
+                    </div>
+
+                    <h4 class="font-bold text-gray-700 mt-6 mb-3 border-b pb-2" id="admin-prod-header">📦 المنتجات الحالية (0)</h4>
+                    <div id="list-admin" class="space-y-3"></div>
+                </div>
+
+                <div id="view-admin-users" class="d-none">
+                    <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
+                        <h3 class="font-bold mb-3 text-blue-700 border-b pb-2" data-i18n="admin_all_users">👥 سجل جميع المستخدمين</h3>
+                        <div id="list-all-users" class="space-y-3"></div>
                     </div>
                 </div>
-            `).join('');
-    }
-
-    // 💡 دالة تحميل شاشة المدير (Admin)
-    function loadAdmin() {
-        switchView('admin-view');
-        
-        const pendingTechs = db.users.filter(u => u.role === 'tech' && !u.isApproved);
-        
-        const listElement = document.getElementById('pending-approvals-list');
-        listElement.innerHTML = ''; 
-
-        if (pendingTechs.length === 0) {
-            listElement.innerHTML = `<p class="empty-state">${t("No technicians pending approval.")}</p>`;
-        } else {
-            pendingTechs.forEach(user => {
-                const userItem = `
-                    <div class="list-item user-item" data-id="${user.id}">
-                        <div class="item-info">
-                            <strong>${user.name}</strong> 
-                            <small>${user.phone} (${t("Reg:")} ${user.regDate})</small>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn-primary" onclick="approveUser(${user.id})">
-                                <i class="fas fa-check"></i> ${t("Approve")}
-                            </button>
-                            <button class="btn-danger" onclick="deleteUser(${user.id})">
-                                <i class="fas fa-times"></i> ${t("Reject")}
-                            </button>
-                        </div>
+                
+                <div id="view-admin-finance" class="d-none">
+                    <div class="bg-white p-4 rounded-xl shadow mb-6 border border-red-200">
+                        <h3 class="font-bold mb-3 text-red-700 border-b pb-2" data-i18n="admin_withdrawal_requests">💸 طلبات السحب المعلقة</h3>
+                        <div id="list-withdrawal-requests" class="space-y-3"></div>
                     </div>
-                `;
-                listElement.innerHTML += userItem;
-            });
-        }
-    }
+                    
+                    <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
+                        <h3 class="font-bold mb-3 text-blue-700 border-b pb-2" data-i18n="admin_tech_balances">🔧 أرصدة الفنيين (الإجمالي)</h3>
+                        <div id="list-tech-balances" class="space-y-3"></div>
+                    </div>
+                    
+                </div>
+                
+
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-3" data-i18n="new_request_title">New Request</h3>
+            <select id="srv-type" class="w-full border p-3 rounded-lg mb-3 bg-gray-50">
+                <option data-i18n="srv_type_signal">Signal Adjustment</option>
+                <option data-i18n="srv_type_tv">TV Installation</option>
+                <option data-i18n="srv_type_general">General Maintenance</option>
+            </select>
+            
+            <input type="tel" id="srv-phone" data-i18n-placeholder="service_phone" placeholder="Contact Phone Number" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" dir="ltr">
+
+            <input id="srv-addr" data-i18n-placeholder="service_addr" placeholder="Detailed Address" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
+            <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]" data-i18n="confirm_request">Confirm Request</button>
+            <button onclick="closeModal('modal')" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+        </div>
+    </div>
     
-    // 💡 تحديث قائمة المنتجات في شاشة طلب جديد
-    function updateProductOptions() {
-        const select = document.getElementById('request-product-id');
-        select.innerHTML = `<option value="">-- ${t("Select a Service")} --</option>`;
-        db.products.forEach(p => {
-            const name = db.lang === 'ar' ? p.name_ar : p.name;
-            select.innerHTML += `<option value="${p.id}">${name}</option>`;
-        });
-    }
+    <div id="withdraw-modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-3" data-i18n="withdraw_title">Request Withdrawal</h3>
+            
+            <p class="mb-3 text-sm text-gray-600">
+                <span data-i18n="current_balance">Current Balance:</span> 
+                <span id="withdraw-current-balance" class="font-bold text-lg text-green-600">0 DH</span>
+            </p>
+            
+            <input type="number" id="withdraw-amount" data-i18n-placeholder="withdraw_amount_placeholder" placeholder="Amount to Withdraw (DH)" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" min="1" step="1" required>
 
-    function switchViewToRequest() {
-        updateProductOptions();
-        switchView('request-view');
-    }
+            <textarea id="withdraw-details" data-i18n-placeholder="withdraw_details_placeholder" placeholder="Bank or Payment Details" rows="2" class="w-full border p-3 rounded-lg mb-4 bg-gray-50"></textarea>
+            
+            <button onclick="sendWithdrawRequest()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition active:scale-[0.98]" data-i18n="confirm_withdrawal">Confirm Withdrawal Request</button>
+            <button onclick="closeModal('withdraw-modal')" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+        </div>
+    </div>
 
-    // =================================================================
-    // =========== 5. دوال العمليات (CRUD - محاكاة) =====================
-    // =================================================================
 
-    function submitRequest() {
-        const productId = document.getElementById('request-product-id').value;
-        const details = document.getElementById('request-details').value.trim();
-        const price = parseFloat(document.getElementById('request-price').value.trim());
+    <div id="admin-payment-modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-3 text-blue-800" data-i18n="admin_payment_title">Process Technician Payment</h3>
+            
+            <p class="mb-3 text-sm text-gray-600">
+                <span data-i18n="tech_name_label">Technician:</span> 
+                <span id="payment-tech-name" class="font-bold text-lg text-gray-800"></span>
+            </p>
+            <p class="mb-3 text-sm text-gray-600">
+                <span data-i18n="current_balance">Current Balance:</span> 
+                <span id="payment-tech-balance" class="font-bold text-lg text-green-600">0 DH</span>
+            </p>
+            
+            <input type="number" id="payment-amount" data-i18n-placeholder="withdraw_amount_placeholder" placeholder="Amount to Pay (DH)" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" min="1" step="1" required>
 
-        if (!productId || !details || isNaN(price) || price <= 0) {
-            return showToast(t("Please fill in all request details correctly."), 'error');
-        }
+            <button onclick="processPayment()" id="btn-process-payment" class="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition active:scale-[0.98]" data-i18n="admin_confirm_payment">Confirm Payment & Deduct</button>
+            <button onclick="closeModal('admin-payment-modal')" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+            
+            <input type="hidden" id="payment-tech-id">
+        </div>
+    </div>
 
-        const product = db.products.find(p => p.id == productId);
-        
-        const newRequest = {
-            id: Date.now(),
-            clientId: db.current.id,
-            productName: db.lang === 'ar' ? product.name_ar : product.name,
-            details,
-            price,
-            status: 'Pending',
-            techId: null,
-            date: new Date().toLocaleDateString(db.lang === 'ar' ? 'ar-SA' : 'en-US')
-        };
 
-        db.requests.push(newRequest);
-        save();
-        
-        showToast(t("Request submitted successfully!"), 'success');
-        notifyUser(t("A new request has been submitted and is awaiting a technician."), 'info');
-        loadClient();
-    }
+    <div id="product-modal" class="fixed inset-0 bg-black/70 z-[6000] d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-xl mb-4 border-b pb-2 text-blue-900" data-i18n="product_details_title">Product Details</h3>
+            
+            <div id="product-details-content">
+                </div>
 
-    function approveUser(userId) {
-        const user = db.users.find(u => u.id === userId);
-        if (user) {
-            user.isApproved = true;
-            save(); 
-            showToast(t("Technician approved!"), 'success');
-            loadAdmin();
-        }
-    }
+            <button onclick="closeModal('product-modal')" class="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-300 transition" data-i18n="close_details_button">Close</button>
+        </div>
+    </div>
 
-    function deleteUser(userId) {
-        db.users = db.users.filter(u => u.id !== userId);
-        save(); 
-        showToast(t("User rejected and removed."), 'warning');
-        loadAdmin();
-    }
-    
-    function acceptRequest(requestId) {
-        const request = db.requests.find(r => r.id === requestId);
-        if (request) {
-            request.status = 'Accepted';
-            request.techId = db.current.id;
-            save();
-            showToast("Request accepted. Start working!", 'success');
-            loadTech();
-            // إشعار للعميل
-            // notifyUser("Your request has been accepted by a technician!", 'info');
-        }
-    }
+    <script>
+        // --- 0.5. Language Data & Management ---
 
-    function finishRequest(requestId) {
-        const request = db.requests.find(r => r.id === requestId);
-        if (request && request.techId === db.current.id) {
-            request.status = 'Completed';
-            db.current.wallet += request.price; // إضافة الرصيد
-            save();
-            showToast("Request completed successfully! Wallet updated.", 'success');
-            loadTech();
-            // إشعار للعميل
-            // notifyUser("Your service request has been completed!", 'success');
-        }
-    }
-
-    // =================================================================
-    // =========== 6. التهيئ الأولي (Initial Setup) ===================
-    // =================================================================
-
-    // ربط اختيار الدور في شاشة التسجيل
-    document.getElementById('role-selection').addEventListener('click', (e) => {
-        const label = e.target.closest('.role-option');
-        if (label) {
-            document.querySelectorAll('.role-option').forEach(l => l.classList.remove('selected'));
-            label.classList.add('selected');
-            label.querySelector('input').checked = true;
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        getSafeData();
-        setLanguage(db.lang);
-        loadApp();
-    });
-</script>
-
-</body>
-</html>
+        const translations = {
+            'ar': {
+                'app_title': 'Honest Sat',
+                'app_title_full': 'Honest Sat | الإصدار المستقر',
+                'login_title': 'تسجيل الدخول',
+                'phone_placeholder': 'رقم الهاتف',
+                'password_placeholder': 'كلمة المرور',
+                'login_button': 'دخول',
+                'no_account': 'ليس لديك حساب؟',
+                'create_account_button': '✨ إنشاء حساب جديد',
+                'back_to_login': '🔙 العودة لتسجيل الدخول',
+                'name_placeholder': 'الاسم الكامل',
+                'register_title': 'حساب جديد',
+                'register_button': 'تسجيل',
+                'role_client': '👤 عميل',
+                'role_tech': '🔧 فني',
+                'register_as': 'أرغب بالتسجيل كـ:',
+                'logout_button': 'تسجيل خروج',
+                'client_shop_tab': '🛒 تسوق المنتجات',
+                'client_req_tab': '📜 طلباتي السابقة',
+                'maintenance_title': 'خدمة الصيانة',
+                'maintenance_text': 'هل لديك عطل؟ اطلب فنياً الآن.',
+                'request_service_button': 'طلب خدمة',
+                'available_products': '⭐ المنتجات المتاحة',
+                'request_history': 'سجل طلبات الصيانة',
+                'tech_balance': 'الرصيد المتاح',
+                'tech_withdraw': 'طلب سحب', // UPDATED
+                'tech_buy_prod': 'شراء منتجات',
+                'tech_work_req': 'طلبات العمل',
+                'tech_earnings_log': 'سجل الأرباح',
+                'tech_purchase_log': 'سجل المشتريات', // NEW
+                'tech_purchase_log_header': 'تاريخ شراء المنتجات', // NEW
+                'new_request_title': 'طلب جديد',
+                'service_phone': 'رقم هاتف الاتصال',
+                'service_addr': 'العنوان المفصل',
+                'confirm_request': 'تأكيد الطلب',
+                'cancel_button': 'إلغاء',
+                'status_pending': 'معلَّق',
+                'status_accepted': 'مقبول (قيد التنفيذ)',
+                'status_completed': 'مكتمل',
+                'accept_job': 'قبول المهمة',
+                'job_completed': '✅ المهمة اكتملت',
+                'contact_client': 'تواصل مع العميل:',
+                'admin_panel_title': 'لوحة تحكم المدير',
+                'admin_requests_tab': '📜 الطلبات', 
+                'admin_products_tab': '📦 المنتجات', 
+                'admin_users_tab': '👥 المستخدمون',
+                'admin_finance_tab': '💰 المالية', // NEW
+                'admin_pending_users': '🆕 طلبات تفعيل الحسابات',
+                'admin_all_users': '👥 سجل جميع المستخدمين',
+                'admin_manage_prods': '➕ إضافة منتج جديد',
+                'admin_prod_name': 'الاسم',
+                'admin_prod_desc': 'وصف المنتج التفصيلي', 
+                'admin_prod_price': 'سعر العميل',
+                'admin_prod_comm': 'عمولة الفني',
+                'admin_prod_image_file': 'صورة المنتج',
+                'admin_prod_image_url': 'أو أدخل رابط الصورة المباشر',
+                'admin_add_prod': 'إضافة المنتج',
+                'admin_current_prods': 'المنتجات الحالية',
+                'admin_all_requests': '📜 سجل جميع الطلبات والمشتريات',
+                'approve_button': 'قبول',
+                'reject_button': 'رفض',
+                'delete_button': 'حذف',
+                'admin_client_role': 'عميل 👤',
+                'admin_tech_role': 'فني 🔧',
+                'admin_approved': '✅ مقبول',
+                'admin_pending': '❌ معلَّق',
+                'no_client_reqs_yet': 'لم تطلب أي خدمات صيانة بعد.',
+                'srv_type_signal': 'تعديل الإشارة',
+                'srv_type_tv': 'تركيب تلفزيون',
+                'srv_type_general': 'صيانة عامة',
+                'no_pending_reqs': 'لا توجد طلبات معلقة حالياً.',
+                'new_req_status': 'جديد',
+                'accepted_req_status': 'مقبول',
+                'tech_earning_product': 'عمولة مبيعات:',
+                'tech_earning_job': 'عمولة خدمة:',
+                'no_earnings_yet': 'لم تحقق أي أرباح بعد.',
+                'client_welcome': 'أهلاً',
+                'tech_welcome': 'أهلاً بك أيها الفني',
+                'admin_welcome': 'أهلاً بك أيها المدير',
+                'req_closed_success': 'تم إغلاق الطلب بنجاح!',
+                'req_accepted_info': 'تم قبول الطلب. رقم العميل:',
+                'no_requests_log': 'لا توجد طلبات في السجل.',
+                'product_details_title': 'تفاصيل المنتج',
+                'product_name_label': 'الاسم:', 
+                'product_price_label': 'السعر:', 
+                'product_description_label': 'الوصف:', 
+                'add_to_cart_button': '🛒 أضف للسلة', 
+                'buy_now_button': 'اشترِ الآن', 
+                'close_details_button': 'إغلاق',
+                'Confirm purchase of': 'تأكيد شراء',
+                'You will earn a commission of': 'ستكسب عمولة قدرها',
+                'added to your balance': 'أضيفت إلى رصيدك',
+                'Account for': 'تم تفعيل حساب',
+                'activated. They can now log in.': 'يمكنه الآن تسجيل الدخول.',
+                'Delete this request permanently from the log?': 'هل تريد حذف هذا الطلب نهائياً من السجل؟',
+                'User deleted successfully.': 'تم حذف المستخدم بنجاح.',
+                'Are you sure you want to permanently delete this user?': 'هل أنت متأكد من حذف هذا المستخدم نهائياً؟',
+                'Product not found.': 'المنتج غير موجود.',
+                'Buy Now': 'شراء فوري', 
+                'Add to Cart': 'أضف للسلة', 
+                'Product ID': 'معرف المنتج', 
+                'Price': 'السعر', 
+                'purchase_success': 'تم تسجيل طلبك! سيتم التواصل معك لتأكيد الشراء قريباً.', 
+                'Address': 'العنوان', 
+                'Tech': 'فني', 
+                'Registration Date': 'تاريخ التسجيل', 
+                'Account Type': 'نوع الحساب', 
+                'No registered users yet.': 'لا يوجد مستخدمون مسجلون بعد.', 
+                'No new or accepted work requests currently.': 'لا توجد طلبات عمل جديدة أو مقبولة حالياً.',
+                // NEW FINANCE STRINGS
+                'withdraw_title': 'طلب سحب رصيد',
+                'current_balance': 'رصيدك الحالي:',
+                'withdraw_amount_placeholder': 'المبلغ المطلوب سحبه (DH)',
+                'withdraw_details_placeholder': 'تفاصيل الحساب البنكي أو وسيلة الدفع',
+                'confirm_withdrawal': 'تأكيد طلب السحب',
+                'insufficient_balance': 'رصيدك غير كافٍ لإتمام العملية.',
+                'withdrawal_request_sent': 'تم إرسال طلب السحب بنجاح. سيتم مراجعته من قبل الإدارة.',
+                'admin_withdrawal_requests': '💸 طلبات السحب المعلقة',
+                'admin_tech_balances': '🔧 أرصدة الفنيين (الإجمالي)',
+                'no_withdrawal_requests': 'لا توجد طلبات سحب معلقة حالياً.',
+                'details': 'التفاصيل',
+                'amount': 'المبلغ',
+                'tech_name_label': 'الفني:',
+                'admin_payment_title': 'معالجة دفعات الفنيين',
+                'admin_confirm_payment': 'تأكيد الدفع والخصم',
+                'pay_button': 'دفع',
+                'payment_processed_success': 'تم خصم المبلغ ({amount} DH) من رصيد الفني بنجاح.',
+                'balance_deducted': 'تم خصم الرصيد',
+                'details': 'التفاصيل',
+                'admin_confirm_comm': '✅ تأكيد واستلام العمولة', // NEW
+                'Product Purchase Request': 'طلب شراء منتج', // NEW
+                'Tech Purchase Request': 'طلب شراء (فني)', // NEW
+                'Product': 'المنتج', // NEW
+                'Commission': 'العمولة', // NEW
+                'Status': 'الحالة', // NEW
+                'Pending': 'معلق', // NEW
+                'Confirmed': 'مؤكد', // NEW
+                'purchase_confirmed_success': 'تم تأكيد الشراء. أضيفت العمولة إلى رصيد الفني.', // NEW
+                'no_purchases_yet': 'لم تقدم أي طلبات شراء منتجات بعد.', // NEW
+            },
+            'fr': {
+                'app_title': 'Honest Sat',
+                'app_title_full': 'Honest Sat | Version Stable',
+                'login_title': 'Connexion',
+                'phone_placeholder': 'Numéro de Téléphone',
+                'password_placeholder': 'Mot de passe',
+                'login_button': 'Se Connecter',
+                'no_account': 'Pas de compte?',
+                'create_account_button': '✨ Créer un nouveau compte',
+                'back_to_login': '🔙 Retour à la Connexion',
+                'name_placeholder': 'Nom Complet',
+                'register_title': 'Nouveau Compte',
+                'register_button': 'S\'inscrire',
+                'role_client': '👤 Client',
+                'role_tech': '🔧 Technicien',
+                'register_as': 'Je veux m\'inscrire en tant que:',
+                'logout_button': 'Déconnexion',
+                'client_shop_tab': '🛒 Acheter des Produits',
+                'client_req_tab': '📜 Mes Demandes',
+                'maintenance_title': 'Service de Maintenance',
+                'maintenance_text': 'Un problème? Demandez un technicien maintenant.',
+                'request_service_button': 'Demander un Service',
+                'available_products': '⭐ Produits Disponibles',
+                'request_history': 'Historique des demandes de maintenance',
+                'tech_balance': 'Solde Disponible',
+                'tech_withdraw': 'Demander Retrait', // UPDATED
+                'tech_buy_prod': 'Acheter Produits',
+                'tech_work_req': 'Demandes de Travail',
+                'tech_earnings_log': 'Journal des Gains',
+                'tech_purchase_log': 'Journal des Achats', // NEW
+                'tech_purchase_log_header': 'Historique d\'Achat des Produits', // NEW
+                'new_request_title': 'Nouvelle Demande',
+                'service_phone': 'Numéro de Téléphone Contact',
+                'service_addr': 'Adresse Détaillée',
+                'confirm_request': 'Confirmer la Demande',
+                'cancel_button': 'Annuler',
+                'status_pending': 'En Attente',
+                'status_accepted': 'Acceptée (En Cours)',
+                'status_completed': 'Terminée',
+                'accept_job': 'Accepter le Travail',
+                'job_completed': '✅ Travail Terminé',
+                'contact_client': 'Contacter le Client:',
+                'admin_panel_title': 'Panneau d\'Administration',
+                'admin_requests_tab': '📜 Demandes', 
+                'admin_products_tab': '📦 Produits', 
+                'admin_users_tab': '👥 Utilisateurs',
+                'admin_finance_tab': '💰 Finance', // NEW
+                'admin_pending_users': '🆕 Demandes d\'Activation de Compte',
+                'admin_all_users': '👥 Journal de Tous les Utilisateurs',
+                'admin_manage_prods': '➕ Ajouter un nouveau produit',
+                'admin_prod_name': 'Nom',
+                'admin_prod_desc': 'Description détaillée du produit', 
+                'admin_prod_price': 'Prix Client',
+                'admin_prod_comm': 'Commission Technicien',
+                'admin_prod_image_file': 'Image du Produit',
+                'admin_prod_image_url': 'Ou entrez l\'URL de l\'image directe',
+                'admin_add_prod': 'Ajouter Produit',
+                'admin_current_prods': 'Produits Actuels',
+                'admin_all_requests': '📜 Journal de Toutes les Demandes et Achats',
+                'approve_button': 'Approuver',
+                'reject_button': 'Rejeter',
+                'delete_button': 'Supprimer',
+                'admin_client_role': 'Client 👤',
+                'admin_tech_role': 'Technicien 🔧',
+                'admin_approved': '✅ Approuvé',
+                'admin_pending': '❌ En Attente',
+                'no_client_reqs_yet': 'Vous n\'avez pas encore demandé de services de maintenance.',
+                'srv_type_signal': 'Ajustement de Signal',
+                'srv_type_tv': 'Installation TV',
+                'srv_type_general': 'Maintenance Générale',
+                'no_pending_reqs': 'Aucune demande en attente actuellement.',
+                'new_req_status': 'Nouveau',
+                'accepted_req_status': 'Accepté',
+                'tech_earning_product': 'Commission de vente:',
+                'tech_earning_job': 'Commission de service:',
+                'no_earnings_yet': 'Vous n\'avez pas encore réalisé de profits.',
+                'client_welcome': 'Bonjour',
+                'tech_welcome': 'Bonjour Technicien',
+                'admin_welcome': 'Bonjour Administrateur',
+                'req_closed_success': 'Demande clôturée avec succès !',
+                'req_accepted_info': 'Demande acceptée. Tél. du client:',
+                'no_requests_log': 'Aucune demande dans le journal.',
+                'product_details_title': 'Détails du Produit',
+                'product_name_label': 'Nom:',
+                'product_price_label': 'Prix:', 
+                'product_description_label': 'Description:', 
+                'add_to_cart_button': '🛒 Ajouter au panier', 
+                'buy_now_button': 'Acheter Maintenant', 
+                'close_details_button': 'Fermer',
+                'Confirm purchase of': 'Confirmer l\'achat de',
+                'You will earn a commission of': 'Vous gagnerez une commission de',
+                'added to your balance': 'ajoutés à votre solde',
+                'Account for': 'Compte pour',
+                'activated. They can now log in.': 'activé. Ils peuvent maintenant se connecter.',
+                'Delete this request permanently from the log?': 'Supprimer définitivement cette demande du journal ?',
+                'User deleted successfully.': 'Utilisateur supprimé avec succès.',
+                'Are you sure you want to permanently delete this user?': 'Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?',
+                'Product not found.': 'Produit non trouvé.',
+                'Buy Now': 'Achat Immédiat', 
+                'Add to Cart': 'Ajouter au Panier', 
+                'Product ID': 'ID Produit', 
+                'Price': 'Prix', 
+                'purchase_success': 'Votre demande est enregistrée! Nous vous contacterons bientôt pour confirmer l\'achat.', 
+                'Address': 'Adresse', 
+                'Tech': 'Technicien', 
+                'Registration Date': 'Date d\'inscription', 
+                'Account Type': 'Type de compte', 
+                'No registered users yet.': 'Aucun utilisateur enregistré pour le moment.', 
+                'No new or accepted work requests currently.': 'Aucune nouvelle demande de travail ou demande acceptée pour le moment.',
+                // NEW FINANCE STRINGS
+                'withdraw_title': 'Demande de Retrait de Solde',
+                'current_balance': 'Solde actuel:',
+                'withdraw_amount_placeholder': 'Montant à retirer (DH)',
+                'withdraw_details_placeholder': 'Détails bancaires ou de paiement',
+                'confirm_withdrawal': 'Confirmer la Demande de Retrait',
+                'insufficient_balance': 'Solde insuffisant pour effectuer cette opération.',
+                'withdrawal_request_sent': 'Demande de retrait envoyée avec succès. Elle sera examinée par l\'administration.',
+                'admin_withdrawal_requests': '💸 Demandes de Retrait en Attente',
+                'admin_tech_balances': '🔧 Soldes des Techniciens (Total)',
+                'no_withdrawal_requests': 'Aucune demande de retrait en attente pour le moment.',
+                'details': 'Détails',
+                'amount': 'Montant',
+                'tech_name_label': 'Technicien:',
+                'admin_payment_title': 'Traiter le Paiement du Technicien',
+                'admin_confirm_payment': 'Confirmer Paiement et Déduire',
+                'pay_button': 'Payer',
+                'payment_processed_success': 'Montant ({amount} DH) déduit du solde du technicien avec succès.',
+                'balance_deducted': 'Solde Déduit',
+                'details': 'Détails',
+                'admin_confirm_comm': '✅ Confirmer & Recevoir Commission', // NEW
+                'Product Purchase Request': 'Demande d\'achat de produit', // NEW
+                'Tech Purchase Request': 'Demande d\'achat (Tech)', // NEW
+                'Product': 'Produit', // NEW
+                'Commission': 'Commission', // NEW
+                'Status': 'Statut', // NEW
+                'Pending': 'En Attente', // NEW
+                'Confirmed': 'Confirmé', // NEW
+                'purchase_confirmed_success': 'Achat confirmé. Commission ajoutée au solde du technicien.', // NEW
+                'no_purchases_yet': 'Vous n\'avez pas encore soumis de demandes d\'achat de produit.', // NEW
+            },
+            'en': {
+                'app_title': 'Honest Sat',
+                'app_title_full': 'Honest Sat | Stable Version',
+                'login_title': 'Login',
+                'phone_placeholder': 'Phone Number',
+                'password_placeholder': 'Password',
+                'login_button': 'Login',
+                'no_account': "Don't have an account?",
+                'create_account_button': '✨ Create New Account',
+                'back_to_login': '🔙 Back to Login',
+                'name_placeholder': 'Full Name',
+                'register_title': 'New Account',
+                'register_button': 'Register',
+                'role_client': '👤 Client',
+                'role_tech': '🔧 Technician',
+                'register_as': 'I want to register as:',
+                'logout_button': 'Logout',
+                'client_shop_tab': '🛒 Shop Products',
+                'client_req_tab': '📜 My Past Requests',
+                'maintenance_title': 'Maintenance Service',
+                'maintenance_text': 'Got a fault? Request a technician now.',
+                'request_service_button': 'Request Service',
+                'available_products': '⭐
