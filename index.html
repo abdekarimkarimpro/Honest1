@@ -150,7 +150,7 @@
                 <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 shadow-lg relative">
                     <p class="text-gray-400 text-xs" data-i18n="tech_balance">Available Balance</p>
                     <h2 class="text-4xl font-bold"><span id="tech-wallet">0</span> <small class="text-sm">DH</small></h2>
-                    <button onclick="showToast(t('Withdrawal request sent to management.'), 'info')" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> <span data-i18n="tech_withdraw">Withdraw Earnings</span></button>
+                    <button onclick="openWithdrawModal()" class="absolute bottom-3 right-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-hand-holding-usd mr-1"></i> <span data-i18n="tech_withdraw">Withdraw Earnings</span></button>
                 </div>
                 
                 <div class="flex gap-2 mb-4 bg-white p-1 rounded-xl shadow-sm">
@@ -170,10 +170,11 @@
             <div id="panel-admin" class="d-none">
                 <h2 class="text-2xl font-black mb-4 text-blue-900" data-i18n="admin_panel_title">Admin Panel</h2>
                 
-                <div class="flex gap-2 mb-6 bg-white p-1 rounded-xl shadow-md border">
+                <div class="grid grid-cols-4 gap-2 mb-6 bg-white p-1 rounded-xl shadow-md border">
                     <button onclick="adminTab('req')" id="btn-admin-req" class="flex-1 py-2 rounded-lg text-sm font-bold bg-blue-900 text-white transition" data-i18n="admin_requests_tab">📜 الطلبات</button>
                     <button onclick="adminTab('prod')" id="btn-admin-prod" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="admin_products_tab">📦 المنتجات</button>
                     <button onclick="adminTab('users')" id="btn-admin-users" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="admin_users_tab">👥 المستخدمون</button>
+                    <button onclick="adminTab('finance')" id="btn-admin-finance" class="flex-1 py-2 rounded-lg text-sm font-bold text-gray-600 transition" data-i18n="admin_finance_tab">💰 المالية</button>
                 </div>
 
                 <div id="view-admin-req">
@@ -214,6 +215,20 @@
                         <div id="list-all-users" class="space-y-3"></div>
                     </div>
                 </div>
+                
+                <div id="view-admin-finance" class="d-none">
+                    <div class="bg-white p-4 rounded-xl shadow mb-6 border border-red-200">
+                        <h3 class="font-bold mb-3 text-red-700 border-b pb-2" data-i18n="admin_withdrawal_requests">💸 طلبات السحب المعلقة</h3>
+                        <div id="list-withdrawal-requests" class="space-y-3"></div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-xl shadow mb-6 border border-gray-100">
+                        <h3 class="font-bold mb-3 text-blue-700 border-b pb-2" data-i18n="admin_tech_balances">🔧 أرصدة الفنيين (الإجمالي)</h3>
+                        <div id="list-tech-balances" class="space-y-3"></div>
+                    </div>
+                    
+                </div>
+                
 
             </div>
 
@@ -233,9 +248,51 @@
 
             <input id="srv-addr" data-i18n-placeholder="service_addr" placeholder="Detailed Address" class="w-full border p-3 rounded-lg mb-4 bg-gray-50">
             <button onclick="sendReq()" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition active:scale-[0.98]" data-i18n="confirm_request">Confirm Request</button>
-            <button onclick="closeModal()" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+            <button onclick="closeModal('modal')" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
         </div>
     </div>
+    
+    <div id="withdraw-modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-3" data-i18n="withdraw_title">Request Withdrawal</h3>
+            
+            <p class="mb-3 text-sm text-gray-600">
+                <span data-i18n="current_balance">Current Balance:</span> 
+                <span id="withdraw-current-balance" class="font-bold text-lg text-green-600">0 DH</span>
+            </p>
+            
+            <input type="number" id="withdraw-amount" data-i18n-placeholder="withdraw_amount_placeholder" placeholder="Amount to Withdraw (DH)" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" min="1" step="1" required>
+
+            <textarea id="withdraw-details" data-i18n-placeholder="withdraw_details_placeholder" placeholder="Bank or Payment Details" rows="2" class="w-full border p-3 rounded-lg mb-4 bg-gray-50"></textarea>
+            
+            <button onclick="sendWithdrawRequest()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition active:scale-[0.98]" data-i18n="confirm_withdrawal">Confirm Withdrawal Request</button>
+            <button onclick="closeModal('withdraw-modal')" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+        </div>
+    </div>
+
+
+    <div id="admin-payment-modal" class="fixed inset-0 bg-black/60 z-50 d-none flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-3 text-blue-800" data-i18n="admin_payment_title">Process Technician Payment</h3>
+            
+            <p class="mb-3 text-sm text-gray-600">
+                <span data-i18n="tech_name_label">Technician:</span> 
+                <span id="payment-tech-name" class="font-bold text-lg text-gray-800"></span>
+            </p>
+            <p class="mb-3 text-sm text-gray-600">
+                <span data-i18n="current_balance">Current Balance:</span> 
+                <span id="payment-tech-balance" class="font-bold text-lg text-green-600">0 DH</span>
+            </p>
+            
+            <input type="number" id="payment-amount" data-i18n-placeholder="withdraw_amount_placeholder" placeholder="Amount to Pay (DH)" class="w-full border p-3 rounded-lg mb-3 bg-gray-50" min="1" step="1" required>
+
+            <button onclick="processPayment()" id="btn-process-payment" class="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition active:scale-[0.98]" data-i18n="admin_confirm_payment">Confirm Payment & Deduct</button>
+            <button onclick="closeModal('admin-payment-modal')" class="w-full mt-2 text-gray-500 py-2 hover:text-gray-700 transition" data-i18n="cancel_button">Cancel</button>
+            
+            <input type="hidden" id="payment-tech-id">
+        </div>
+    </div>
+
 
     <div id="product-modal" class="fixed inset-0 bg-black/70 z-[6000] d-none flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
@@ -244,7 +301,7 @@
             <div id="product-details-content">
                 </div>
 
-            <button onclick="closeProductModal()" class="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-300 transition" data-i18n="close_details_button">Close</button>
+            <button onclick="closeModal('product-modal')" class="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-300 transition" data-i18n="close_details_button">Close</button>
         </div>
     </div>
 
@@ -277,7 +334,7 @@
                 'available_products': '⭐ المنتجات المتاحة',
                 'request_history': 'سجل طلبات الصيانة',
                 'tech_balance': 'الرصيد المتاح',
-                'tech_withdraw': 'سحب الأرباح',
+                'tech_withdraw': 'طلب سحب', // UPDATED
                 'tech_buy_prod': 'شراء منتجات',
                 'tech_work_req': 'طلبات العمل',
                 'tech_earnings_log': 'سجل الأرباح',
@@ -295,7 +352,8 @@
                 'admin_panel_title': 'لوحة تحكم المدير',
                 'admin_requests_tab': '📜 الطلبات', 
                 'admin_products_tab': '📦 المنتجات', 
-                'admin_users_tab': '👥 المستخدمون', 
+                'admin_users_tab': '👥 المستخدمون',
+                'admin_finance_tab': '💰 المالية', // NEW
                 'admin_pending_users': '🆕 طلبات تفعيل الحسابات',
                 'admin_all_users': '👥 سجل جميع المستخدمين',
                 'admin_manage_prods': '➕ إضافة منتج جديد',
@@ -357,7 +415,26 @@
                 'Registration Date': 'تاريخ التسجيل', 
                 'Account Type': 'نوع الحساب', 
                 'No registered users yet.': 'لا يوجد مستخدمون مسجلون بعد.', 
-                'No new or accepted work requests currently.': 'لا توجد طلبات عمل جديدة أو مقبولة حالياً.', 
+                'No new or accepted work requests currently.': 'لا توجد طلبات عمل جديدة أو مقبولة حالياً.',
+                // NEW FINANCE STRINGS
+                'withdraw_title': 'طلب سحب رصيد',
+                'current_balance': 'رصيدك الحالي:',
+                'withdraw_amount_placeholder': 'المبلغ المطلوب سحبه (DH)',
+                'withdraw_details_placeholder': 'تفاصيل الحساب البنكي أو وسيلة الدفع',
+                'confirm_withdrawal': 'تأكيد طلب السحب',
+                'insufficient_balance': 'رصيدك غير كافٍ لإتمام العملية.',
+                'withdrawal_request_sent': 'تم إرسال طلب السحب بنجاح. سيتم مراجعته من قبل الإدارة.',
+                'admin_withdrawal_requests': '💸 طلبات السحب المعلقة',
+                'admin_tech_balances': '🔧 أرصدة الفنيين (الإجمالي)',
+                'no_withdrawal_requests': 'لا توجد طلبات سحب معلقة حالياً.',
+                'details': 'التفاصيل',
+                'amount': 'المبلغ',
+                'tech_name_label': 'الفني:',
+                'admin_payment_title': 'معالجة دفعات الفنيين',
+                'admin_confirm_payment': 'تأكيد الدفع والخصم',
+                'pay_button': 'دفع',
+                'payment_processed_success': 'تم خصم المبلغ ({amount} DH) من رصيد الفني بنجاح.',
+                'balance_deducted': 'تم خصم الرصيد',
             },
             'fr': {
                 'app_title': 'Honest Sat',
@@ -384,7 +461,7 @@
                 'available_products': '⭐ Produits Disponibles',
                 'request_history': 'Historique des demandes de maintenance',
                 'tech_balance': 'Solde Disponible',
-                'tech_withdraw': 'Retirer les gains',
+                'tech_withdraw': 'Demander Retrait', // UPDATED
                 'tech_buy_prod': 'Acheter Produits',
                 'tech_work_req': 'Demandes de Travail',
                 'tech_earnings_log': 'Journal des Gains',
@@ -402,7 +479,8 @@
                 'admin_panel_title': 'Panneau d\'Administration',
                 'admin_requests_tab': '📜 Demandes', 
                 'admin_products_tab': '📦 Produits', 
-                'admin_users_tab': '👥 Utilisateurs', 
+                'admin_users_tab': '👥 Utilisateurs',
+                'admin_finance_tab': '💰 Finance', // NEW
                 'admin_pending_users': '🆕 Demandes d\'Activation de Compte',
                 'admin_all_users': '👥 Journal de Tous les Utilisateurs',
                 'admin_manage_prods': '➕ Ajouter un nouveau produit',
@@ -464,7 +542,26 @@
                 'Registration Date': 'Date d\'inscription', 
                 'Account Type': 'Type de compte', 
                 'No registered users yet.': 'Aucun utilisateur enregistré pour le moment.', 
-                'No new or accepted work requests currently.': 'Aucune nouvelle demande de travail ou demande acceptée pour le moment.', 
+                'No new or accepted work requests currently.': 'Aucune nouvelle demande de travail ou demande acceptée pour le moment.',
+                // NEW FINANCE STRINGS
+                'withdraw_title': 'Demande de Retrait de Solde',
+                'current_balance': 'Solde actuel:',
+                'withdraw_amount_placeholder': 'Montant à retirer (DH)',
+                'withdraw_details_placeholder': 'Détails bancaires ou de paiement',
+                'confirm_withdrawal': 'Confirmer la Demande de Retrait',
+                'insufficient_balance': 'Solde insuffisant pour effectuer cette opération.',
+                'withdrawal_request_sent': 'Demande de retrait envoyée avec succès. Elle sera examinée par l\'administration.',
+                'admin_withdrawal_requests': '💸 Demandes de Retrait en Attente',
+                'admin_tech_balances': '🔧 Soldes des Techniciens (Total)',
+                'no_withdrawal_requests': 'Aucune demande de retrait en attente pour le moment.',
+                'details': 'Détails',
+                'amount': 'Montant',
+                'tech_name_label': 'Technicien:',
+                'admin_payment_title': 'Traiter le Paiement du Technicien',
+                'admin_confirm_payment': 'Confirmer Paiement et Déduire',
+                'pay_button': 'Payer',
+                'payment_processed_success': 'Montant ({amount} DH) déduit du solde du technicien avec succès.',
+                'balance_deducted': 'Solde Déduit',
             },
             'en': {
                 'app_title': 'Honest Sat',
@@ -491,7 +588,7 @@
                 'available_products': '⭐ Available Products',
                 'request_history': 'Maintenance Request History',
                 'tech_balance': 'Available Balance',
-                'tech_withdraw': 'Withdraw Earnings',
+                'tech_withdraw': 'Request Withdrawal', // UPDATED
                 'tech_buy_prod': 'Buy Products',
                 'tech_work_req': 'Work Requests',
                 'tech_earnings_log': 'Earnings Log',
@@ -509,7 +606,8 @@
                 'admin_panel_title': 'Admin Panel',
                 'admin_requests_tab': '📜 Requests', 
                 'admin_products_tab': '📦 Products', 
-                'admin_users_tab': '👥 Users', 
+                'admin_users_tab': '👥 Users',
+                'admin_finance_tab': '💰 Finance', // NEW
                 'admin_pending_users': '🆕 Account Activation Requests',
                 'admin_all_users': '👥 All Users Log',
                 'admin_manage_prods': '➕ Add New Product',
@@ -571,7 +669,26 @@
                 'Registration Date': 'Registration Date', 
                 'Account Type': 'Account Type', 
                 'No registered users yet.': 'No registered users yet.', 
-                'No new or accepted work requests currently.': 'No new or accepted work requests currently.', 
+                'No new or accepted work requests currently.': 'No new or accepted work requests currently.',
+                // NEW FINANCE STRINGS
+                'withdraw_title': 'Request Withdrawal',
+                'current_balance': 'Current Balance:',
+                'withdraw_amount_placeholder': 'Amount to Withdraw (DH)',
+                'withdraw_details_placeholder': 'Bank or Payment Details',
+                'confirm_withdrawal': 'Confirm Withdrawal Request',
+                'insufficient_balance': 'Insufficient balance for this operation.',
+                'withdrawal_request_sent': 'Withdrawal request sent successfully. It will be reviewed by the administration.',
+                'admin_withdrawal_requests': '💸 Pending Withdrawal Requests',
+                'admin_tech_balances': '🔧 Technician Balances (Total)',
+                'no_withdrawal_requests': 'No pending withdrawal requests currently.',
+                'details': 'Details',
+                'amount': 'Amount',
+                'tech_name_label': 'Technician:',
+                'admin_payment_title': 'Process Technician Payment',
+                'admin_confirm_payment': 'Confirm Payment & Deduct',
+                'pay_button': 'Pay',
+                'payment_processed_success': 'Amount ({amount} DH) deducted from technician balance successfully.',
+                'balance_deducted': 'Balance Deducted',
             }
         };
 
@@ -665,8 +782,7 @@
 
         let db = {
             // Version updates to prevent old data conflict
-            users: getSafeData('sf_users_v6', []),
-            // UPDATED PRODUCTS STRUCTURE
+            users: getSafeData('sf_users_v7', []), // Updated for Admin Finance
             products: getSafeData('sf_prods_v5', [
                 {id:1, name:'Echolink HD Receiver', description: 'جهاز استقبال عالي الدقة يدعم جميع القنوات الفضائية وخدمات التشفير.', price:200, comm:40, imgURL: defaultImageUrl + '1', icon:'📡'}, 
                 {id:2, name:'High Quality LNB', description: 'مفتاح عالي الجودة لتقوية الإشارة وتحسين الاستقبال في الظروف الصعبة.', price:50, comm:10, imgURL: defaultImageUrl + '2', icon:'📡'},
@@ -674,15 +790,18 @@
             ]),
             requests: getSafeData('sf_reqs_v5', []),
             techLogs: getSafeData('sf_tech_logs_v5', []), 
-            current: getSafeData('sf_curr_v5', null)
+            // NEW: Withdrawal requests storage
+            withdrawals: getSafeData('sf_withdrawals_v7', []), 
+            current: getSafeData('sf_curr_v7', null) // Updated
         };
 
         function save() {
-            localStorage.setItem('sf_users_v6', JSON.stringify(db.users));
+            localStorage.setItem('sf_users_v7', JSON.stringify(db.users));
             localStorage.setItem('sf_prods_v5', JSON.stringify(db.products));
             localStorage.setItem('sf_reqs_v5', JSON.stringify(db.requests));
             localStorage.setItem('sf_tech_logs_v5', JSON.stringify(db.techLogs));
-            localStorage.setItem('sf_curr_v5', JSON.stringify(db.current));
+            localStorage.setItem('sf_withdrawals_v7', JSON.stringify(db.withdrawals));
+            localStorage.setItem('sf_curr_v7', JSON.stringify(db.current));
         }
 
         // --- 2. Interface Control ---
@@ -690,6 +809,11 @@
             document.getElementById('view-login').classList.add('d-none');
             document.getElementById('view-register').classList.add('d-none');
             document.getElementById(`view-${view}`).classList.remove('d-none');
+        }
+
+        // Consolidated Modal Closer
+        function closeModal(modalId) { 
+            document.getElementById(modalId).classList.add('d-none'); 
         }
 
         // --- 3. Authentication ---
@@ -880,8 +1004,6 @@
             document.getElementById('modal').classList.remove('d-none'); 
         }
 
-        function closeModal() { document.getElementById('modal').classList.add('d-none'); }
-
         function sendReq() {
             const type = document.getElementById('srv-type').value.trim();
             const phone = document.getElementById('srv-phone').value.trim();
@@ -902,11 +1024,11 @@
                 date: new Date().toLocaleDateString('en-US')
             });
             save();
-            closeModal();
+            closeModal('modal');
             showToast(t("Request sent successfully! Technicians will be notified."), 'success');
         }
         
-        // --- NEW/UPDATED: Product Details Modal Functions ---
+        // --- Product Details Modal Functions ---
         function openProductModal(productId) {
             const product = db.products.find(p => p.id === productId);
             if (!product) {
@@ -951,14 +1073,10 @@
             
             document.getElementById('product-modal').classList.remove('d-none');
         }
-
-        function closeProductModal() {
-            document.getElementById('product-modal').classList.add('d-none');
-        }
         
-        // --- NEW: Product Purchase Functions ---
+        // --- Product Purchase Functions ---
         function recordProductPurchase(productId, type = 'buy') {
-            closeProductModal();
+            closeModal('product-modal');
             const product = db.products.find(p => p.id === productId);
             if (!product) return showToast(t("Product not found."), 'error');
             
@@ -1033,6 +1151,44 @@
             if (t === 'req') updateRequestsList(); 
             if (t === 'log') updateTechLogs(); 
         }
+        
+        // NEW: Open Withdrawal Modal
+        function openWithdrawModal() {
+            document.getElementById('withdraw-current-balance').innerText = `${db.current.wallet} DH`;
+            document.getElementById('withdraw-modal').classList.remove('d-none'); 
+        }
+
+        // NEW: Send Withdrawal Request
+        function sendWithdrawRequest() {
+            const amount = parseInt(document.getElementById('withdraw-amount').value.trim());
+            const details = document.getElementById('withdraw-details').value.trim();
+            
+            if (isNaN(amount) || amount <= 0 || !details) {
+                return showToast(t("Please enter a valid amount and payment details."), 'error');
+            }
+            if (amount > db.current.wallet) {
+                return showToast(t("insufficient_balance"), 'error');
+            }
+
+            db.withdrawals.push({
+                id: Date.now(),
+                techId: db.current.id,
+                techName: db.current.name,
+                techPhone: db.current.phone,
+                amount: amount,
+                details: details,
+                status: 'pending',
+                date: new Date().toLocaleDateString('en-US')
+            });
+            save();
+
+            // Clear inputs and close modal
+            document.getElementById('withdraw-amount').value = '';
+            document.getElementById('withdraw-details').value = '';
+            closeModal('withdraw-modal');
+            showToast(t("withdrawal_request_sent"), 'success');
+        }
+
 
         function buy(id) {
             const p = db.products.find(x => x.id === id);
@@ -1147,8 +1303,8 @@
         // --- 7. Admin Functions ---
         
         function adminTab(t) {
-            const views = { 'req': 'view-admin-req', 'prod': 'view-admin-prod', 'users': 'view-admin-users' };
-            const btns = { 'req': 'btn-admin-req', 'prod': 'btn-admin-prod', 'users': 'btn-admin-users' };
+            const views = { 'req': 'view-admin-req', 'prod': 'view-admin-prod', 'users': 'view-admin-users', 'finance': 'view-admin-finance' };
+            const btns = { 'req': 'btn-admin-req', 'prod': 'btn-admin-prod', 'users': 'btn-admin-users', 'finance': 'btn-admin-finance' };
             
             // Deactivate all
             for (let key in views) {
@@ -1168,6 +1324,9 @@
                 updateAdminRequestsList();
             } else if (t === 'users') {
                 updateAllUsersList();
+            } else if (t === 'finance') {
+                 updateWithdrawalRequestsList();
+                 updateTechBalancesList();
             }
         }
 
@@ -1239,6 +1398,7 @@
                 save();
                 updatePendingUsersList(); 
                 updateAllUsersList();
+                updateTechBalancesList(); // Update finance tab too
                 showToast(t("User deleted successfully."), 'success');
             }
         }
@@ -1421,6 +1581,146 @@
                 showToast(t("Product deleted successfully."), 'success');
             }
         }
+        
+        // --- NEW: Admin Finance Functions ---
+
+        function updateTechBalancesList() {
+            const container = document.getElementById('list-tech-balances');
+            const techUsers = db.users.filter(u => u.role === 'tech');
+
+            if (techUsers.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 text-sm py-4">${t('No technician accounts found.')}</p>`;
+                return;
+            }
+
+            container.innerHTML = techUsers.map(tech => `
+                <div class="bg-white p-3 rounded-xl shadow border-l-4 border-blue-500 flex justify-between items-center">
+                    <div>
+                        <span class="font-bold">${tech.name}</span>
+                        <div class="text-xs text-gray-500">${t('phone_placeholder')}: ${tech.phone}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-lg text-green-600">${tech.wallet} DH</div>
+                        <button onclick="openAdminPaymentModal(${tech.id}, '${tech.name}', ${tech.wallet})" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition active:scale-[0.98] mt-1" data-i18n="pay_button">
+                            <i class="fas fa-money-bill-wave mr-1"></i> ${t('pay_button')}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateWithdrawalRequestsList() {
+            const container = document.getElementById('list-withdrawal-requests');
+            const pendingWithdrawals = db.withdrawals.filter(w => w.status === 'pending').reverse();
+
+            if (pendingWithdrawals.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 text-sm py-4">${t('no_withdrawal_requests')}</p>`;
+                return;
+            }
+
+            container.innerHTML = pendingWithdrawals.map(w => `
+                <div class="bg-white p-4 rounded-xl shadow border-r-4 border-red-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-bold text-red-700">${w.amount} DH</span>
+                            <div class="text-xs text-gray-600">${t('tech_name_label')}: ${w.techName} (${w.techPhone})</div>
+                        </div>
+                        <span class="text-xs text-gray-400">${w.date}</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-700">
+                        <p class="font-semibold mb-1">${t('details')}:</p>
+                        <p class="text-xs whitespace-pre-wrap">${w.details}</p>
+                    </div>
+                    <button onclick="markWithdrawalPaid(${w.id}, ${w.techId}, ${w.amount})" class="w-full bg-green-600 text-white py-2 rounded-xl mt-3 text-sm hover:bg-green-700 transition active:scale-[0.98]"><i class="fas fa-check"></i> ${t('admin_confirm_payment')}</button>
+                </div>
+            `).join('');
+        }
+        
+        function markWithdrawalPaid(id, techId, amount) {
+            if (!confirm(t(`Confirm payment of ${amount} DH to the technician and deduct it from their balance?`))) return;
+            
+            // 1. Find and update the withdrawal request status
+            const withdrawalIndex = db.withdrawals.findIndex(w => w.id === id);
+            if (withdrawalIndex !== -1) {
+                db.withdrawals[withdrawalIndex].status = 'paid';
+            }
+            
+            // 2. Deduct the amount from the technician's wallet
+            const userIndex = db.users.findIndex(u => u.id === techId);
+            if (userIndex !== -1) {
+                db.users[userIndex].wallet -= amount;
+                if (db.users[userIndex].wallet < 0) db.users[userIndex].wallet = 0; // Prevent negative
+            }
+
+            // 3. Log the payment deduction in techLogs
+             db.techLogs.push({ 
+                id: Date.now(), 
+                techId: techId, 
+                type: 'payment', 
+                amount: -amount, // Negative value for deduction
+                desc: `${t('balance_deducted')} (${t('amount')}: ${amount} DH)`, 
+                date: new Date().toLocaleDateString('en-US') 
+            });
+
+            save();
+            
+            // Update UI
+            updateWithdrawalRequestsList();
+            updateTechBalancesList();
+            showToast(t('payment_processed_success').replace('{amount}', amount), 'success');
+        }
+
+        // Separate function to manually process payments (e.g., if a request wasn't made)
+        let currentTechIdForPayment = null;
+
+        function openAdminPaymentModal(techId, techName, currentBalance) {
+            currentTechIdForPayment = techId;
+            document.getElementById('payment-tech-id').value = techId;
+            document.getElementById('payment-tech-name').innerText = techName;
+            document.getElementById('payment-tech-balance').innerText = `${currentBalance} DH`;
+            document.getElementById('payment-amount').value = '';
+            document.getElementById('admin-payment-modal').classList.remove('d-none');
+        }
+
+        function processPayment() {
+            const amount = parseInt(document.getElementById('payment-amount').value.trim());
+            const techId = parseInt(document.getElementById('payment-tech-id').value);
+            
+            if (isNaN(amount) || amount <= 0) {
+                return showToast(t("Please enter a valid amount."), 'error');
+            }
+
+            const userIndex = db.users.findIndex(u => u.id === techId);
+            if (userIndex === -1) {
+                 closeModal('admin-payment-modal');
+                 return showToast(t("User not found."), 'error');
+            }
+            
+            if (!confirm(t(`Confirm deduction of ${amount} DH from ${db.users[userIndex].name}'s balance?`))) return;
+
+
+            // Deduct the amount
+            db.users[userIndex].wallet -= amount;
+            if (db.users[userIndex].wallet < 0) db.users[userIndex].wallet = 0; 
+
+            // Log the payment deduction in techLogs
+             db.techLogs.push({ 
+                id: Date.now(), 
+                techId: techId, 
+                type: 'payment', 
+                amount: -amount, // Negative value for deduction
+                desc: `${t('balance_deducted')} (${t('amount')}: ${amount} DH)`, 
+                date: new Date().toLocaleDateString('en-US') 
+            });
+
+            save();
+
+            // Update UI and close
+            closeModal('admin-payment-modal');
+            updateTechBalancesList();
+            showToast(t('payment_processed_success').replace('{amount}', amount), 'success');
+        }
+
 
         // --- 8. Startup (Ensure Admin exists) ---
         document.addEventListener('DOMContentLoaded', () => {
